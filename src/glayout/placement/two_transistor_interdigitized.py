@@ -2,12 +2,10 @@ from glayout.pdk.mappedpdk import MappedPDK
 from pydantic import validate_arguments
 from gdsfactory.component import Component
 from glayout.primitives.fet import nmos, pmos, multiplier
-from glayout.util.comp_utils import evaluate_bbox
+from glayout.util.comp_utils import evaluate_bbox, prec_ref_center, transformed
 from typing import Literal, Union
 from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, create_private_ports
-from glayout.util.comp_utils import prec_ref_center
 from glayout.routing.straight_route import straight_route
-from gdsfactory.functions import transformed
 from glayout.primitives.guardring import tapring
 from glayout.util.port_utils import add_ports_perimeter
 from gdsfactory import clear_cache
