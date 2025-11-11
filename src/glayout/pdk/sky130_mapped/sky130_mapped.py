@@ -142,7 +142,8 @@ sky130_mapped_pdk = MappedPDK(
 )
 # Set layers after initialization to avoid GDSFactory v9 validation
 sky130_mapped_pdk.layers = LAYER
-# set the grid size
-sky130_mapped_pdk.gds_write_settings.precision = 5*10**-9
-sky130_mapped_pdk.cell_decorator_settings.cache=False
-sky130_mapped_pdk.gds_write_settings.flatten_invalid_refs=False
+# Note: gds_write_settings and cell_decorator_settings no longer exist in GDSFactory v9
+# These settings are now handled differently or are deprecated
+# sky130_mapped_pdk.gds_write_settings.precision = 5*10**-9
+# sky130_mapped_pdk.cell_decorator_settings.cache=False
+# sky130_mapped_pdk.gds_write_settings.flatten_invalid_refs=False

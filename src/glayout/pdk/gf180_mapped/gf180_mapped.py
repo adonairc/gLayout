@@ -114,6 +114,7 @@ gf180_mapped_pdk = MappedPDK(
 # Set layers after initialization to avoid GDSFactory v9 validation
 gf180_mapped_pdk.layers = LAYER
 
-# configure the grid size and other settings
-gf180_mapped_pdk.gds_write_settings.precision = 5*10**-9
-gf180_mapped_pdk.cell_decorator_settings.cache=False
+# Note: gds_write_settings and cell_decorator_settings no longer exist in GDSFactory v9
+# These settings are now handled differently or are deprecated
+# gf180_mapped_pdk.gds_write_settings.precision = 5*10**-9
+# gf180_mapped_pdk.cell_decorator_settings.cache=False
