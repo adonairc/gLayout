@@ -967,10 +967,14 @@ exit
 
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
-    def layer_to_glayer(self, layer: tuple[int, int]) -> str:
+    def layer_to_glayer(self, layer: tuple[int, int] | int) -> str:
         """if layer provided corresponds to a glayer, will return a glayer
         else will raise an exception
-        takes layer as a tuple(int,int)"""
+        takes layer as a tuple(int,int) or int (in which case datatype defaults to 0)"""
+        # In GDSFactory v9, port.layer may return just an integer
+        # Convert to tuple format if needed
+        if isinstance(layer, int):
+            layer = (layer, 0)
         # lambda for finding last matching key in dict from val
         find_last = lambda val, d: [x for x, y in d.items() if y == val].pop()
         if layer in self.glayers.values():
