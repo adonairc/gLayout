@@ -449,17 +449,23 @@ def nmos(
                 except KeyError:
                     pass
     # add pwell
-    nfet.add_padding(
-        layers=(pdk.get_glayer("pwell"),),
-        default=pdk.get_grule("pwell", "active_tap")["min_enclosure"],
-    )
+    pwell_enc = pdk.get_grule("pwell", "active_tap")["min_enclosure"]
+    bbox = nfet.bbox()
+    pwell_width = bbox[1][0] - bbox[0][0] + 2 * pwell_enc
+    pwell_height = bbox[1][1] - bbox[0][1] + 2 * pwell_enc
+    pwell_rect = rectangle(size=(pwell_width, pwell_height), layer=pdk.get_glayer("pwell"))
+    pwell_ref = nfet << pwell_rect
+    pwell_ref.move((bbox[0][0] - pwell_enc, bbox[0][1] - pwell_enc))
     nfet = add_ports_perimeter(nfet,layer=pdk.get_glayer("pwell"),prefix="well_")
     # add dnwell if dnwell
     if with_dnwell:
-        nfet.add_padding(
-            layers=(pdk.get_glayer("dnwell"),),
-            default=pdk.get_grule("pwell", "dnwell")["min_enclosure"],
-        )
+        dnwell_enc = pdk.get_grule("pwell", "dnwell")["min_enclosure"]
+        bbox = nfet.bbox()
+        dnwell_width = bbox[1][0] - bbox[0][0] + 2 * dnwell_enc
+        dnwell_height = bbox[1][1] - bbox[0][1] + 2 * dnwell_enc
+        dnwell_rect = rectangle(size=(dnwell_width, dnwell_height), layer=pdk.get_glayer("dnwell"))
+        dnwell_ref = nfet << dnwell_rect
+        dnwell_ref.move((bbox[0][0] - dnwell_enc, bbox[0][1] - dnwell_enc))
     # add substrate tap if with_substrate_tap
     if with_substrate_tap:
         substrate_tap_separation = pdk.get_grule("dnwell", "active_tap")[
@@ -597,10 +603,13 @@ def pmos(
                     pass
     # add nwell
     nwell_glayer = "dnwell" if dnwell else "nwell"
-    pfet.add_padding(
-        layers=(pdk.get_glayer(nwell_glayer),),
-        default=pdk.get_grule("active_tap", nwell_glayer)["min_enclosure"],
-    )
+    nwell_enc = pdk.get_grule("active_tap", nwell_glayer)["min_enclosure"]
+    bbox = pfet.bbox()
+    nwell_width = bbox[1][0] - bbox[0][0] + 2 * nwell_enc
+    nwell_height = bbox[1][1] - bbox[0][1] + 2 * nwell_enc
+    nwell_rect = rectangle(size=(nwell_width, nwell_height), layer=pdk.get_glayer(nwell_glayer))
+    nwell_ref = pfet << nwell_rect
+    nwell_ref.move((bbox[0][0] - nwell_enc, bbox[0][1] - nwell_enc))
     pfet = add_ports_perimeter(pfet,layer=pdk.get_glayer(nwell_glayer),prefix="well_")
     # add substrate tap if with_substrate_tap
     if with_substrate_tap:
