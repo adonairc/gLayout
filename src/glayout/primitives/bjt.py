@@ -428,7 +428,7 @@ def multiplier(
 
         multiplier.add(base)
         multiplier.add(collector)
-        multiplier.add_ports(evia_ref.get_ports_list(prefix="emitter_"))
+        multiplier.add_ports(evia_ref.ports, prefix="emitter_")
         multiplier.add_ports(base.ports, prefix="base_")
         multiplier.add_ports(collector.ports,prefix="collector_")
 

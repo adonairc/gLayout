@@ -225,7 +225,7 @@ def multiplier(
         # add ports
         multiplier.add_ports(drain.ports, prefix="drain_")
         multiplier.add_ports(source.ports, prefix="source_")
-        multiplier.add_ports(gate_ref.get_ports_list(prefix="gate_"))
+        multiplier.add_ports(gate_ref.ports, prefix="gate_")
     # create dummy regions
     if isinstance(dummy, bool):
         dummyl = dummyr = dummy
