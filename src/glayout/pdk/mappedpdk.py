@@ -970,11 +970,13 @@ exit
     def layer_to_glayer(self, layer: tuple[int, int] | int) -> str:
         """if layer provided corresponds to a glayer, will return a glayer
         else will raise an exception
-        takes layer as a tuple(int,int) or int (in which case datatype defaults to 0)"""
+        takes layer as a tuple(int,int) or int (in which case we search for any matching layer number)"""
         # In GDSFactory v9, port.layer may return just an integer
-        # Convert to tuple format if needed
+        # If integer, search for any layer tuple with that layer number
+        layer_as_int = None
         if isinstance(layer, int):
-            layer = (layer, 0)
+            layer_as_int = layer
+            layer = (layer, 0)  # Try default datatype first
         # lambda for finding last matching key in dict from val
         find_last = lambda val, d: [x for x, y in d.items() if y == val].pop()
         if layer in self.glayers.values():
@@ -990,6 +992,21 @@ exit
                     glayer_name = find_last(layer_name, self.glayers)
                 else:
                     raise ValueError("layer does not correspond to a glayer")
+            elif layer_as_int is not None:
+                # Search for any layer tuple with matching layer number
+                matching_layer = None
+                for pdk_layer in pdk_real_layers:
+                    if isinstance(pdk_layer, tuple) and len(pdk_layer) >= 1 and pdk_layer[0] == layer_as_int:
+                        matching_layer = pdk_layer
+                        break
+                if matching_layer:
+                    layer_name = find_last(matching_layer, self.layers)
+                    if layer_name in self.glayers.values():
+                        glayer_name = find_last(layer_name, self.glayers)
+                    else:
+                        raise ValueError("layer does not correspond to a glayer")
+                else:
+                    raise ValueError("layer is not a layer present in the pdk")
             else:
                 raise ValueError("layer is not a layer present in the pdk")
             return glayer_name
