@@ -57,9 +57,9 @@ def add_two_int_labels(two_int_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         two_int_in.add(compref)
-    return two_int_in.flatten() 
-
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    two_int_in.flatten()
+    return two_int_in
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def macro_two_transistor_interdigitized(
     pdk: MappedPDK,

@@ -66,9 +66,9 @@ def add_tg_labels(tg_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         tg_in.add(compref)
-    return tg_in.flatten() 
-
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    tg_in.flatten()
+    return tg_in
 def get_component_netlist(component) -> Netlist:
     """Helper function to extract netlist from component with version compatibility"""
     if hasattr(component.info, 'get'):        

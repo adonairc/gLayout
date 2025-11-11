@@ -59,8 +59,9 @@ def sky130_add_fvf_labels(fvf_in: Component) -> Component:
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         fvf_in.add(compref)
-    return fvf_in.flatten() 
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    fvf_in.flatten()
+    return fvf_in
 @cell
 def  flipped_voltage_follower(
         pdk: MappedPDK,

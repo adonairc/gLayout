@@ -58,8 +58,9 @@ def add_cm_labels(cm_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         cm_in.add(compref)
-    return cm_in.flatten() 
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    cm_in.flatten()
+    return cm_in
 def current_mirror_netlist(
     pdk: MappedPDK, 
     width: float,

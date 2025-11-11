@@ -367,4 +367,6 @@ def get_primitive_rectangle(size: tuple[float,float]=(5,3), layer: LayerSpec=(0,
 	#clogic_ref = prec_ref_center(temprect) if centered else temprect.ref()
 	#rect.add(clogic_ref)
 	#rect.add_ports(clogic_ref.ports)
-	return temprect.flatten()
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	temprect.flatten()
+	return temprect

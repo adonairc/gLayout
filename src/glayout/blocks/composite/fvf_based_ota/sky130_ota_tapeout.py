@@ -116,7 +116,9 @@ def sky130_ota_add_pads(ota_in: Component, flatten=False) -> Component:
             align_comp_to_port(pin_ref,pad_array_port,alignment=('c','t'))
     
     if flatten:
-        return ota_wpads.flatten()
+        # In GDSFactory v9, flatten() mutates in-place and returns None
+        ota_wpads.flatten()
+        return ota_wpads
     else:
         return ota_wpads
 
@@ -169,10 +171,9 @@ def sky130_add_ota_labels(ota_in: Component) -> Component:
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         ota_in.add(compref)
-    return ota_in.flatten() 
-
-
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    ota_in.flatten()
+    return ota_in
 def sky130_add_ota_lvt_layer(ota_in: Component) -> Component:
     global __NO_LVT_GLOBAL_
     if __NO_LVT_GLOBAL_:

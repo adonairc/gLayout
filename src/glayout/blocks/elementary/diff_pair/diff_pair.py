@@ -81,8 +81,9 @@ def sky130_add_df_labels(df_in: Component) -> Component:
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         df_in.add(compref)
-    return df_in.flatten() 
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    df_in.flatten()
+    return df_in
 def diff_pair_netlist(fetL: Component, fetR: Component) -> Netlist:
 	diff_pair_netlist = Netlist(circuit_name='DIFF_PAIR', nodes=['VP', 'VN', 'VDD1', 'VDD2', 'VTAIL', 'B'])
 	
@@ -207,8 +208,11 @@ def sky130_add_diff_pair_labels(diff_pair_in: Component) -> Component:
             compref = comp
         diff_pair_in.add(compref)
     
-    return diff_pair_in.flatten()
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    
+    diff_pair_in.flatten()
+    
+    return diff_pair_in
 @cell
 def diff_pair(
 	pdk: MappedPDK,

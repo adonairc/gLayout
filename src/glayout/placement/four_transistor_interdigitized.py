@@ -87,8 +87,9 @@ def add_four_int_labels1(four_int_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         four_int_in.add(compref)
-    return four_int_in.flatten()
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    four_int_in.flatten()
+    return four_int_in
 # one common bulk node
 def add_four_int_labels2(four_int_in: Component,
                 pdk: MappedPDK 
@@ -159,8 +160,9 @@ def add_four_int_labels2(four_int_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         four_int_in.add(compref)
-    return four_int_in.flatten()
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    four_int_in.flatten()
+    return four_int_in
 def four_tran_interdigitized_netlist(toprow: ComponentReference, bottomrow: ComponentReference, same_bulk: bool) -> Netlist:
 
     if same_bulk:

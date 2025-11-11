@@ -80,8 +80,9 @@ def add_df_labels(df_in: Component,
 		alignment = ('c','b') if alignment is None else alignment
 		compref = align_comp_to_port(comp, prt, alignment=alignment)
 		df_in.add(compref)
-	return df_in.flatten() 
-
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	df_in.flatten()
+	return df_in
 def diff_pair_netlist(fetL: Component, fetR: Component) -> Netlist:
 	diff_pair_netlist = Netlist(circuit_name='DIFF_PAIR', nodes=['VP', 'VN', 'VDD1', 'VDD2', 'VTAIL', 'B'])
 	diff_pair_netlist.connect_netlist(

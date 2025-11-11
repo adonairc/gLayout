@@ -132,6 +132,8 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
 	# add netlist
 	mimcap_arr.info['netlist'] = __generate_mimcap_array_netlist(mimcap_single.info['netlist'], rows * columns)
 
-	return mimcap_arr.flatten()
+	# In GDSFactory v9, flatten() mutates in-place and returns None
 
+	mimcap_arr.flatten()
 
+	return mimcap_arr

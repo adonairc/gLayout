@@ -52,8 +52,9 @@ def add_lvcm_labels(lvcm_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         lvcm_in.add(compref)
-    return lvcm_in.flatten() 
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    lvcm_in.flatten()
+    return lvcm_in
 def low_voltage_cmirr_netlist(bias_fvf: Component, cascode_fvf: Component, fet_1_ref: ComponentReference, fet_2_ref: ComponentReference, fet_3_ref: ComponentReference, fet_4_ref: ComponentReference) -> Netlist:
     
         netlist = Netlist(circuit_name='Low_voltage_current_mirror', nodes=['IBIAS1', 'IBIAS2', 'GND', 'IOUT1', 'IOUT2'])

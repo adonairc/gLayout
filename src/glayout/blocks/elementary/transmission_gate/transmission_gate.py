@@ -64,9 +64,9 @@ def add_tg_labels(tg_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         tg_in.add(compref)
-    return tg_in.flatten() 
-
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    tg_in.flatten()
+    return tg_in
 def get_component_netlist(component):
     """Helper function to get netlist object from component info, compatible with all gdsfactory versions"""
     from glayout.spice.netlist import Netlist
@@ -135,9 +135,9 @@ def sky130_add_tg_labels(tg_in: Component) -> Component:
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         tg_in.add(compref)
-    return tg_in.flatten() 
-
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    tg_in.flatten()
+    return tg_in
 def tg_netlist(nfet: Component, pfet: Component) -> Netlist:
 
          netlist = Netlist(circuit_name='Transmission_Gate', nodes=['VIN', 'VSS', 'VOUT', 'VCC', 'VGP', 'VGN'])
