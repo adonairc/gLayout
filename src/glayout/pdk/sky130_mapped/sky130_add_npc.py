@@ -1,6 +1,5 @@
 from gdsfactory.component import Component
 import gdsfactory as gf
-from gdsfactory.geometry.boolean import boolean
 
 
 def sky130_add_npc(comp: Component) -> Component:
@@ -16,9 +15,9 @@ def sky130_add_npc(comp: Component) -> Component:
 	# TODO: see about an implemtation using gdsfactory component metadata
 	if len(licon_comp.get_polygons()) < 2 and len(poly_comp.get_polygons()) < 2:
 		return comp
-	liconANDpoly = boolean(licon_comp, poly_comp, layer=(1,2), operation="and")
+	liconANDpoly = gf.boolean(licon_comp, poly_comp, layer=(1,2), operation="and")
 	if len(existing_npc.get_polygons()) > 1:
-		liconANDpoly = boolean(liconANDpoly, existing_npc, layer=(1,2), operation="A-B")
+		liconANDpoly = gf.boolean(liconANDpoly, existing_npc, layer=(1,2), operation="A-B")
 	licon_polygons = liconANDpoly.get_polygons(as_array=False)
 	# iterate through all licon and create npc (ignore merges for now)
 	npc_polygons = list()
