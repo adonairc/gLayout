@@ -1,4 +1,3 @@
-from gdsfactory import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
@@ -9,7 +8,6 @@ from glayout.util.port_utils import assert_port_manhattan, set_port_orientation,
 from gdstk import rectangle as primitive_rectangle
 
 
-@cell
 def straight_route(
 	pdk: MappedPDK,
 	edge1: Port,

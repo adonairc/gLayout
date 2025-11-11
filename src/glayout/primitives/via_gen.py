@@ -1,4 +1,3 @@
-from gdsfactory import cell
 from gdsfactory.component import Component
 from gdsfactory.components import rectangle
 from pydantic import validate_arguments
@@ -89,7 +88,6 @@ def __get_viastack_minseperation(pdk: MappedPDK, viastack: Component, ordered_la
     return pdk.snap_to_2xgrid([via_spacing, 2*top_enclosure], return_type="float")
 
 
-@cell
 def via_stack(
     pdk: MappedPDK,
     glayer1: str,
@@ -177,7 +175,6 @@ def via_stack(
     return rename_ports_by_orientation(viastack.flatten())
 
 
-@cell
 def via_array(
     pdk: MappedPDK,
     glayer1: str,

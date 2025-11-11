@@ -1,4 +1,3 @@
-from gdsfactory import cell
 from gdsfactory.component import Component
 from gdsfactory.components import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
@@ -111,7 +110,6 @@ XMAIN   D G S B {model} l={{l}} w={{w}} m={{m}}"""
     )
 
 # drain is above source
-@cell
 def multiplier(
     pdk: MappedPDK,
     sdlayer: str,

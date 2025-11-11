@@ -7,9 +7,7 @@ from glayout.pdk.mappedpdk import MappedPDK
 from glayout.primitives.guardring import tapring
 from glayout.util.comp_utils import evaluate_bbox, add_ports_perimeter
 from gdsfactory.component import Component
-from gdsfactory import cell
 
-@cell
 def resistor(
     pdk: MappedPDK,
     width: float = 5,

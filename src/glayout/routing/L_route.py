@@ -1,4 +1,3 @@
-from gdsfactory import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
@@ -9,7 +8,6 @@ from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by
 from decimal import Decimal
 
 
-@cell
 def L_route(
 	pdk: MappedPDK,
 	edge1: Port,
