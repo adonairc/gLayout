@@ -302,15 +302,15 @@ def prec_ref_center(custom_comp: Union[Component,ComponentReference], destinatio
 	you can optionally specify a destination = tuple(x,y), by default, the destination is 0,0
 	returns component reference
 	"""
-	compref = custom_comp if isinstance(custom_comp, ComponentReference) else custom_comp.copy()
+	# In GDSFactory v9, always create a reference from Component
+	compref = custom_comp if isinstance(custom_comp, ComponentReference) else custom_comp.ref()
 	xcor, ycor = prec_center(compref, False)
 	if destination is not None:
 		xcor += destination[0]
 		ycor += destination[1]
 	if snapmov2grid:
-		compref.movex(snap_to_grid(xcor,2)).movey(snap_to_grid(ycor,2))
+		return compref.movex(snap_to_grid(xcor,2)).movey(snap_to_grid(ycor,2))
 	else:
-		
 		return compref.movex(xcor).movey(ycor)
 
 
