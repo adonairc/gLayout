@@ -24,7 +24,7 @@ def rectangular_ring(
 		centered: True sets center to (0,0), False sets south-west to (0,0).
 	"""
 	c = Component()
-	c_temp = Component("temp create ring")
+	c_temp = Component()
 	rect_in = c_temp << rectangle(size = enclosed_size, centered=centered, layer=layer)
 	rect_out = c_temp << rectangle(size = [dim+2*width for dim in enclosed_size], centered=centered, layer=layer)
 	if not centered:
