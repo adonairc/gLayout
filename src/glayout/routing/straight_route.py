@@ -64,12 +64,19 @@ def straight_route(
 			try:
 				xs = port.cross_section
 				if hasattr(xs, 'layer'):
-					print(f"DEBUG: Found cross_section.layer = {xs.layer}")
-					# xs.layer is a LayerEnum member, convert to tuple for layer_to_glayer
-					layer_tuple = tuple(xs.layer) if not isinstance(xs.layer, tuple) else xs.layer
+					print(f"DEBUG: Found cross_section.layer = {xs.layer}, type = {type(xs.layer)}")
+					# xs.layer can be LayerInfo (KLayout), LayerEnum, or tuple
+					if isinstance(xs.layer, tuple):
+						layer_tuple = xs.layer
+					elif hasattr(xs.layer, 'layer') and hasattr(xs.layer, 'datatype'):
+						# KLayout LayerInfo object
+						layer_tuple = (xs.layer.layer, xs.layer.datatype)
+					else:
+						# Try tuple() conversion for LayerEnum
+						layer_tuple = tuple(xs.layer)
 					print(f"DEBUG: Converted to tuple = {layer_tuple}")
 					return pdk.layer_to_glayer(layer_tuple)
-			except (ValueError, KeyError, AttributeError) as e:
+			except (ValueError, KeyError, AttributeError, TypeError) as e:
 				print(f"DEBUG: Failed to use cross_section.layer: {e}")
 				pass
 
