@@ -1,6 +1,5 @@
-from gdsfactory.grid import grid
 from gdsfactory import cell
-from gdsfactory.component import Component, copy
+from gdsfactory.component import Component
 from gdsfactory.components import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
 from typing import Union

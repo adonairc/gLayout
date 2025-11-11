@@ -5,7 +5,6 @@ from gdsfactory.components import rectangle
 from gdsfactory.port import Port
 from typing import Callable, Union, Iterable
 from decimal import Decimal
-from gdsfactory.functions import move as __gf_move
 from glayout.pdk.mappedpdk import MappedPDK
 from gdstk import rectangle as primitive_rectangle
 from .port_utils import add_ports_perimeter, rename_ports_by_list, parse_direction
