@@ -52,11 +52,11 @@ def straight_route(
 	width = width if width else edge1.width
 	# In GDSFactory v9, port.layer may not be reliable, try to infer from port name
 	def infer_glayer_from_port_name(port_name):
-		"""Infer glayer from port name patterns like 'bottom_met_N', 'top_met_W', etc."""
+		"""Infer glayer from port name patterns like 'bottom_met_N', 'gate_S', etc."""
 		if "met" in port_name.lower():
 			return "met1"  # Default to met1 for metal ports
-		elif "poly" in port_name.lower():
-			return "poly"
+		elif "poly" in port_name.lower() or "gate" in port_name.lower():
+			return "poly"  # Gates are on poly layer
 		elif "diff" in port_name.lower() or "active" in port_name.lower():
 			return "active_diff"
 		return None
