@@ -144,12 +144,13 @@ sky130_mapped_pdk = MappedPDK(
 		'pfet': 'sky130_fd_pr__pfet_01v8',
 		'mimcap': 'sky130_fd_pr__cap_mim_m3_1'
     },
+    layers = LAYER,
     grules=grulesobj,
     pdk_files=pdk_files,
     default_decorator=sky130_add_npc,
     valid_bjt_sizes=sky130_valid_bjt_sizes
 )
-sky130_mapped_pdk.layers = LAYER
+# sky130_mapped_pdk.layers = LAYER
 # set the grid size
 # sky130_mapped_pdk.gds_write_settings.precision = 5*10**-9
 # sky130_mapped_pdk.cell_decorator_settings.cache=False

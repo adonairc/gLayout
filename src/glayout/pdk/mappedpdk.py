@@ -979,11 +979,13 @@ exit
         find_last = lambda val, d: [x for x, y in d.items() if y == val].pop()
         if layer in self.glayers.values():
             return find_last(layer, self.glayers)
+            
         elif self.layers is not None:
             # find glayer verfying presence along the way
-            pdk_real_layers = self.layers.values()
+            print(self.layers)
+            pdk_real_layers = self.layers
             if layer in pdk_real_layers:
-                layer_name = find_last(layer, self.layers)
+                layer_name = find_last(layer.name, self.layers.items())
                 if layer_name in self.glayers.values():
                     glayer_name = find_last(layer_name, self.glayers)
                 else:
