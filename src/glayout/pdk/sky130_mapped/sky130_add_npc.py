@@ -1,5 +1,5 @@
 from gdsfactory.component import Component
-from gdsfactory.polygon import Polygon
+import gdsfactory as gf
 from gdsfactory.geometry.boolean import boolean
 
 
@@ -34,31 +34,36 @@ def sky130_add_npc(comp: Component) -> Component:
 			[licon_polygonxmax + 0.1, licon_polygonymax + 0.1],
 			[licon_polygonxmin - 0.1, licon_polygonymax + 0.1],
 		]
-		npc_polygons.append(Polygon(padding_points, layer=(95,20)))
-	# determine which npc polygons should be merged 
-	# also merge them by adding a polygon over them 
+		npc_polygons.append(gf.kdb.DPolygon(padding_points))
+	# determine which npc polygons should be merged
+	# also merge them by adding a polygon over them
 	# naive approach, n^2 complexity
 	npc_merged_polygons = list()
 	for i, npc_polygon in enumerate(npc_polygons):
 		for j, other_polygon in enumerate(npc_polygons):
 			# use the fact that all npc polys have the same width (at this point)
-			yviolation = abs(npc_polygon.center[1] - other_polygon.center[1]) < 0.64#0.27+0.37
-			xviolation = abs(npc_polygon.center[0] - other_polygon.center[0]) < 0.64
+			bbox_i = npc_polygon.bbox()
+			bbox_j = other_polygon.bbox()
+			center_i = ((bbox_i.left + bbox_i.right) / 2, (bbox_i.bottom + bbox_i.top) / 2)
+			center_j = ((bbox_j.left + bbox_j.right) / 2, (bbox_j.bottom + bbox_j.top) / 2)
+			yviolation = abs(center_i[1] - center_j[1]) < 0.64#0.27+0.37
+			xviolation = abs(center_i[0] - center_j[0]) < 0.64
 			if i==j:#skip same polygon
 				continue
 			elif (xviolation and yviolation):
-				nxmax = max(npc_polygon.xmax, other_polygon.xmax)
-				nxmin = min(npc_polygon.xmin, other_polygon.xmin)
-				nymax = max(npc_polygon.ymax, other_polygon.ymax)
-				nymin = min(npc_polygon.ymin, other_polygon.ymin)
+				nxmax = max(bbox_i.right, bbox_j.right)
+				nxmin = min(bbox_i.left, bbox_j.left)
+				nymax = max(bbox_i.top, bbox_j.top)
+				nymin = min(bbox_i.bottom, bbox_j.bottom)
 				points = [
 					[nxmin,nymin],
 					[nxmax,nymin],
 					[nxmax,nymax],
 					[nxmin,nymax],
 				]
-				npc_merged_polygons.append(Polygon(points=points,layer=(95,20)))
+				npc_merged_polygons.append(gf.kdb.DPolygon(points))
 	# add npc and return
 	npc_polygons_to_add = npc_polygons + npc_merged_polygons
-	comp.add(npc_polygons_to_add)
+	for poly in npc_polygons_to_add:
+		comp.add_polygon(poly, layer=(95, 20))
 	return comp
