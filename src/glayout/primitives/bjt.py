@@ -1069,7 +1069,9 @@ def pnp(
                     dummy_port_name = "col_" + str(multipliers[0]-1) + "_" + dummy_port_name
                 pnp<<straight_route(pdk,pnp.ports[dummy_port_name],pnp.ports[f"substrate_E_top_met_E"],glayer2="met1")
 
-    component =  rename_ports_by_orientation(pnp).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(pnp)
+    component.flatten()
 
     #component.info['netlist'] = fet_netlist(
     #    pdk,
@@ -1188,7 +1190,9 @@ def npn(
                 npn<<straight_route(pdk,npn.ports[f"multiplier_{row}_dummy_R_C_metal_E_E"],npn.ports[f"substrate_E_top_met_E"],glayer2="met1")
 
 
-    component =  rename_ports_by_orientation(npn).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(npn)
+    component.flatten()
 
     #component.info['netlist'] = fet_netlist(
     #    pdk,

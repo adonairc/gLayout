@@ -47,8 +47,11 @@ def common_centroid_ab_ba(
         fetL = pmos(pdk, width=width, fingers=fingers,length=length,multipliers=1,with_tie=False,with_dummy=(dummy[0], False),dnwell=False,with_substrate_tap=False,rmult=rmult)
         fetR = pmos(pdk, width=width, fingers=fingers,length=length,multipliers=1,with_tie=False,with_dummy=(False,dummy[1]),dnwell=False,with_substrate_tap=False,rmult=rmult)
         well, sdglayer = "nwell", "p+s/d"
-    fetRdims = evaluate_bbox(fetR.flatten().remove_layers(layers=[pdk.get_glayer(well)]))
-    fetLdims = evaluate_bbox(fetL.flatten().remove_layers(layers=[pdk.get_glayer(well)]))
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    fetR.flatten()
+    fetRdims = evaluate_bbox(fetR.remove_layers(layers=[pdk.get_glayer(well)]))
+    fetL.flatten()
+    fetLdims = evaluate_bbox(fetL.remove_layers(layers=[pdk.get_glayer(well)]))
     # place and flip top transistors such that the drains of bottom and top point towards eachother
     a_topl = comcentroid << fetL
     a_topl = rename_ports_by_orientation(a_topl.mirror_y())

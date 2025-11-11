@@ -20,11 +20,12 @@ def transformed(ref: ComponentReference) -> Component:
 		ref: the reference to flatten into a new cell.
 
 	"""
-	
+
 	c = Component()
 	c.add(ref)
 	c.add_ports(ref.ports)
-	# c = c.flatten()
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	c.flatten()  # Flatten the component in-place
 	# c.copy_child_info(ref.ref_cell)
 	c.info["transformed_cell"] = ref.name
 	return c

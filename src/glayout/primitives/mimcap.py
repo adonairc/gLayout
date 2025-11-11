@@ -78,7 +78,9 @@ def mimcap(
     mim_cap = add_ports_perimeter(mim_cap, layer=pdk.get_glayer(capmetbottom), prefix="bottom_met_")
     mim_cap.add_ports(top_met_ref.get_ports_list())
 
-    component = rename_ports_by_orientation(mim_cap).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(mim_cap)
+    component.flatten()
 
     # netlist generation
     component.info['netlist'] = __generate_mimcap_netlist(pdk, size)

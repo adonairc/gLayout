@@ -476,7 +476,9 @@ def nmos(
         tapring_ref = nfet << ringtoadd
         nfet.add_ports(tapring_ref.get_ports_list(),prefix="guardring_")
 
-    component = rename_ports_by_orientation(nfet).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(nfet)
+    component.flatten()
 
     component.info['netlist'] = fet_netlist(
         pdk,
@@ -614,7 +616,9 @@ def pmos(
             horizontal_glayer=substrate_tap_layers[0],
             vertical_glayer=substrate_tap_layers[1],
         )
-    component =  rename_ports_by_orientation(pfet).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(pfet)
+    component.flatten()
 
     component.info['netlist'] = fet_netlist(
         pdk,

@@ -201,8 +201,12 @@ def generic_4T_interdigitzed(
     toprow.movey(pdk.snap_to_2xgrid((evaluate_bbox(bottomrow)[1]/2 + evaluate_bbox(toprow)[1]/2 + pdk.util_max_metal_seperation())))
     # add substrate tap
     if with_substrate_tap:
-        substrate_tap = tapring(pdk, enclosed_rectangle=pdk.snap_to_2xgrid(evaluate_bbox(toplvl.flatten(),padding=0.34)))
-        substrate_tap_ref = toplvl << movey(substrate_tap,destination=pdk.snap_to_2xgrid(toplvl.flatten().center[1],snap4=True))
+        # In GDSFactory v9, flatten() mutates in-place and returns None
+        # Create a temporary copy for getting bbox and center
+        toplvl_temp = toplvl.copy()
+        toplvl_temp.flatten()
+        substrate_tap = tapring(pdk, enclosed_rectangle=pdk.snap_to_2xgrid(evaluate_bbox(toplvl_temp,padding=0.34)))
+        substrate_tap_ref = toplvl << movey(substrate_tap,destination=pdk.snap_to_2xgrid(toplvl_temp.center[1],snap4=True))
     # add ports
     toplvl.add_ports(substrate_tap_ref.get_ports_list(),prefix="substratetap_")
     toplvl.add_ports(toprow.get_ports_list(),prefix="top_")
