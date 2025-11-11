@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import Literal
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __error_check_order_layers(
     pdk: MappedPDK, glayer1: str, glayer2: str
 ) -> tuple[tuple[int, int], tuple[str, str]]:
@@ -36,7 +36,7 @@ def __error_check_order_layers(
     return ((level1,level2),(glayer1,glayer2))
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __get_layer_dim(pdk: MappedPDK, glayer: str, mode: Literal["both","above","below"]="both") -> float:
 	"""Returns the required dimension of a routable layer in a via stack
 	glayer is the routable glayer
@@ -65,7 +65,7 @@ def __get_layer_dim(pdk: MappedPDK, glayer: str, mode: Literal["both","above","b
 	return layer_dim
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __get_viastack_minseperation(pdk: MappedPDK, viastack: Component, ordered_layer_info) -> tuple[float,float]:
     """internal use: return absolute via separation and top_enclosure (top via to top met enclosure)"""
     get_sep = lambda _pdk, rule, _lay_, comp : (rule+2*comp.extract(layers=[_pdk.get_glayer(_lay_)]).xmax)

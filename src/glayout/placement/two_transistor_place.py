@@ -5,11 +5,11 @@ from typing import Callable
 from glayout.primitives.fet import nmos, pmos
 from glayout.util.comp_utils import evaluate_bbox
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def two_transistor_place(
-	pdk: MappedPDK, 
-	pattern: str, 
-	deviceA: tuple[Callable, dict], 
+	pdk: MappedPDK,
+	pattern: str,
+	deviceA: tuple[Callable, dict],
 	deviceB: tuple[Callable, dict]
         ) -> Component:
     """Place two transitors according to the patter provided

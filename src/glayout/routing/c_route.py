@@ -13,7 +13,7 @@ from pydantic import validate_arguments
 from gdsfactory.snap import snap_to_grid
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __fill_empty_viastack__macro(pdk: MappedPDK, glayer: str, size: tuple[float,float] | None=None) -> Component:
     """returns a rectangle with ports that pretend to be viastack ports
     by default creates a rectangle with size double the min width of the glayer"""

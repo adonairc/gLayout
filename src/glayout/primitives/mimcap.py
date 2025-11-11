@@ -10,7 +10,7 @@ from glayout.routing.straight_route import straight_route
 from decimal import ROUND_UP, Decimal
 from glayout.spice import Netlist
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __get_mimcap_layerconstruction_info(pdk: MappedPDK) -> tuple[str,str]:
 	"""returns the glayer metal below and glayer metal above capmet
 	args: pdk

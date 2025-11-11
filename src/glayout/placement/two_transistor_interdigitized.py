@@ -15,7 +15,7 @@ from typing import Literal
 
 #from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized; from glayout.pdk.sky130_mapped import sky130_mapped_pdk as pdk; biasParams=[6,2,4]; rmult=2
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def macro_two_transistor_interdigitized(
     pdk: MappedPDK,
     numcols: int,
@@ -98,7 +98,7 @@ def macro_two_transistor_interdigitized(
     return idplace
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def two_nfet_interdigitized(
     pdk: MappedPDK,
     numcols: int,
@@ -176,7 +176,7 @@ def two_nfet_interdigitized(
 
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def two_pfet_interdigitized(
     pdk: MappedPDK,
     numcols: int,

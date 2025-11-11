@@ -2,7 +2,7 @@ from gdsfactory.component import Component
 from pydantic import validate_arguments
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def component_snap_to_grid(comp: Component) -> Component:
 	"""snaps all polygons and ports in component to grid
 	comp = the component to snap to grid

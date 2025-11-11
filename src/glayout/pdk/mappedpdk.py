@@ -299,7 +299,7 @@ class MappedPDK(Pdk):
                 )
         return glayers_obj
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def drc(
         self,
         layout: Component | PathType,
@@ -369,7 +369,7 @@ class MappedPDK(Pdk):
         drc_error_count = len(drc_root[7])
         return (drc_error_count == 0)
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def drc_magic(
         self,
         layout: Component | PathType,
@@ -553,7 +553,7 @@ custom_drc_save_report $::env(DESIGN_NAME) $::env(REPORTS_DIR)/$::env(DESIGN_NAM
 
         return ret_dict
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def lvs_netgen(
         self,
         layout: Component | PathType,
@@ -897,7 +897,7 @@ exit
         return {'magic_subproc_code': magic_subproc_code, 'netgen_subproc_code': netgen_subproc_code, 'result_str': result_str}
                     
     
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def has_required_glayers(self, layers_required: list[str]):
         """Raises ValueError if any of the generic layers in layers_required: list[str]
         are not mapped to anything in the pdk.glayers dictionary
@@ -913,7 +913,7 @@ exit
                 raise TypeError("glayer mapped value should be str or tuple[int,int]")
 
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def layer_to_glayer(self, layer: tuple[int, int]) -> str:
         """if layer provided corresponds to a glayer, will return a glayer
         else will raise an exception
@@ -938,7 +938,7 @@ exit
             raise ValueError("layer might not be a layer present in the pdk")
 
     # TODO: implement LayerSpec type
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def get_glayer(self, layer: str) -> Layer:
         """Returns the pdk layer from the generic layer name"""
         direct_mapping = self.glayers[layer]
@@ -947,7 +947,7 @@ exit
         else:
             return self.get_layer(direct_mapping)
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def get_grule(
         self, glayer1: str, glayer2: str | None = None, return_decimal = False
     ) -> dict[StrictStr, Union[float,Decimal]]:
@@ -1026,7 +1026,7 @@ exit
         return mappedpdk
 
     # util methods
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def util_max_metal_seperation(self, metal_levels: Union[list[int],list[str], str, int] = range(1,6)) -> float:
         """returns the maximum of the min_seperation rule for all layers specfied
         although the name of this function is util_max_metal_seperation, layers do not have to be metals
@@ -1047,7 +1047,7 @@ exit
             sep_rules.append(self.get_grule(met)["min_separation"])
         return self.snap_to_2xgrid(max(sep_rules))
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def snap_to_2xgrid(self, dims: Union[list[Union[float,Decimal]], Union[float,Decimal]], return_type: Literal["decimal","float","same"]="float", snap4: bool=False) -> Union[list[Union[float,Decimal]], Union[float,Decimal]]:
         """snap all numbers in dims to double the grid size.
         This is useful when a generator accepts a size or dimension argument

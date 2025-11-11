@@ -17,7 +17,7 @@ from glayout.routing.straight_route import straight_route
 from glayout.spice import Netlist
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float, width: float, poly_height: float, sdlayer: str, inter_finger_topmet: str) -> Component:
     """internal use: returns an array of fingers"""
     length = pdk.snap_to_2xgrid(length)
@@ -255,7 +255,7 @@ def multiplier(
     return component_snap_to_grid(rename_ports_by_orientation(multiplier))
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __mult_array_macro(
     pdk: MappedPDK,
     sdlayer: str,
