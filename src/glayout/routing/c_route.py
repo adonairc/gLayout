@@ -7,7 +7,7 @@ from glayout.primitives.via_gen import via_stack, via_array
 from glayout.routing.straight_route import straight_route
 from gdsfactory.components import rectangle
 from glayout.util.comp_utils import evaluate_bbox, get_primitive_rectangle, to_float, prec_ref_center
-from glayout.util.port_utils import add_ports_perimeter, rename_ports_by_orientation, rename_ports_by_list, print_ports, set_port_width, set_port_orientation, get_orientation
+from glayout.util.port_utils import add_ports_perimeter, rename_ports_by_orientation, rename_ports_by_list, print_ports, set_port_width, set_port_orientation, get_orientation, get_layer_from_port
 from pydantic import validate_arguments
 from gdsfactory.snap import snap_to_grid
 
@@ -75,8 +75,9 @@ def c_route(
     width1 = width1 if width1 else edge1.width
     width2 = width2 if width2 else edge1.width
     cwidth = cwidth if cwidth else min(width1,width2)
-    e1glayer = e1glayer if e1glayer else pdk.layer_to_glayer(edge1.layer)
-    e2glayer = e2glayer if e2glayer else pdk.layer_to_glayer(edge2.layer)
+    # In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+    e1glayer = e1glayer if e1glayer else get_layer_from_port(edge1, pdk)
+    e2glayer = e2glayer if e2glayer else get_layer_from_port(edge2, pdk)
     eglayer_plusone = "met" + str(int(e1glayer[-1])+1)
     cglayer = cglayer if cglayer else eglayer_plusone
     if not "met" in e1glayer or not "met" in e2glayer or not "met" in cglayer:

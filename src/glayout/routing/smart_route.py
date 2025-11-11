@@ -9,6 +9,7 @@ from glayout.util.port_utils import (
     assert_port_manhattan,
     ports_inline,
     ports_parallel,
+    get_layer_from_port,
 )
 from glayout.primitives.via_gen import via_stack
 from glayout.routing.c_route import c_route
@@ -103,7 +104,8 @@ def generic_route_two_transistor_interdigitized(
             specbase = basename + dev
             for pin in ["source","drain","gate"]:
                 portcorrection = top_comp.ports[specbase+pin+direction+"_private"]
-                rt = top_comp << straight_route(pdk, portcorrection, extend_to, glayer2=pdk.layer_to_glayer(portcorrection.layer))
+                # In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+                rt = top_comp << straight_route(pdk, portcorrection, extend_to, glayer2=get_layer_from_port(portcorrection, pdk))
                 top_comp.ports[specbase+pin+direction] = rt.ports["route"+direction]
                 top_comp.ports[specbase+pin+direction].name = specbase+pin+direction
         # no return (modifies the top_comp)
@@ -111,7 +113,8 @@ def generic_route_two_transistor_interdigitized(
         # gives port which is same except a different edge N,E,S,W
         return top_comp.ports[edge.name.rstrip("NESW")+direction+"_private"]
     #glayer1 = pdk.layer_to_glayer(edge1.layer)
-    glayer2 = pdk.layer_to_glayer(edge2.layer)
+    # In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+    glayer2 = get_layer_from_port(edge2, pdk)
     name1 = parse_port_name(edge1.name)
     name2 = parse_port_name(edge2.name)
     # order names so that A is first (if only one A)
@@ -216,7 +219,8 @@ def generic_route_four_transistor_interdigitized(
             specbase = basename + dev
             for pin in ["source","drain","gate"]:
                 portcorrection = top_comp.ports[specbase+pin+direction+"_private"]
-                rt = top_comp << straight_route(pdk, portcorrection, extend_to, glayer2=pdk.layer_to_glayer(portcorrection.layer))
+                # In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+                rt = top_comp << straight_route(pdk, portcorrection, extend_to, glayer2=get_layer_from_port(portcorrection, pdk))
                 top_comp.ports[specbase+pin+direction] = rt.ports["route"+direction]
                 top_comp.ports[specbase+pin+direction].name = specbase+pin+direction
     # check that this function supports the ports specified
@@ -316,10 +320,12 @@ def generic_route_ab_ba_common_centroid(
         return straight_route(pdk, get_top_port("tl_multiplier_0_source_E"),get_top_port("tr_multiplier_0_source_W"))
     if check_route(name1,name2,"A_drain","B_source"):
         portmv1 = get_top_port("tl_multiplier_0_drain_E").copy()
-        return straight_route(pdk, get_top_port("tl_multiplier_0_drain_E"),movex(portmv1,2*pdk.get_grule(pdk.layer_to_glayer(portmv1.layer))["min_separation"]))
+        # In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+        return straight_route(pdk, get_top_port("tl_multiplier_0_drain_E"),movex(portmv1,2*pdk.get_grule(get_layer_from_port(portmv1, pdk))["min_separation"]))
     if check_route(name1,name2,"A_source","B_drain"):
         portmv1 = get_top_port("tr_multiplier_0_drain_W").copy()
-        return straight_route(pdk, get_top_port("tr_multiplier_0_drain_W"),movex(portmv1,-2*pdk.get_grule(pdk.layer_to_glayer(portmv1.layer))["min_separation"]))
+        # In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+        return straight_route(pdk, get_top_port("tr_multiplier_0_drain_W"),movex(portmv1,-2*pdk.get_grule(get_layer_from_port(portmv1, pdk))["min_separation"]))
     if check_route(name1,name2,"A_drain","B_drain"):
         portmv1 = get_top_port("bl_mutliplier_0_drain_N").copy()
         portmv2 = get_top_port("br_multiplier_0_drain_N").copy()
