@@ -421,8 +421,7 @@ def nmos(
         interfinger_rmult=interfinger_rmult,
         dummy_routes=dummy_routes
     )
-    multiplier_arr_ref = multiplier_arr.ref()
-    nfet.add(multiplier_arr_ref)
+    multiplier_arr_ref = nfet << multiplier_arr
     nfet.add_ports(multiplier_arr_ref.ports)
     # add tie if tie
     if with_tie:
@@ -568,8 +567,7 @@ def pmos(
         sd_rmult=sd_rmult,
         dummy_routes=dummy_routes
     )
-    multiplier_arr_ref = multiplier_arr.ref()
-    pfet.add(multiplier_arr_ref)
+    multiplier_arr_ref = pfet << multiplier_arr
     pfet.add_ports(multiplier_arr_ref.ports)
     # add tie if tie
     if with_tie:
