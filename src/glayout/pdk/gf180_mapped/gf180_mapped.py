@@ -108,10 +108,11 @@ gf180_mapped_pdk = MappedPDK(
 		'pfet': 'pfet_03v3',
 		'mimcap': 'mimcap_1p0fF'
     },
-    layers=LAYER,
     pdk_files=pdk_files,
     grules=grulesobj,
 )
+# Set layers after initialization to avoid GDSFactory v9 validation
+gf180_mapped_pdk.layers = LAYER
 
 # configure the grid size and other settings
 gf180_mapped_pdk.gds_write_settings.precision = 5*10**-9
