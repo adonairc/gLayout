@@ -994,6 +994,13 @@ exit
                 enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
                 enum_name = enum_member.name if hasattr(enum_member, 'name') else str(enum_member)
                 print(f"  {enum_name}: {enum_value}")
+            # Print all layer numbers to see if 56 exists
+            all_layer_nums = set()
+            for enum_member in pdk_real_layers:
+                enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
+                if isinstance(enum_value, tuple) and len(enum_value) >= 1:
+                    all_layer_nums.add(enum_value[0])
+            print(f"DEBUG: All unique layer numbers in PDK: {sorted(all_layer_nums)}")
             # First try exact match with the layer tuple
             layer_found = False
             for enum_member in pdk_real_layers:
