@@ -1,7 +1,7 @@
 from pydantic import validate_arguments
 from sys import prefix
 import numpy as np
-from typing import Any, Optional, Union
+from typing import Any, Union
 from glayout import MappedPDK, sky130 , gf180
 from glayout.primitives.guardring import tapring
 from glayout.routing import c_route
@@ -46,7 +46,7 @@ def fill_area_with_contacts(pdk: MappedPDK, dims, center, contact_layer:str,
 
     centered_contacts =  prec_ref_center(contacts,destination=(float(center[0]),float(center[1])))
     component.add(centered_contacts)
-    component.add_ports(centered_contacts.get_ports_list())
+    component.add_ports(centered_contacts.ports)
 
     return component
 
@@ -90,7 +90,7 @@ def draw_metal_over_ring(pdk: MappedPDK,ring_dims:dict[str,np.ndarray[Any]],
         metal = component << rectangle(layer=pdk.get_glayer(metal_layer), centered=True,
                   **l_metal_dims[direction])
         metal.move(l_metal_center_position[direction])
-        component.add_ports(metal.get_ports_list(), prefix=f"metal_{direction}_")
+        component.add_ports(metal.ports, prefix=f"metal_{direction}_")
 
         if label is not None:
             component.add_label(label,
@@ -121,7 +121,7 @@ def fill_ring_with_contacts(pdk: MappedPDK,ring_dims:dict[str,np.ndarray[Any]],
                                            padding,
                                            spacing,
                                            contact_size)
-        component.add_ports(contacts.get_ports_list(), prefix=f"contacts_{direction}_")
+        component.add_ports(contacts.ports, prefix=f"contacts_{direction}_")
 
     return component
 
@@ -225,9 +225,9 @@ def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
                                           centered=True, **dims["base"])
     diff_c= component << rectangular_ring(layer=pdk.get_glayer(bjt_layers[bjt_type][2]),
                                           centered=True, **dims["collector"])
-    component.add_ports(diff_e.get_ports_list(),prefix="diff_e_")
-    component.add_ports(diff_b.get_ports_list(),prefix="diff_b_")
-    component.add_ports(diff_c.get_ports_list(),prefix="diff_c_")
+    component.add_ports(diff_e.ports,prefix="diff_e_")
+    component.add_ports(diff_b.ports,prefix="diff_b_")
+    component.add_ports(diff_c.ports,prefix="diff_c_")
 
     ## Add active region inside diffusion areas
     tap_e= component << rectangle(layer=pdk.get_glayer(comp_layer),
@@ -237,21 +237,21 @@ def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
     tap_c= component << rectangular_ring(layer=pdk.get_glayer(comp_layer),
                                           centered=True,
                                          **dims["collector_active"])
-    component.add_ports(tap_e.get_ports_list(),prefix="tap_e_")
-    component.add_ports(tap_b.get_ports_list(),prefix="tap_b_")
-    component.add_ports(tap_c.get_ports_list(),prefix="tap_c_")
+    component.add_ports(tap_e.ports,prefix="tap_e_")
+    component.add_ports(tap_b.ports,prefix="tap_b_")
+    component.add_ports(tap_c.ports,prefix="tap_c_")
 
     ## Adding well layer
     well = component << rectangle(
         layer=pdk.get_glayer(well_layer[bjt_type]), centered=True, **dims["well"])
 
-    component.add_ports(well.get_ports_list(), prefix="well_")
+    component.add_ports(well.ports, prefix="well_")
 
     ## Adding dnwell if required
     if bjt_type=="npn" and draw_dnwell:
         dnwell = component << rectangle(
             layer=pdk.get_glayer("dnwell"), centered=True, **dims["dnwell"])
-        component.add_ports(dnwell.get_ports_list(), prefix="dnwell_")
+        component.add_ports(dnwell.ports, prefix="dnwell_")
 
     ## Add lvs and drc
     lvs= component << rectangle(layer=pdk.get_glayer("lvs_bjt"),
@@ -260,14 +260,14 @@ def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
     drc= component << rectangle(layer=pdk.get_glayer("drc_bjt"),
                                    centered=True, **dims["drc"])
 
-    component.add_ports(lvs.get_ports_list(), prefix="lvs_")
-    component.add_ports(drc.get_ports_list(), prefix="drc_")
+    component.add_ports(lvs.ports, prefix="lvs_")
+    component.add_ports(drc.ports, prefix="drc_")
 
 
     ## Add metals
     metal_e = component << rectangle(layer=pdk.get_glayer("met1"),
                                      centered=True, **dims["emitter_active"])
-    component.add_ports(metal_e.get_ports_list(), prefix="E_")
+    component.add_ports(metal_e.ports, prefix="E_")
 
     if with_labels:
         component.add_label("E",position=metal_e.center,layer=pdk.get_glayer("met1"))
@@ -277,14 +277,14 @@ def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
                                                 "met1",
                                                 "B" if with_labels else
                                                 None)
-    component.add_ports(metal_b.get_ports_list(), prefix="B_")
+    component.add_ports(metal_b.ports, prefix="B_")
 
     metal_c = component << draw_metal_over_ring(pdk,
                                                 dims["collector_active"],
                                                 "met1",
                                                 "C" if with_labels else
                                                 None)
-    component.add_ports(metal_c.get_ports_list(), prefix="C_")
+    component.add_ports(metal_c.ports, prefix="C_")
 
     contacts_e = component << fill_comp_with_contacts(pdk,
                                                  metal_e,
@@ -292,7 +292,7 @@ def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
                                                  dims["min_enclosure_contact_tap"],
                                                  (0.28,0.28),
                                                  np.asarray((1,1))*dims["contact_size"])
-    component.add_ports(contacts_e.get_ports_list(), prefix="contacts_e_")
+    component.add_ports(contacts_e.ports, prefix="contacts_e_")
 
     contacts_b = component << fill_ring_with_contacts(pdk,
                                                  dims["base_active"],
@@ -301,7 +301,7 @@ def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
                                                  (0.25,0.25),
                                                  np.asarray((1,1))*dims["contact_size"])
 
-    component.add_ports(contacts_b.get_ports_list(), prefix="contacts_b_")
+    component.add_ports(contacts_b.ports, prefix="contacts_b_")
 
     contacts_c = component << fill_ring_with_contacts(pdk,
                                                  dims["collector_active"],
@@ -310,7 +310,7 @@ def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
                                                  (0.25,0.25),
                                                  np.asarray((1,1))*dims["contact_size"])
 
-    component.add_ports(contacts_c.get_ports_list(), prefix="contacts_c_")
+    component.add_ports(contacts_c.ports, prefix="contacts_c_")
 
     return rename_ports_by_orientation(component)
 
@@ -324,7 +324,7 @@ def multiplier(
     dummy: Union[bool, tuple[bool, bool]] = True,
     bc_route_topmet: str = "met2",
     emitter_route_topmet: str = "met2",
-    rmult: Optional[int]=None,
+    rmult: int | None = None,
     bc_rmult: int = 1,
     emitter_rmult: int=1,
     dummy_routes: bool=True,
@@ -428,9 +428,9 @@ def multiplier(
 
         multiplier.add(base)
         multiplier.add(collector)
-        multiplier.add_ports(evia_ref.get_ports_list(prefix="emitter_"))
-        multiplier.add_ports(base.get_ports_list(), prefix="base_")
-        multiplier.add_ports(collector.get_ports_list(),prefix="collector_")
+        multiplier.add_ports(evia_ref.ports, prefix="emitter_")
+        multiplier.add_ports(base.ports, prefix="base_")
+        multiplier.add_ports(collector.ports,prefix="collector_")
 
 
     # get reference for dummy sep
@@ -458,7 +458,7 @@ def multiplier(
         for side, name in sides:
             dummy_ref = multiplier << dummy
             dummy_ref.movex(side * (dummy_space + multiplier.xmax))
-            multiplier.add_ports(dummy_ref.get_ports_list(),prefix=name)
+            multiplier.add_ports(dummy_ref.ports,prefix=name)
     # ensure correct port names and return
     return component_snap_to_grid(rename_ports_by_orientation(multiplier))
 
@@ -469,11 +469,11 @@ def __mult_array_macro(
     active_area: tuple[float,float] = (5.,5.),
     bjt_type: str = "pnp",
     multipliers: int = 1,
-    routing: Optional[bool] = True,
-    dummy: Optional[Union[bool, tuple[bool, bool]]] = True,
-    bc_route_topmet: Optional[str] = "met2",
-    emitter_route_topmet: Optional[str] = "met2",
-    bc_route_left: Optional[bool] = True,
+    routing: bool | None = True,
+    dummy: Union[bool, tuple[bool, bool]] | None = True,
+    bc_route_topmet: str | None = "met2",
+    emitter_route_topmet: str | None = "met2",
+    bc_route_left: bool | None = True,
     bc_rmult: int = 1,
     emitter_rmult: int=1,
     dummy_routes: bool=True,
@@ -523,7 +523,7 @@ def __mult_array_macro(
         row_ref = multiplier_arr << multiplier_comp
         row_ref.movey(to_float(row_displacment))
         multiplier_arr.add_ports(
-            row_ref.get_ports_list(), prefix="multiplier_" + str(rownum) + "_"
+            row_ref.ports, prefix="multiplier_" + str(rownum) + "_"
         )
     b_extension = to_decimal(0.6)
 
@@ -570,7 +570,7 @@ def __mult_array_macro(
                 base_ref = multiplier_arr << c_route(pdk, this_base, next_base,
                                                      viaoffset=(True,False),
                                                      extension=to_float(b_extension))
-                multiplier_arr.add_ports(base_ref.get_ports_list(), prefix=basepfx)
+                multiplier_arr.add_ports(base_ref.ports, prefix=basepfx)
                 # route collectors left
                 collectorpfx = thismult + "collector_"
                 this_collector = multiplier_arr.ports[collectorpfx+bc_side]
@@ -581,7 +581,7 @@ def __mult_array_macro(
                                                           next_collector,
                                                       viaoffset=(True,False),
                                                       extension=to_float(c_extension))
-                multiplier_arr.add_ports(collector_ref.get_ports_list(),
+                multiplier_arr.add_ports(collector_ref.ports,
                                          prefix=collectorpfx)
                 # route emitter right
                 emitterpfx = thismult + "emitter_"
@@ -593,7 +593,7 @@ def __mult_array_macro(
                                                         next_emitter,
                                                         viaoffset=(True,False),
                                                         extension=to_float(b_extension))
-                multiplier_arr.add_ports(emitter_ref.get_ports_list(), prefix=emitterpfx)
+                multiplier_arr.add_ports(emitter_ref.ports, prefix=emitterpfx)
         elif pattern is not None:
             for rownum in range(len(unique_elements)):
                 this_id_pfx = unique_elements[rownum] + "_"
@@ -643,7 +643,7 @@ def __mult_array_macro(
                     multiplier_arr.add(base_route_ref)
                     if is_bc_shared:
                         this_base_pfx = "base_"
-                    multiplier_arr.add_ports(base_route_ref.get_ports_list(),
+                    multiplier_arr.add_ports(base_route_ref.ports,
                                              prefix=this_base_pfx)
 
                     if not is_bc_short and not is_bc_shared:
@@ -651,14 +651,14 @@ def __mult_array_macro(
                                                nref_port_collector,
                                                alignment=("l",'c'))
                         multiplier_arr.add(collector_route_ref)
-                        multiplier_arr.add_ports(collector_route_ref.get_ports_list(),
+                        multiplier_arr.add_ports(collector_route_ref.ports,
                                                  prefix=this_collector_pfx)
 
                 emitter_route_ref = align_comp_to_port(sample_route.copy(),
                                        nref_port_emitter,
                                        alignment=("r",'c'))
                 multiplier_arr.add(emitter_route_ref)
-                multiplier_arr.add_ports(emitter_route_ref.get_ports_list(),
+                multiplier_arr.add_ports(emitter_route_ref.ports,
                                          prefix=this_emitter_pfx)
 
                 multiplier_arr = rename_ports_by_orientation(multiplier_arr)
@@ -709,7 +709,7 @@ def __mult_array_macro(
     if centered:
         correctionxy = prec_center(marrref)
         marrref.movex(correctionxy[0]).movey(correctionxy[1])
-    final_arr.add_ports(marrref.get_ports_list())
+    final_arr.add_ports(marrref.ports)
     return component_snap_to_grid(rename_ports_by_orientation(final_arr))
 
 
@@ -719,12 +719,12 @@ def __mult_2dim_array_macro(
     active_area: tuple[float,float] = (5.,5.),
     bjt_type: str = "pnp",
     multipliers: Union[tuple[int,int], int] = (1,1),
-    routing: Optional[bool] = True,
-    dummy: Optional[Union[bool, tuple[bool, bool]]] = True,
-    bc_route_topmet: Optional[str] = "met2",
-    emitter_route_topmet: Optional[str] = "met2",
-    bc_route_left: Optional[bool] = True,
-    bc_route_bottom: Optional[bool] = True,
+    routing: bool | None = True,
+    dummy: Union[bool, tuple[bool, bool]] | None = True,
+    bc_route_topmet: str | None = "met2",
+    emitter_route_topmet: str | None = "met2",
+    bc_route_left: bool | None = True,
+    bc_route_bottom: bool | None = True,
     bc_rmult: int = 1,
     emitter_rmult: int=1,
     dummy_routes: bool=True,
@@ -860,7 +860,7 @@ def __mult_2dim_array_macro(
         col_ref = multiplier_2dim_arr << l_cols[colnum]
         col_ref.movex(to_float(col_displacment))
         multiplier_2dim_arr.add_ports(
-            col_ref.get_ports_list(), prefix="col_" + str(colnum) + "_"
+            col_ref.ports, prefix="col_" + str(colnum) + "_"
         )
 
     # routing 
@@ -923,7 +923,7 @@ def __mult_2dim_array_macro(
                                                       multiplier_2dim_arr.ports[next_port],
                                                   viaoffset=(True,False),
                                                   extension=0)
-            multiplier_2dim_arr.add_ports(ref.get_ports_list(),
+            multiplier_2dim_arr.add_ports(ref.ports,
                                           prefix="_".join(["route",
                                                            str(n),
                                                            "base"]))
@@ -956,7 +956,7 @@ def __mult_2dim_array_macro(
                                                           multiplier_2dim_arr.ports[next_port],
                                                       viaoffset=(True,False),
                                                       extension=to_float(distance)+element_shift*shift_factor)
-                multiplier_2dim_arr.add_ports(ref.get_ports_list(),
+                multiplier_2dim_arr.add_ports(ref.ports,
                                               prefix="_".join(["route",
                                                                element,
                                                                str(l_positions[i_pos]),
@@ -969,12 +969,12 @@ def pnp(
     pdk,
     active_area: tuple[float,float] = (5.,5.),
     multipliers: int = 1,
-    with_substrate_tap: Optional[bool] = True,
+    with_substrate_tap: bool | None = True,
     with_dummy: Union[bool, tuple[bool, bool]] = True,
     bc_route_topmet: str = "met2",
     emitter_route_topmet: str = "met2",
     bc_route_left: bool = True,
-    rmult: Optional[int] = None,
+    rmult: int | None = None,
     bc_rmult: int=1,
     emitter_rmult: int=1,
     substrate_tap_layers: tuple[str,str] = ("met2","met1"),
@@ -1030,7 +1030,7 @@ def pnp(
     )
     multiplier_arr_ref = multiplier_arr.ref()
     pnp.add(multiplier_arr_ref)
-    pnp.add_ports(multiplier_arr_ref.get_ports_list())
+    pnp.add_ports(multiplier_arr_ref.ports)
     # add substrate if substrate
     if with_substrate_tap:
         tap_separation = max(
@@ -1049,7 +1049,7 @@ def pnp(
             horizontal_glayer=substrate_tap_layers[0],
             vertical_glayer=substrate_tap_layers[1],
         )
-        pnp.add_ports(substrate_ref.get_ports_list(), prefix="substrate_")
+        pnp.add_ports(substrate_ref.ports, prefix="substrate_")
 
         if isinstance(with_dummy, bool):
             dummyl = dummyr = with_dummy
@@ -1069,7 +1069,9 @@ def pnp(
                     dummy_port_name = "col_" + str(multipliers[0]-1) + "_" + dummy_port_name
                 pnp<<straight_route(pdk,pnp.ports[dummy_port_name],pnp.ports[f"substrate_E_top_met_E"],glayer2="met1")
 
-    component =  rename_ports_by_orientation(pnp).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(pnp)
+    component.flatten()
 
     #component.info['netlist'] = fet_netlist(
     #    pdk,
@@ -1085,13 +1087,13 @@ def npn(
     pdk,
     active_area: tuple[float,float] = (5.,5.),
     multipliers: int = 1,
-    with_dnwell: Optional[bool] = True,
+    with_dnwell: bool | None = True,
     with_dummy: Union[bool, tuple[bool, bool]] = True,
     with_substrate_tap: bool=True,
     bc_route_topmet: str = "met2",
     emitter_route_topmet: str = "met2",
     bc_route_left: bool = True,
-    rmult: Optional[int] = None,
+    rmult: int | None = None,
     bc_rmult: int=1,
     emitter_rmult: int=1,
     substrate_tap_layers: tuple[str,str] = ("met2","met1"),
@@ -1141,7 +1143,7 @@ def npn(
     )
     multiplier_arr_ref = multiplier_arr.ref()
     npn.add(multiplier_arr_ref)
-    npn.add_ports(multiplier_arr_ref.get_ports_list())
+    npn.add_ports(multiplier_arr_ref.ports)
 
     # add nwell
     nwell_glayer = "dnwell" if with_dnwell else "nwell"
@@ -1174,7 +1176,7 @@ def npn(
             vertical_glayer=substrate_tap_layers[1],
         )
 
-        npn.add_ports(substrate_ref.get_ports_list(), prefix="substrate_")
+        npn.add_ports(substrate_ref.ports, prefix="substrate_")
 
         if isinstance(with_dummy, bool):
             dummyl = dummyr = with_dummy
@@ -1188,7 +1190,9 @@ def npn(
                 npn<<straight_route(pdk,npn.ports[f"multiplier_{row}_dummy_R_C_metal_E_E"],npn.ports[f"substrate_E_top_met_E"],glayer2="met1")
 
 
-    component =  rename_ports_by_orientation(npn).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(npn)
+    component.flatten()
 
     #component.info['netlist'] = fet_netlist(
     #    pdk,

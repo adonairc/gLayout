@@ -82,10 +82,10 @@ def n_block(
     top_level << straight_route(pdk, fet_inA_ref.ports["multiplier_0_source_W"], source_inA_via.ports["bottom_met_E"], width=0.29*2)
     top_level << straight_route(pdk, fet_inB_ref.ports["multiplier_0_source_E"], source_inB_via.ports["bottom_met_W"], width=0.29*2)
     
-    top_level.add_ports(fet_inA_ref.get_ports_list(), prefix="Min_1_")
-    top_level.add_ports(fet_inB_ref.get_ports_list(), prefix="Min_2_")
-    top_level.add_ports(gate_inA_via.get_ports_list(), prefix="gate_inA_")
-    top_level.add_ports(gate_inB_via.get_ports_list(), prefix="gate_inB_")
+    top_level.add_ports(fet_inA_ref.ports, prefix="Min_1_")
+    top_level.add_ports(fet_inB_ref.ports, prefix="Min_2_")
+    top_level.add_ports(gate_inA_via.ports, prefix="gate_inA_")
+    top_level.add_ports(gate_inB_via.ports, prefix="gate_inB_")
     
     #FVF cells
     fvf = flipped_voltage_follower(pdk, width=(input_pair_params[0],fvf_shunt_params[0]), length=(input_pair_params[1],fvf_shunt_params[1]), fingers=(1,1), sd_rmult=3, with_dnwell=False) 
@@ -114,8 +114,8 @@ def n_block(
     top_level << c_route(pdk, source_inA_via.ports["top_met_N"], fvf_2_ref.ports["A_source_top_met_N"], extension=0.8*evaluate_bbox(fet_in)[1], width1=0.4, width2=0.4, cwidth=0.5, e1glayer="met3", e2glayer="met3", cglayer="met2")
     top_level << c_route(pdk, source_inB_via.ports["top_met_N"], fvf_1_ref.ports["A_source_top_met_N"], extension=1.1*evaluate_bbox(fet_in)[1], width1=0.4, width2=0.4, cwidth=0.5, e1glayer="met3", e2glayer="met3", cglayer="met2")
     
-    top_level.add_ports(fvf_1_ref.get_ports_list(), prefix="fvf_1_")
-    top_level.add_ports(fvf_2_ref.get_ports_list(), prefix="fvf_2_")
+    top_level.add_ports(fvf_1_ref.ports, prefix="fvf_1_")
+    top_level.add_ports(fvf_2_ref.ports, prefix="fvf_2_")
 
     cmirror = current_mirror(pdk, numcols=2, with_substrate_tap=False, width=current_mirror_params[0], length=current_mirror_params[1], fingers=ratio, sd_rmult=3)
     cmirr_ref = prec_ref_center(cmirror)
@@ -127,13 +127,13 @@ def n_block(
     top_level << straight_route(pdk, cmirr_ref.ports["fet_B_1_dummy_R_gsdcon_top_met_E"],cmirr_ref.ports["welltie_E_top_met_E"],glayer1="met1", width=0.5)
 
 
-    top_level.add_ports(cmirr_ref.get_ports_list(), prefix="op_cmirr_")
+    top_level.add_ports(cmirr_ref.ports, prefix="op_cmirr_")
  
     global_c_bias = low_voltage_cmirror(pdk, width=(global_current_bias_params[0]/2,global_current_bias_params[1]), length=global_current_bias_params[2], fingers=(2,1))
     global_c_bias_ref = prec_ref_center(global_c_bias)
     global_c_bias_ref.movey(cmirr_ref.ymin - evaluate_bbox(global_c_bias)[1]/2 - 8*pdk.util_max_metal_seperation())
     top_level.add(global_c_bias_ref)
-    top_level.add_ports(global_c_bias_ref.get_ports_list(), prefix="cbias_")
+    top_level.add_ports(global_c_bias_ref.ports, prefix="cbias_")
 
 
     fet_1 = nmos(pdk, width=input_pair_params[0], length=input_pair_params[1], fingers=1, with_dnwell=False, with_tie=True, with_substrate_tap=False, sd_rmult=3)

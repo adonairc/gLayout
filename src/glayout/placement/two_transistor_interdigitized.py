@@ -1,22 +1,16 @@
 from glayout.pdk.mappedpdk import MappedPDK
 from pydantic import validate_arguments
 from gdsfactory.component import Component
+from gdsfactory.components import rectangle
 from glayout.primitives.fet import nmos, pmos, multiplier
-from glayout.util.comp_utils import evaluate_bbox
+from glayout.util.comp_utils import evaluate_bbox, prec_ref_center, transformed, align_comp_to_port
 from typing import Literal, Union
 from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, create_private_ports
-from glayout.util.comp_utils import prec_ref_center,evaluate_bbox, prec_center, align_comp_to_port
 from glayout.routing.straight_route import straight_route
-from gdsfactory.functions import transformed
 from glayout.primitives.guardring import tapring
 from glayout.util.port_utils import add_ports_perimeter
-from gdsfactory.cell import clear_cache
-from typing import Literal, Optional, Union
-from glayout.pdk.sky130_mapped import sky130_mapped_pdk
-from glayout.pdk.gf180_mapped import gf180_mapped_pdk
-from glayout.spice.netlist import Netlist
-from gdsfactory.components import text_freetype, rectangle
-from glayout.primitives.via_gen import via_stack
+from gdsfactory import clear_cache
+
 #from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized; from glayout.pdk.sky130_mapped import sky130_mapped_pdk as pdk; biasParams=[6,2,4]; rmult=2
 def add_two_int_labels(two_int_in: Component,
                 pdk: MappedPDK 
@@ -63,50 +57,10 @@ def add_two_int_labels(two_int_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         two_int_in.add(compref)
-    return two_int_in.flatten() 
-
-
-def two_tran_interdigitized_netlist(
-    pdk: MappedPDK, 
-    width: float,
-    length: float,
-    fingers: int,
-    multipliers: int, 
-    with_dummy: True,
-    n_or_p_fet: Optional[str] = 'nfet',
-    subckt_only: Optional[bool] = False
-) -> Netlist:
-    if length is None:
-        length = pdk.get_grule('poly')['min_width']
-    if width is None:
-        width = 3 
-    #mtop = multipliers if subckt_only else 1
-    #mtop=1
-    model = pdk.models[n_or_p_fet]
-    mtop = fingers * multipliers
-    
-    source_netlist = """.subckt {circuit_name} {nodes} """ + f'l={length} w={width} m={1} '+ f"""
-XA VDD1 VG1 VSS1 VB {model} l={length} w={width} m={mtop}
-XB VDD2 VG2 VSS2 VB {model} l={length} w={width} m={mtop}"""
-    if with_dummy:
-        source_netlist += f"\nXDUMMY VB VB VB VB {model} l={length} w={width} m={2}"
-    source_netlist += "\n.ends {circuit_name}"
-
-    instance_format = "X{name} {nodes} {circuit_name} l={length} w={width} m={{1}}"
- 
-    return Netlist(
-        circuit_name='two_trans_interdigitized',
-        nodes=['VDD1', 'VDD2', 'VSS1', 'VSS2', 'VG1', 'VG2', 'VB'], 
-        source_netlist=source_netlist,
-        instance_format=instance_format,
-        parameters={
-            'model': model,
-            'width': width,
-            'length': length,   
-            'mult': multipliers
-        }
-    )
-@validate_arguments
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    two_int_in.flatten()
+    return two_int_in
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def macro_two_transistor_interdigitized(
     pdk: MappedPDK,
     numcols: int,
@@ -161,7 +115,7 @@ def macro_two_transistor_interdigitized(
         refs[-1].movex(i*(xdisp))
         devletter = "B" if i%2 else "A"
         prefix=devletter+"_"+str(int(i/2))+"_"
-        idplace.add_ports(refs[-1].get_ports_list(), prefix=prefix)
+        idplace.add_ports(refs[-1].ports, prefix=prefix)
     # extend poly layer for equal parasitics
     for i in range(2*numcols):
         desired_end_layer = pdk.layer_to_glayer(refs[i].ports["row0_col0_rightsd_top_met_N"].layer)
@@ -182,14 +136,14 @@ def macro_two_transistor_interdigitized(
     # add route ports and return
     prefixes = ["A_source","B_source","A_drain","B_drain","A_gate","B_gate"]
     for i, ref in enumerate([A_src, B_src, A_drain, B_drain, A_gate, B_gate]):
-        idplace.add_ports(ref.get_ports_list(),prefix=prefixes[i])
+        idplace.add_ports(ref.ports,prefix=prefixes[i])
     idplace = transformed(prec_ref_center(idplace))
     idplace.unlock()
     idplace.add_ports(create_private_ports(idplace, prefixes))
     return idplace
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def two_nfet_interdigitized(
     pdk: MappedPDK,
     numcols: int,
@@ -228,7 +182,7 @@ def two_nfet_interdigitized(
             horizontal_glayer=tie_layers[0],
             vertical_glayer=tie_layers[1],
         )
-        base_multiplier.add_ports(tiering_ref.get_ports_list(), prefix="welltie_")
+        base_multiplier.add_ports(tiering_ref.ports, prefix="welltie_")
         try:
             base_multiplier<<straight_route(pdk,base_multiplier.ports["A_0_dummy_L_gsdcon_top_met_W"],base_multiplier.ports["welltie_W_top_met_W"],glayer2="met1")
         except KeyError:
@@ -261,20 +215,21 @@ def two_nfet_interdigitized(
             vertical_glayer="met1",
         )
         tapring_ref = base_multiplier << ringtoadd
-        base_multiplier.add_ports(tapring_ref.get_ports_list(),prefix="substratetap_")
+        base_multiplier.add_ports(tapring_ref.ports,prefix="substratetap_")
     base_multiplier.info["route_genid"] = "two_transistor_interdigitized"
 
-    base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
-        pdk, 
-        width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
-        n_or_p_fet="nfet",
-        subckt_only=True
-    )
+    # TODO: Implement two_tran_interdigitized_netlist function
+    # base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
+    #     pdk,
+    #     width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
+    #     n_or_p_fet="nfet",
+    #     subckt_only=True
+    # )
     return base_multiplier
 
 
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def two_pfet_interdigitized(
     pdk: MappedPDK,
     numcols: int,
@@ -313,7 +268,7 @@ def two_pfet_interdigitized(
             horizontal_glayer=tie_layers[0],
             vertical_glayer=tie_layers[1],
         )
-        base_multiplier.add_ports(tiering_ref.get_ports_list(), prefix="welltie_")
+        base_multiplier.add_ports(tiering_ref.ports, prefix="welltie_")
         try:
             base_multiplier<<straight_route(pdk,base_multiplier.ports["A_0_dummy_L_gsdcon_top_met_W"],base_multiplier.ports["welltie_W_top_met_W"],glayer2="met1")
         except KeyError:
@@ -346,15 +301,16 @@ def two_pfet_interdigitized(
             vertical_glayer="met1",
         )
         tapring_ref = base_multiplier << ringtoadd
-        base_multiplier.add_ports(tapring_ref.get_ports_list(),prefix="substratetap_")
+        base_multiplier.add_ports(tapring_ref.ports,prefix="substratetap_")
     base_multiplier.info["route_genid"] = "two_transistor_interdigitized"
 
-    base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
-        pdk, 
-        width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
-        n_or_p_fet="pfet",
-        subckt_only=True
-    )
+    # TODO: Implement two_tran_interdigitized_netlist function
+    # base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
+    #     pdk,
+    #     width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
+    #     n_or_p_fet="pfet",
+    #     subckt_only=True
+    # )
     return base_multiplier
 
 

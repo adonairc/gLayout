@@ -6,58 +6,61 @@ from ..ihp130_mapped.ihp130_grules import grulesobj
 from ..mappedpdk import MappedPDK, SetupPDKFiles
 from pathlib import Path
 import os
-
+from gdsfactory.typings import LayerSpec
+from gdsfactory.technology import LayerMap
+from gdsfactory.typings import Layer
 # Layer definitions for IHP 130nm BiCMOS Open Source PDK
 # See: IHP Layer Table (GDS number and datatype) https://ihp-open-pdk-docs.readthedocs.io/en/latest/layout_rules/02_layer_table.html
 
-LAYER = {
+class LayerMapIHP130(LayerMap):
     # Active (diffusion)
-    "activ":            (1,   0),
+    activ:            Layer =(1,   0)
     # Poly gates
-    "gatpoly":          (5,   0),
+    gatpoly:          Layer =(5,   0)
     # Source/drain implants
-    "nsd":              (7,   0),
-    "nsd_block":        (7,  21),
-    "nsd_pin":          (7,   2),
-    "psd":              (14,  0),
-    "psd_pin":          (14,  2),
+    nsd:               Layer =(7,   0)
+    nsd_block:         Layer =(7,  21)
+    nsd_pin:           Layer =(7,   2)
+    psd:               Layer =(14,  0)
+    psd_pin:           Layer =(14,  2)
     # Well implants
-    "nwell":            (31,  0),
-    "nwell_pin":        (31,  2),
-    "pwell":            (46,  0),
-    "pwell_pin":        (46,  2),
+    nwell:             Layer =(31,  0)
+    nwell_pin:         Layer =(31,  2)
+    pwell:             Layer =(46,  0)
+    pwell_pin:         Layer =(46,  2)
     # Contacts
-    "cont":             (6,   0),
-    "cont_pin":         (6,   2),
+    cont:              Layer =(6,   0)
+    cont_pin:          Layer =(6,   2)
     # Metal layers and vias
-    "via1":             (19,  0),
-    "metal1":           (8,   0),
-    "via2":             (29,  0),
-    "metal2":           (10,  0),
-    "via3":             (49,  0),
-    "metal3":           (30,  0),
-    "via4":             (66,  0),
-    "metal4":           (50,  0),
-    "metal5":           (67,  0),
+    via1:              Layer =(19,  0)
+    metal1:            Layer =(8,   0)
+    via2:              Layer =(29,  0)
+    metal2:            Layer =(10,  0)
+    via3:              Layer =(49,  0)
+    metal3:            Layer =(30,  0)
+    via4:              Layer =(66,  0)
+    metal4:            Layer =(50,  0)
+    metal5:            Layer =(67,  0)
     # MIM capacitor
-    "mim":              (36,  0),
+    mim:               Layer =(36,  0)
     # LVS reference
-    "gatpoly_pin":      (5,   2),
-    "activ_pin":        (1,   2),
-    "metal1_pin":       (8,   2),
-    "metal1_label":     (8,   25),
-    "metal2_pin":       (10,  2),
-    "metal2_label":     (10,  25),
-    "metal3_pin":       (30,  2),
-    "metal3_label":     (30,  25),
-    "metal4_pin":       (50,  2),
-    "metal4_label":     (50,  25),
-    "metal5_pin":       (67,  2),
-    "metal5_label":     (67,  25),
-}
+    gatpoly_pin:       Layer =(5,   2)
+    activ_pin:         Layer =(1,   2)
+    metal1_pin:        Layer =(8,   2)
+    metal1_label:      Layer =(8,   25)
+    metal2_pin:        Layer =(10,  2)
+    metal2_label:      Layer =(10,  25)
+    metal3_pin:        Layer =(30,  2)
+    metal3_label:      Layer =(30,  25)
+    metal4_pin:        Layer =(50,  2)
+    metal4_label:      Layer =(50,  25)
+    metal5_pin:        Layer =(67,  2)
+    metal5_label:      Layer =(67,  25)
 
 # Generic-to-IHP layer name mapping
-ihp130_glayer_mapping = {
+LAYER = LayerMapIHP130
+
+ihp130_glayer_mapping: dict[str,LayerSpec]  = {
     # Metals and vias
     "met5":       "metal5",
     "via4":       "via4",
@@ -101,12 +104,12 @@ ihp130_glayer_mapping = {
 
 # Add valid BJT sizes
 
-ip130_valid_bjt_sizes = {
+ihp130_valid_bjt_sizes = {
     "npn" : [ ],
     "pnp" : [ ],
 }
 
-ip130_lydrc_file_path = Path(__file__).resolve().parent / "ihp130_drc.lydrc"
+ihp130_lydrc_file_path = Path(__file__).resolve().parent / "ihp130_drc.lydrc"
 
 if os.getenv('PDK_ROOT') is None:
     raise EnvironmentError("PDK_ROOT environment variable is not set.")
@@ -126,7 +129,7 @@ temp_dir = None
 
 pdk_files = SetupPDKFiles(
     pdk_root=pdk_root,
-    klayout_drc_file=ip130_lydrc_file_path,
+    klayout_drc_file=ihp130_lydrc_file_path,
     lvs_schematic_ref_file=lvs_schematic_ref_file,
     lvs_setup_tcl_file=lvs_setup_tcl_file,
     magic_drc_file=magic_drc_file,
@@ -143,12 +146,11 @@ ihp130_mapped_pdk = MappedPDK(
         'pfet': 'sg13_lv_pmos',
         'mimcap': 'cap_cmim',
     },
-    layers=LAYER,
     pdk_files=pdk_files,
     grules=grulesobj,
-    valid_bjt_sizes=ip130_valid_bjt_sizes
+    valid_bjt_sizes=ihp130_valid_bjt_sizes
 )
-
+ihp130_mapped_pdk.layers = LAYER
 # Configure GDS write precision and cell decorator cache
-ihp130_mapped_pdk.gds_write_settings.precision = 1e-9 # 1nm precision , Check this setting with PDk documentration later
-ihp130_mapped_pdk.cell_decorator_settings.cache = False
+# ihp130_mapped_pdk.gds_write_settings.precision = 1e-9 # 1nm precision , Check this setting with PDk documentration later
+# ihp130_mapped_pdk.cell_decorator_settings.cache = False

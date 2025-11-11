@@ -2,12 +2,12 @@
 Geometry utility functions for Glayout.
 """
 
-from typing import Optional, Union, Tuple, List
+from typing import Union, Tuple, List
 from pathlib import Path
 
 from gdsfactory import cell
 from gdsfactory.component import Component
-from gdsfactory import ComponentReference as Reference
+from gdsfactory.component import ComponentReference as Reference
 from gdsfactory.typings import Layer, ComponentOrReference
 from pydantic import validate_arguments
 
@@ -153,7 +153,7 @@ def prec_array(
         for col in range(columns):
             ref = array << component
             ref.move((col * x_spacing, row * y_spacing))
-            array.add_ports(ref.get_ports_list(), prefix=f"row{row}_col{col}_")
+            array.add_ports(ref.ports, prefix=f"row{row}_col{col}_")
     
     return array
 
@@ -240,8 +240,8 @@ def movey(
 def align_comp_to_port(
     component: Component,
     port: ComponentOrReference,
-    alignment: tuple[Optional[str], Optional[str]] = (None, None),
-    layer: Optional[Layer] = None
+    alignment: tuple[str | None, str | None] = (None, None),
+    layer: Layer | None = None
 ) -> Reference:
     """Align component to port.
     

@@ -5,7 +5,7 @@ from gdsfactory.component import Component, copy
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from glayout.blocks.elementary.diff_pair.diff_pair import diff_pair
 from glayout.primitives.fet import nmos, pmos, multiplier
 from glayout.primitives.guardring import tapring
@@ -30,15 +30,15 @@ def __create_sharedgatecomps(pdk: MappedPDK, rmult: int, half_pload: tuple[float
     pcompR = multiplier(pdk, "p+s/d", width=half_pload[0], length=half_pload[1], fingers=half_pload[2], dummy=True,rmult=rmult).copy()
     tapref = pcompR << tapring(pdk, evaluate_bbox(pcompR,padding=0.3+pdk.get_grule("n+s/d", "active_tap")["min_enclosure"]),"n+s/d","met1","met1")
     pcompR.add_padding(layers=(pdk.get_glayer("nwell"),), default=pdk.get_grule("active_tap", "nwell")["min_enclosure"])
-    pcompR.add_ports(tapref.get_ports_list(),prefix="welltap_")
+    pcompR.add_ports(tapref.ports,prefix="welltap_")
     pcompR << straight_route(pdk,pcompR.ports["dummy_L_gsdcon_top_met_W"],pcompR.ports["welltap_W_top_met_W"],glayer2="met1")
     pcompR << straight_route(pdk,pcompR.ports["dummy_R_gsdcon_top_met_W"],pcompR.ports["welltap_E_top_met_E"],glayer2="met1")
     pcompL = pcompR.copy()
     pcomp_AB_spacing = max(2*pdk.util_max_metal_seperation() + 6*pdk.get_grule("met4")["min_width"],pdk.get_grule("p+s/d")["min_separation"])
     _prefL = (twomultpcomps << pcompL).movex(-1 * pcompL.xmax - pcomp_AB_spacing/2)
     _prefR = (twomultpcomps << pcompR).movex(-1 * pcompR.xmin + pcomp_AB_spacing/2)
-    twomultpcomps.add_ports(_prefL.get_ports_list(),prefix="L_")
-    twomultpcomps.add_ports(_prefR.get_ports_list(),prefix="R_")
+    twomultpcomps.add_ports(_prefL.ports,prefix="L_")
+    twomultpcomps.add_ports(_prefR.ports,prefix="R_")
     twomultpcomps << route_quad(_prefL.ports["gate_W"], _prefR.ports["gate_E"], layer=pdk.get_glayer("met2"))
     # center
     relative_dim_comp = multiplier(
@@ -101,11 +101,11 @@ def __route_sharedgatecomps(pdk: MappedPDK, shared_gate_comps, via_location, pto
     shared_gate_comps << route_quad(LRsourcesPorts[0],LRsourcesPorts[-1],layer=LRsourcesPorts[0].layer)
     pcomps_2L_2R_sourcevia = shared_gate_comps << via_stack(pdk,pdk.layer_to_glayer(LRsourcesPorts[0].layer), "met4")
     pcomps_2L_2R_sourcevia.movey(evaluate_bbox(pcomps_2L_2R_sourcevia.parent.extract(layers=[LRsourcesPorts[0].layer,]))[1]/2 + LRsourcesPorts[0].center[1])
-    shared_gate_comps.add_ports(pcomps_2L_2R_sourcevia.get_ports_list(),prefix="2L2Rsrcvia_")
+    shared_gate_comps.add_ports(pcomps_2L_2R_sourcevia.ports,prefix="2L2Rsrcvia_")
     # short all the gates
     shared_gate_comps << route_quad(LRgatePorts[0],LRgatePorts[-1],layer=pdk.get_glayer("met2"))
-    shared_gate_comps.add_ports(ptop_AB.get_ports_list(),prefix="ptopAB_")
-    shared_gate_comps.add_ports(pbottom_AB.get_ports_list(),prefix="pbottomAB_")
+    shared_gate_comps.add_ports(ptop_AB.ports,prefix="ptopAB_")
+    shared_gate_comps.add_ports(pbottom_AB.ports,prefix="pbottomAB_")
     # short all gates of shared_gate_comps
     pcenter_gate_route_extension = pdk.snap_to_2xgrid(shared_gate_comps.xmax - min(ptop_AB.ports["R_gate_E"].center[0], LRgatePorts[-1].center[0]) - pdk.get_grule("active_diff")["min_width"])
     pcenter_l_croute = shared_gate_comps << c_route(pdk, ptop_AB.ports["L_gate_W"], pbottom_AB.ports["L_gate_W"],extension=pcenter_gate_route_extension)
@@ -141,8 +141,8 @@ def __route_sharedgatecomps(pdk: MappedPDK, shared_gate_comps, via_location, pto
     pcomps_route_B_drain_extension = shared_gate_comps.xmax-ptop_AB.ports["R_drain_E"].center[0]+_max_metal_seperation_ps
     shared_gate_comps << c_route(pdk, ptop_AB.ports["R_drain_E"], pmos_bdrain_diffpair_v.ports["bottom_met_E"],extension=pcomps_route_B_drain_extension +_max_metal_seperation_ps)
     shared_gate_comps << c_route(pdk, pbottom_AB.ports["L_drain_W"], pmos_bdrain_diffpair_v.ports["bottom_met_W"],extension=pcomps_route_B_drain_extension +_max_metal_seperation_ps)
-    shared_gate_comps.add_ports(pmos_bdrain_diffpair_v.get_ports_list(),prefix="minusvia_")
-    shared_gate_comps.add_ports(mimcap_connection_ref.get_ports_list(),prefix="mimcap_connection_")
+    shared_gate_comps.add_ports(pmos_bdrain_diffpair_v.ports,prefix="minusvia_")
+    shared_gate_comps.add_ports(mimcap_connection_ref.ports,prefix="mimcap_connection_")
     return shared_gate_comps
 
 def differential_to_single_ended_converter_netlist(pdk: MappedPDK, half_pload: tuple[float, float, int]) -> Netlist:

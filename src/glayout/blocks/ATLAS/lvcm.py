@@ -17,7 +17,6 @@ from glayout.flow.pdk.util.port_utils import add_ports_perimeter
 from glayout.flow.spice.netlist import Netlist
 from glayout.flow.blocks.elementary.LHS.fvf import fvf_netlist, flipped_voltage_follower
 from glayout.flow.primitives.via_gen import via_stack
-from typing import Optional
 from evaluator_wrapper import run_evaluation
 
 
@@ -62,8 +61,9 @@ def add_lvcm_labels(lvcm_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         lvcm_in.add(compref)
-    return lvcm_in.flatten() 
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    lvcm_in.flatten()
+    return lvcm_in
 def low_voltage_cmirr_netlist(bias_fvf: Component, cascode_fvf: Component, fet_1_ref: ComponentReference, fet_2_ref: ComponentReference, fet_3_ref: ComponentReference, fet_4_ref: ComponentReference) -> Netlist:
     
         netlist = Netlist(circuit_name='Low_voltage_current_mirror', nodes=['IBIAS1', 'IBIAS2', 'GND', 'IOUT1', 'IOUT2'])
@@ -176,12 +176,12 @@ def  low_voltage_cmirror(
     top_level << straight_route(pdk, fet_3_ref.ports["multiplier_0_source_W"], fet_3_ref.ports["tie_W_top_met_W"], glayer1='met1', width=0.2)
     
 
-    top_level.add_ports(bias_fvf_ref.get_ports_list(), prefix="M_1_")
-    top_level.add_ports(cascode_fvf_ref.get_ports_list(), prefix="M_2_")
-    top_level.add_ports(fet_1_ref.get_ports_list(), prefix="M_3_B_")
-    top_level.add_ports(fet_2_ref.get_ports_list(), prefix="M_3_A_")
-    top_level.add_ports(fet_3_ref.get_ports_list(), prefix="M_4_B_")
-    top_level.add_ports(fet_4_ref.get_ports_list(), prefix="M_4_A_")
+    top_level.add_ports(bias_fvf_ref.ports, prefix="M_1_")
+    top_level.add_ports(cascode_fvf_ref.ports, prefix="M_2_")
+    top_level.add_ports(fet_1_ref.ports, prefix="M_3_B_")
+    top_level.add_ports(fet_2_ref.ports, prefix="M_3_A_")
+    top_level.add_ports(fet_3_ref.ports, prefix="M_4_B_")
+    top_level.add_ports(fet_4_ref.ports, prefix="M_4_A_")
     
     component = component_snap_to_grid(rename_ports_by_orientation(top_level))
     component.info['netlist'] = low_voltage_cmirr_netlist(bias_fvf, cascode_fvf, fet_1_ref, fet_2_ref, fet_3_ref, fet_4_ref)

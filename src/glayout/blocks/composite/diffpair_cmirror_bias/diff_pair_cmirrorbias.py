@@ -4,7 +4,7 @@ from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout import MappedPDK, sky130,gf180
 from glayout.routing import c_route,L_route,straight_route
-from typing import Optional, Union
+from typing import Union
 from glayout.blocks.elementary.diff_pair import diff_pair
 from glayout.primitives.fet import nmos, pmos, multiplier
 from glayout.primitives.guardring import tapring
@@ -36,7 +36,7 @@ from glayout.placement.two_transistor_interdigitized import two_nfet_interdigiti
 from glayout.spice import Netlist
 from glayout.blocks.elementary.current_mirror import current_mirror_netlist
 
-def diff_pair_ibias_netlist(center_diffpair: Component, current_mirror: Component, antenna_diode: Optional[Component] = None) -> Netlist:
+def diff_pair_ibias_netlist(center_diffpair: Component, current_mirror: Component, antenna_diode: Component | None = None) -> Netlist:
     netlist = Netlist(
         circuit_name="DIFFPAIR_CMIRROR_BIAS",
         nodes=['VP', 'VN', 'VDD1', 'VDD2', 'IBIAS', 'VSS', 'B']
@@ -91,7 +91,7 @@ def diff_pair_ibias(
     # add antenna diodes if that option was specified
     diffpair_centered_ref = prec_ref_center(center_diffpair_comp)
     diffpair_i_.add(diffpair_centered_ref)
-    diffpair_i_.add_ports(diffpair_centered_ref.get_ports_list())
+    diffpair_i_.add_ports(diffpair_centered_ref.ports)
     antenna_diode_comp = None
     if with_antenna_diode_on_diffinputs:
         antenna_diode_comp = nmos(
@@ -179,7 +179,7 @@ def diff_pair_ibias(
         extension=metal_sep,
         viaoffset=False,
     )
-    cmirror.add_ports(srcshort.get_ports_list(), prefix="purposegndports")
+    cmirror.add_ports(srcshort.ports, prefix="purposegndports")
     # current mirror netlist
     cmirror.info['netlist'] = current_mirror_netlist(
         pdk,
@@ -200,7 +200,7 @@ def diff_pair_ibias(
     purposegndPort = tailcurrent_ref.ports["purposegndportscon_S"].copy()
     purposegndPort.name = "ibias_purposegndport"
     diffpair_i_.add_ports([purposegndPort])
-    diffpair_i_.add_ports(tailcurrent_ref.get_ports_list(), prefix="ibias_")
+    diffpair_i_.add_ports(tailcurrent_ref.ports, prefix="ibias_")
 
     diffpair_i_ref = prec_ref_center(diffpair_i_)
 

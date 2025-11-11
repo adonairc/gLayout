@@ -1,8 +1,7 @@
-from gdsfactory.cell import cell
+from gdsfactory import cell
 from gdsfactory.component import Component
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional
 from glayout.primitives.via_gen import via_array
 from glayout.util.comp_utils import prec_array, to_decimal, to_float
 from glayout.util.port_utils import rename_ports_by_orientation, add_ports_perimeter, print_ports
@@ -11,7 +10,7 @@ from glayout.routing.straight_route import straight_route
 from decimal import ROUND_UP, Decimal
 from glayout.spice import Netlist
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __get_mimcap_layerconstruction_info(pdk: MappedPDK) -> tuple[str,str]:
 	"""returns the glayer metal below and glayer metal above capmet
 	args: pdk
@@ -77,9 +76,11 @@ def mimcap(
     mim_cap.add_padding(layers=(pdk.get_glayer(capmetbottom),),default=bottom_met_enclosure)
     # flatten and create ports
     mim_cap = add_ports_perimeter(mim_cap, layer=pdk.get_glayer(capmetbottom), prefix="bottom_met_")
-    mim_cap.add_ports(top_met_ref.get_ports_list())
+    mim_cap.add_ports(top_met_ref.ports)
 
-    component = rename_ports_by_orientation(mim_cap).flatten()
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    component = rename_ports_by_orientation(mim_cap)
+    component.flatten()
 
     # netlist generation
     component.info['netlist'] = __generate_mimcap_netlist(pdk, size)
@@ -87,7 +88,7 @@ def mimcap(
     return component
 
 #@cell
-def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,float] = (5.0,5.0), rmult: Optional[int]=1) -> Component:
+def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,float] = (5.0,5.0), rmult: int | None=1) -> Component:
 	"""create mimcap array
 	args:
 	pdk to use
@@ -103,7 +104,7 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
 	mimcap_single = mimcap(pdk, size)
 	mimcap_space = pdk.get_grule("capmet")["min_separation"] #+ evaluate_bbox(mimcap_single)[0]
 	array_ref = mimcap_arr << prec_array(mimcap_single, rows, columns, spacing=2*[mimcap_space])
-	mimcap_arr.add_ports(array_ref.get_ports_list())
+	mimcap_arr.add_ports(array_ref.ports)
 	# create a list of ports that should be routed to connect the array
 	port_pairs = list()
 	for rownum in range(rows):
@@ -131,6 +132,8 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
 	# add netlist
 	mimcap_arr.info['netlist'] = __generate_mimcap_array_netlist(mimcap_single.info['netlist'], rows * columns)
 
-	return mimcap_arr.flatten()
+	# In GDSFactory v9, flatten() mutates in-place and returns None
 
+	mimcap_arr.flatten()
 
+	return mimcap_arr

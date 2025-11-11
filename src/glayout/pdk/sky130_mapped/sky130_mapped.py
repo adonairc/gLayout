@@ -7,63 +7,67 @@ from ..sky130_mapped.sky130_grules import grulesobj
 from pathlib import Path
 from ..sky130_mapped.sky130_add_npc import sky130_add_npc
 import os
+from gdsfactory.typings import LayerSpec
+
+from gdsfactory.technology import LayerMap
+from gdsfactory.typings import Layer
 
 # Actual Pin definations for Skywater 130nm from the PDK manual
 # Ref: https://skywater-pdk.readthedocs.io/en/main/rules/layers.html#layers-definitions
-LAYER = {
-    "capm": (89, 44),
-    "met4": (71, 20),
-    "via3": (70, 44),
-    "met3": (70, 20),
-    "via2": (69, 44),
-    "met2": (69, 20),
-    "via" : (68, 44),
-    "met1": (68, 20),
-    "mcon": (67, 44),
-    "li1": (67, 20),
-    "licon1": (66, 44),
-    "poly": (66, 20),
-    "diff": (65, 20),
-    "tap" : (65, 44),
-    "nsdm": (93, 44),
-    "psdm": (94, 20),
-    "nwell": (64, 20),
-    "pwell": (64, 44),
-    "dnwell": (64, 18),
+
+class LayerMapSky130(LayerMap):
+    capm : Layer = (89, 44)
+    met4: Layer = (71, 20)
+    via3: Layer =  (70, 44)
+    met3: Layer =  (70, 20)
+    via2: Layer =  (69, 44)
+    met2: Layer =  (69, 20)
+    via: Layer =  (68, 44)
+    met1: Layer =  (68, 20)
+    mcon: Layer =  (67, 44)
+    li1: Layer =  (67, 20)
+    licon1: Layer =  (66, 44)
+    poly: Layer =  (66, 20)
+    diff: Layer =  (65, 20)
+    tap: Layer =  (65, 44)
+    nsdm: Layer =  (93, 44)
+    psdm: Layer =  (94, 20)
+    nwell: Layer =  (64, 20)
+    pwell: Layer =  (64, 44)
+    dnwell: Layer =  (64, 18)
     ## _pin layer definations 
     # (Text type Pin definiaitons are not needed)
-    #"met5_pin": (72, 16), # (Text and data) Not Needed
-    "met4_pin": (71, 16), # (Text and data)
-    "met3_pin": (70, 16), # (Text and data)
-    "met2_pin": (69, 16), # (Text and data)
-    "met1_pin": (68, 16), # (Text and data)
-    "li1_pin": (67, 16), # (Text and data)
-    "poly_pin": (66, 16), # (Text and data)
-    "diff_pin": (65, 16), # (Text and data)
-    #"nwell_pin": (64, 16), # (Text type)
+    #met5_pin: Layer =  (72, 16) # (Text and data) Not Needed
+    met4_pin: Layer =  (71, 16) # (Text and data)
+    met3_pin: Layer =  (70, 16) # (Text and data)
+    met2_pin: Layer =  (69, 16) # (Text and data)
+    met1_pin: Layer =  (68, 16) # (Text and data)
+    li1_pin: Layer =  (67, 16) # (Text and data)
+    poly_pin: Layer =  (66, 16) # (Text and data)
+    diff_pin: Layer =  (65, 16) # (Text and data)
+    #nwell_pin: Layer =  (64, 16) # (Text type)
     ##
-    #"pad_pin": (76, 16), # (Text and data)
-    #"pwell_pin": (122, 16), # (Text and data)
-    #"pwelliso_pin": (44, 16), # (Text and data)
+    #"pad_pin: Layer =  (76, 16) # (Text and data)
+    #"pwell_pin: Layer =  (122, 16) # (Text and data)
+    #"pwelliso_pin: Layer =  (44, 16) # (Text and data)
     ## _label layer definations
-    #"met5_label": (72, 5), # (Text)
-    "met4_label": (71, 5), # (Text)
-    "met3_label": (70, 5), # (Text)
-    "met2_label": (69, 5), # (Text)
-    "met1_label": (68, 5), # (Text)
-    "li1_label": (67, 5), # (Text)
-    "poly_label": (66, 5), # (Text)
-    "diff_label": (65, 6), # (Text)
-    #"tap_label": (65, 5), #
-    #"nwell_label": (64, 5), # (Text)
+    #"met5_label: Layer =  (72, 5) # (Text)
+    met4_label: Layer =  (71, 5) # (Text)
+    met3_label: Layer =  (70, 5) # (Text)
+    met2_label: Layer =  (69, 5) # (Text)
+    met1_label: Layer =  (68, 5) # (Text)
+    li1_label: Layer =  (67, 5) # (Text)
+    poly_label: Layer =  (66, 5) # (Text)
+    diff_label: Layer =  (65, 6) # (Text)
+    #"tap_label: Layer =  (65, 5) #
+    #"nwell_label: Layer =  (64, 5) # (Text)
     ##
-    #"pad_label": (76, 5), # (Text)
-    #"pwell_label": (64,59), # (Text and data type)
-    #"pwelliso_label": (44,5), # (Text)
-   
-}
+    #"pad_label: Layer =  (76, 5) # (Text)
+    #"pwell_label: Layer =  (64,59) # (Text and data type)
+    #"pwelliso_label: Layer =  (44,5) # (Text)
+LAYER = LayerMapSky130
 
-sky130_glayer_mapping = {
+sky130_glayer_mapping: dict[str,LayerSpec] = {
     "capmet": "capm",
     "met5": "met4",
     "via4": "via3",
@@ -106,13 +110,10 @@ sky130_glayer_mapping = {
     
 }
 
-# Add valid BJT sizes
-
 sky130_valid_bjt_sizes = {
     "npn" : [ ],
     "pnp" : [ ],
 }
-
 # openfasoc_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
 
 klayout_drc_file = Path(__file__).resolve().parent / "sky130.lydrc"
@@ -143,13 +144,14 @@ sky130_mapped_pdk = MappedPDK(
 		'pfet': 'sky130_fd_pr__pfet_01v8',
 		'mimcap': 'sky130_fd_pr__cap_mim_m3_1'
     },
-    layers=LAYER,
+    layers = LAYER,
     grules=grulesobj,
     pdk_files=pdk_files,
     default_decorator=sky130_add_npc,
     valid_bjt_sizes=sky130_valid_bjt_sizes
 )
+# sky130_mapped_pdk.layers = LAYER
 # set the grid size
-sky130_mapped_pdk.gds_write_settings.precision = 5*10**-9
-sky130_mapped_pdk.cell_decorator_settings.cache=False
-sky130_mapped_pdk.gds_write_settings.flatten_invalid_refs=False
+# sky130_mapped_pdk.gds_write_settings.precision = 5*10**-9
+# sky130_mapped_pdk.cell_decorator_settings.cache=False
+# sky130_mapped_pdk.gds_write_settings.flatten_invalid_refs=False

@@ -1,24 +1,22 @@
-from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from glayout.primitives.via_gen import via_stack, via_array
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port, to_decimal, to_float, prec_ref_center, get_primitive_rectangle
-from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, print_ports, assert_port_manhattan, assert_ports_perpindicular
+from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, print_ports, assert_port_manhattan, assert_ports_perpindicular, get_layer_from_port
 from decimal import Decimal
 
 
-@cell
 def L_route(
 	pdk: MappedPDK,
 	edge1: Port,
 	edge2: Port,
-	vwidth: Optional[float] = None,
-	hwidth: Optional[float] = None,
-	hglayer: Optional[str] = None,
-	vglayer: Optional[str] = None,
-	viaoffset: Optional[Union[tuple[bool,bool],bool]]=True,
+	vwidth: float | None = None,
+	hwidth: float | None = None,
+	hglayer: str | None = None,
+	vglayer: str | None = None,
+	viaoffset: Union[tuple[bool,bool],bool] | None=True,
 	fullbottom: bool = True
 ) -> Component:
 	"""creates a L shaped route between two Ports.
@@ -63,8 +61,9 @@ def L_route(
 	# arg setup
 	vwidth = to_decimal(vwidth if vwidth else vport.width)
 	hwidth = to_decimal(hwidth if hwidth else hport.width)
-	hglayer = hglayer if hglayer else pdk.layer_to_glayer(vport.layer)
-	vglayer = vglayer if vglayer else pdk.layer_to_glayer(hport.layer)
+	# In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+	hglayer = hglayer if hglayer else get_layer_from_port(vport, pdk)
+	vglayer = vglayer if vglayer else get_layer_from_port(hport, pdk)
 	if isinstance(viaoffset,bool):
 		viaoffset = (True,True) if viaoffset else (False,False)
 	# compute required dimensions
@@ -91,7 +90,9 @@ def L_route(
 		hv_via = via_array(pdk, hglayer, vglayer, size=to_float((hwidth,vwidth)), lay_bottom=True)
 	h_to_v_via_ref = prec_ref_center(hv_via)
 	Lroute.add(h_to_v_via_ref)
-	h_to_v_via_ref.move(destination=(hport.center[0], vport.center[1]))
+	# In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+	target = (hport.center[0], vport.center[1])
+	h_to_v_via_ref.movex(target[0] - h_to_v_via_ref.center[0]).movey(target[1] - h_to_v_via_ref.center[1])
 	if viaoffset[0] or viaoffset[1]:
 		viadim_osx = evaluate_bbox(h_to_v_via_ref,True)[0]/2
 		viaxofs = abs(hwidth/2-viadim_osx)
@@ -103,7 +104,9 @@ def L_route(
 		viayofs = viayofs if viaoffset[1] else 0
 		h_to_v_via_ref.movex(viaxofs).movey(viayofs)
 	# add ports and return
-	Lroute.add_ports(h_to_v_via_ref.get_ports_list())
-	return rename_ports_by_orientation(Lroute.flatten())
+	Lroute.add_ports(h_to_v_via_ref.ports)
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	Lroute.flatten()
+	return rename_ports_by_orientation(Lroute)
 
 

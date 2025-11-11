@@ -86,8 +86,9 @@ def sky130_add_fvf_labels(fvf_in: Component) -> Component:
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         fvf_in.add(compref)
-    return fvf_in.flatten() 
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    fvf_in.flatten()
+    return fvf_in
 @cell
 def  flipped_voltage_follower(
     pdk: MappedPDK,
@@ -170,12 +171,12 @@ def  flipped_voltage_follower(
     except:
         pass
     #Renaming Ports
-    top_level.add_ports(fet_1_ref.get_ports_list(), prefix="A_")
-    top_level.add_ports(fet_2_ref.get_ports_list(), prefix="B_")
-    top_level.add_ports(drain_1_via.get_ports_list(), prefix="A_drain_")
-    top_level.add_ports(source_1_via.get_ports_list(), prefix="A_source_")
-    top_level.add_ports(drain_2_via.get_ports_list(), prefix="B_drain_")
-    top_level.add_ports(gate_2_via.get_ports_list(), prefix="B_gate_")
+    top_level.add_ports(fet_1_ref.ports, prefix="A_")
+    top_level.add_ports(fet_2_ref.ports, prefix="B_")
+    top_level.add_ports(drain_1_via.ports, prefix="A_drain_")
+    top_level.add_ports(source_1_via.ports, prefix="A_source_")
+    top_level.add_ports(drain_2_via.ports, prefix="B_drain_")
+    top_level.add_ports(gate_2_via.ports, prefix="B_gate_")
     #add nwell
     if well == "nwell": 
         top_level.add_padding(layers=(pdk.get_glayer("nwell"),),default= 1 )

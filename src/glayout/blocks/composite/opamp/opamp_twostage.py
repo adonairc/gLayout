@@ -3,7 +3,7 @@ from gdsfactory.component import Component, copy
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout.flow.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from glayout.flow.primitives.fet import nmos, pmos, multiplier
 from glayout.flow.blocks.elementary.diff_pair import diff_pair
 from glayout.flow.primitives.guardring import tapring
@@ -95,12 +95,12 @@ def __create_and_route_pins(
     outputvia_diff_pcomps = opamp_top << via_stack(pdk,"met5","met4")
     outputvia_diff_pcomps.movex(opamp_top.ports["diffpair_tl_multiplier_0_drain_N"].center[0]).movey(ptop_halfmultp_gate_route.ports["con_E"].center[1])
     # add pin ports
-    opamp_top.add_ports(vddpin.get_ports_list(), prefix="pin_vdd_")
-    opamp_top.add_ports(vbias1.get_ports_list(), prefix="pin_diffpairibias_")
-    opamp_top.add_ports(vbias2.get_ports_list(), prefix="pin_commonsourceibias_")
-    opamp_top.add_ports(minusi_pin.get_ports_list(), prefix="pin_minus_")
-    opamp_top.add_ports(plusi_pin.get_ports_list(), prefix="pin_plus_")
-    #opamp_top.add_ports(output.get_ports_list(), prefix="pin_output_")
+    opamp_top.add_ports(vddpin.ports, prefix="pin_vdd_")
+    opamp_top.add_ports(vbias1.ports, prefix="pin_diffpairibias_")
+    opamp_top.add_ports(vbias2.ports, prefix="pin_commonsourceibias_")
+    opamp_top.add_ports(minusi_pin.ports, prefix="pin_minus_")
+    opamp_top.add_ports(plusi_pin.ports, prefix="pin_plus_")
+    #opamp_top.add_ports(output.ports, prefix="pin_output_")
     return opamp_top, n_to_p_output_route
 
 
@@ -124,7 +124,7 @@ def __add_mimcap_arr(pdk: MappedPDK, opamp_top: Component, mim_cap_size, mim_cap
     opamp_top << c_route(pdk,port1,port2, extension=cref2_extension, fullbottom=True)
     intermediate_output = set_port_orientation(n_to_p_output_route.ports["con_S"],"E")
     opamp_top << L_route(pdk, mimcaps_ref.ports["row0_col0_top_met_S"], intermediate_output, hwidth=3)
-    opamp_top.add_ports(mimcaps_ref.get_ports_list(),prefix="mimcap_")
+    opamp_top.add_ports(mimcaps_ref.ports,prefix="mimcap_")
     # add the cs output as a port
     opamp_top.add_port(name="commonsource_output_E", port=intermediate_output)
     return opamp_top, mimcap_netlist
@@ -230,7 +230,7 @@ def opamp_twostage(
     ydim_ncomps = opamp_top.ymax
     pmos_comps_ref = opamp_top << pmos_comps
     pmos_comps_ref.movey(round(ydim_ncomps + pmos_comps_ref.ymax+10))
-    opamp_top.add_ports(pmos_comps_ref.get_ports_list(),prefix="pcomps_")
+    opamp_top.add_ports(pmos_comps_ref.ports,prefix="pcomps_")
     rename_func = lambda name_, port_ : name_.replace("pcomps_halfpspecialmarker","commonsource_Pamp") if name_.startswith("pcomps_halfpspecialmarker") else name_
     opamp_top = rename_component_ports(opamp_top, rename_function=rename_func)
     # create pins and route
@@ -239,9 +239,9 @@ def opamp_twostage(
     # place mimcaps and route
     clear_cache()
     opamp_top, mimcap_netlist = __add_mimcap_arr(pdk, opamp_top, mim_cap_size, mim_cap_rows, pmos_comps_ref.ymin, n_to_p_output_route)
-    opamp_top.add_ports(n_to_p_output_route.get_ports_list(),"special_con_npr_")
+    opamp_top.add_ports(n_to_p_output_route.ports,"special_con_npr_")
     # return
-    opamp_top.add_ports(_cref.get_ports_list(), prefix="gnd_route_")
+    opamp_top.add_ports(_cref.ports, prefix="gnd_route_")
 
     pmos_comps.info['netlist'] = opamp_gain_stage_netlist(mimcap_netlist, pmos_comps.info['netlist'], cs_bias_netlist)
     opamp_top.info['netlist'] = opamp_twostage_netlist(opamp_top.info['netlist'], pmos_comps.info['netlist'])

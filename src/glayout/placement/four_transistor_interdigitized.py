@@ -4,9 +4,9 @@
 
 from glayout.pdk.mappedpdk import MappedPDK
 from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized, two_pfet_interdigitized
-from typing import Literal, Optional
+from typing import Literal
 from gdsfactory import Component
-from gdsfactory.component_reference import ComponentReference
+from gdsfactory.component import ComponentReference
 from glayout.util.comp_utils import evaluate_bbox, movey, align_comp_to_port
 from glayout.primitives.guardring import tapring
 from glayout.spice.netlist import Netlist
@@ -87,8 +87,9 @@ def add_four_int_labels1(four_int_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         four_int_in.add(compref)
-    return four_int_in.flatten()
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    four_int_in.flatten()
+    return four_int_in
 # one common bulk node
 def add_four_int_labels2(four_int_in: Component,
                 pdk: MappedPDK 
@@ -159,8 +160,9 @@ def add_four_int_labels2(four_int_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         four_int_in.add(compref)
-    return four_int_in.flatten()
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    four_int_in.flatten()
+    return four_int_in
 def four_tran_interdigitized_netlist(toprow: ComponentReference, bottomrow: ComponentReference, same_bulk: bool) -> Netlist:
 
     if same_bulk:
@@ -180,8 +182,8 @@ def generic_4T_interdigitzed(
     numcols: int=3,
     length: float=None,
     with_substrate_tap: bool = True,
-    top_kwargs: Optional[dict]=None,
-    bottom_kwargs: Optional[dict]=None
+    top_kwargs: dict | None = None,
+    bottom_kwargs: dict | None = None
 ):
     if top_kwargs is None:
         top_kwargs = dict()
@@ -201,12 +203,16 @@ def generic_4T_interdigitzed(
     toprow.movey(pdk.snap_to_2xgrid((evaluate_bbox(bottomrow)[1]/2 + evaluate_bbox(toprow)[1]/2 + pdk.util_max_metal_seperation())))
     # add substrate tap
     if with_substrate_tap:
-        substrate_tap = tapring(pdk, enclosed_rectangle=pdk.snap_to_2xgrid(evaluate_bbox(toplvl.flatten(),padding=0.34)))
-        substrate_tap_ref = toplvl << movey(substrate_tap,destination=pdk.snap_to_2xgrid(toplvl.flatten().center[1],snap4=True))
+        # In GDSFactory v9, flatten() mutates in-place and returns None
+        # Create a temporary copy for getting bbox and center
+        toplvl_temp = toplvl.copy()
+        toplvl_temp.flatten()
+        substrate_tap = tapring(pdk, enclosed_rectangle=pdk.snap_to_2xgrid(evaluate_bbox(toplvl_temp,padding=0.34)))
+        substrate_tap_ref = toplvl << movey(substrate_tap,destination=pdk.snap_to_2xgrid(toplvl_temp.center[1],snap4=True))
     # add ports
-    toplvl.add_ports(substrate_tap_ref.get_ports_list(),prefix="substratetap_")
-    toplvl.add_ports(toprow.get_ports_list(),prefix="top_")
-    toplvl.add_ports(bottomrow.get_ports_list(),prefix="bottom_")
+    toplvl.add_ports(substrate_tap_ref.ports,prefix="substratetap_")
+    toplvl.add_ports(toprow.ports,prefix="top_")
+    toplvl.add_ports(bottomrow.ports,prefix="bottom_")
     # flag for smart route
     toplvl.info["route_genid"] = "four_transistor_interdigitized"
     if top_row_device==bottom_row_device and top_row_device=="nfet":

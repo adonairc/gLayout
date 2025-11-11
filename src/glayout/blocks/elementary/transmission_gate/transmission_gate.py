@@ -64,9 +64,9 @@ def add_tg_labels(tg_in: Component,
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         tg_in.add(compref)
-    return tg_in.flatten() 
-
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    tg_in.flatten()
+    return tg_in
 def get_component_netlist(component):
     """Helper function to get netlist object from component info, compatible with all gdsfactory versions"""
     from glayout.spice.netlist import Netlist
@@ -135,9 +135,9 @@ def sky130_add_tg_labels(tg_in: Component) -> Component:
         alignment = ('c','b') if alignment is None else alignment
         compref = align_comp_to_port(comp, prt, alignment=alignment)
         tg_in.add(compref)
-    return tg_in.flatten() 
-
-
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    tg_in.flatten()
+    return tg_in
 def tg_netlist(nfet: Component, pfet: Component) -> Netlist:
 
          netlist = Netlist(circuit_name='Transmission_Gate', nodes=['VIN', 'VSS', 'VOUT', 'VCC', 'VGP', 'VGN'])
@@ -184,8 +184,8 @@ def  transmission_gate(
     top_level << c_route(pdk, nfet_ref.ports["multiplier_0_drain_W"], pfet_ref.ports["multiplier_0_drain_W"], viaoffset=False)
     
     #Renaming Ports
-    top_level.add_ports(nfet_ref.get_ports_list(), prefix="N_")
-    top_level.add_ports(pfet_ref.get_ports_list(), prefix="P_")
+    top_level.add_ports(nfet_ref.ports, prefix="N_")
+    top_level.add_ports(pfet_ref.ports, prefix="P_")
 
     #substrate tap
     if substrate_tap:
@@ -198,7 +198,7 @@ def  transmission_gate(
             vertical_glayer='met1',
         )
             guardring_ref.move(nfet_ref.center).movey(evaluate_bbox(pfet_ref)[1]/2 + pdk.util_max_metal_seperation()/2)
-            top_level.add_ports(guardring_ref.get_ports_list(),prefix="tap_")
+            top_level.add_ports(guardring_ref.ports,prefix="tap_")
     
     component = component_snap_to_grid(rename_ports_by_orientation(top_level)) 
     # Store netlist as string to avoid gymnasium info dict type restrictions

@@ -2,14 +2,14 @@
 Routing utility functions for Glayout.
 """
 
-from typing import Optional, Tuple
+from typing import Tuple
 from gdsfactory.component import Component
-from gdsfactory.typings import Port
+from gdsfactory.port import Port
 from ..pdk.mappedpdk import MappedPDK
 from .geometry import rectangle
 
 
-def straight_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: Optional[str] = None) -> Component:
+def straight_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: str | None = None) -> Component:
     """Create a straight route between two ports."""
     c = Component()
     if glayer is None:
@@ -23,7 +23,7 @@ def straight_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: Optional[st
     return c
 
 
-def L_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: Optional[str] = None) -> Component:
+def L_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: str | None = None) -> Component:
     """Create an L-shaped route between two ports."""
     c = Component()
     if glayer is None:
@@ -37,7 +37,7 @@ def L_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: Optional[str] = No
     return c
 
 
-def c_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: Optional[str] = None) -> Component:
+def c_route(pdk: MappedPDK, port1: Port, port2: Port, glayer: str | None = None) -> Component:
     """Create a C-shaped route between two ports (for demonstration)."""
     c = Component()
     if glayer is None:

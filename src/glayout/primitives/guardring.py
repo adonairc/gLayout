@@ -1,14 +1,35 @@
 from glayout.pdk.mappedpdk import MappedPDK
-from gdsfactory.cell import cell
+from gdsfactory import cell
 from gdsfactory.component import Component
-from gdsfactory.components.rectangle import rectangle
-from gdsfactory.components.rectangular_ring import rectangular_ring
+# from gdsfactory.components import rectangular_ring
 from glayout.primitives.via_gen import via_array, via_stack
-from typing import Optional
-from glayout.util.comp_utils import to_decimal, to_float, evaluate_bbox
-from glayout.util.port_utils import print_ports
+from glayout.util.comp_utils import evaluate_bbox
 from glayout.util.snap_to_grid import component_snap_to_grid
 from glayout.routing.L_route import L_route
+from gdsfactory.typings import LayerSpec
+@cell
+def rectangular_ring(
+	enclosed_size = (4.0,2.0), 
+	width: float = 0.5,
+	layer: LayerSpec = "WG",
+	centered: bool = False,
+) -> Component:
+	"""Returns a Rectangular Ring
+	
+	Args:
+		enclosed_size = (width,hieght) of the enclosed area.
+		width = width of the ring.
+		layer = Specific layer to put polygon geometry on.
+		centered: True sets center to (0,0), False sets south-west to (0,0).
+	"""
+	c = Component()
+	c_temp = Component("temp create ring")
+	rect_in = c_temp << rectangle(size = enclosed_size, centered=centered, layer=layer)
+	rect_out = c_temp << rectangle(size = [dim+2*width for dim in enclosed_size], centered=centered, layer=layer)
+	if not centered:
+		rect_in.move((width,width))
+	c << boolean(A=rect_out, B=rect_in, operation="A-B", layer=layer)
+	return c
 
 
 #@cell
@@ -125,7 +146,7 @@ def tapring(
         refs_prefixes += [(brvia,"br_")]
     # add ports, flatten and return
     for ref_, prefix in refs_prefixes:
-        ptapring.add_ports(ref_.get_ports_list(),prefix=prefix)
+        ptapring.add_ports(ref_.ports,prefix=prefix)
     return component_snap_to_grid(ptapring)
 
 

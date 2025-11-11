@@ -1,5 +1,5 @@
 from os.path import join, dirname
-from typing import Union, Optional
+from typing import Union
 from copy import deepcopy
 
 import re
@@ -42,7 +42,7 @@ class Netlist:
 	parameters: dict = {}
 	"""Dictionary of the high-level parameters."""
 
-	def __init__(self, source_netlist: str = '', nodes: list[str] = [], circuit_name: Union[str, None] = None, instance_format: Optional[str] = None, parameters: dict = {}, sub_netlists: list['Netlist'] = []):
+	def __init__(self, source_netlist: str = '', nodes: list[str] = [], circuit_name: Union[str, None] = None, instance_format: str | None = None, parameters: dict = {}, sub_netlists: list['Netlist'] = []):
 		"""Initializes a Netlist object.
 
 		Override to load sub-netlists and parameters on initialization.
@@ -72,7 +72,7 @@ class Netlist:
 
 		return 'Netlist'
 
-	def generate_instance(self, name: Optional[str] = None, nodes: Optional[list[str]] = None, instance_format: Optional[str] = None) -> str:
+	def generate_instance(self, name: str | None = None, nodes: list[str] | None = None, instance_format: str | None = None) -> str:
 		"""Generates an instance of the netlist subcircuit.
 		Override to insert parameters in the instance.
 		"""
@@ -184,7 +184,7 @@ class Netlist:
 
 		return netlist_index
 
-	def generate_source_netlist_params(self, circuit_name: Optional[str] = None) -> dict:
+	def generate_source_netlist_params(self, circuit_name: str | None = None) -> dict:
 		"""Generates the parameters to be inserted in the source SPICE netlist. Uses the Python template string format."""
 		return {
 			'circuit_name': circuit_name if circuit_name != None else self.circuit_name,

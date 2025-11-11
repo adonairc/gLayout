@@ -1,28 +1,25 @@
-from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional
 from glayout.primitives.via_gen import via_stack, via_array
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components import rectangle
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port
-from glayout.util.port_utils import assert_port_manhattan, set_port_orientation, add_ports_perimeter
+from glayout.util.port_utils import assert_port_manhattan, set_port_orientation, add_ports_perimeter, get_layer_from_port
 from gdstk import rectangle as primitive_rectangle
 
 
-@cell
 def straight_route(
 	pdk: MappedPDK,
 	edge1: Port,
 	edge2: Port,
-	glayer1: Optional[str] = None,
-	width: Optional[float] = None,
-	glayer2: Optional[str] = None,
-	via1_alignment: Optional[tuple[str, str]] = None,
-	via1_alignment_layer: Optional[str] = None,
-	via2_alignment: Optional[tuple[str, str]] = None,
-	via2_alignment_layer: Optional[str] = None,
-	fullbottom: Optional[bool] = False
+	glayer1: str | None = None,
+	width: float | None = None,
+	glayer2: str | None = None,
+	via1_alignment: tuple[str, str] | None = None,
+	via1_alignment_layer: str | None = None,
+	via2_alignment: tuple[str, str] | None = None,
+	via2_alignment_layer: str | None = None,
+	fullbottom: bool | None = False
 ) -> Component:
 	"""extends a route from edge1 until perpindicular with edge2, then places a via
 	This depends on the orientation of edge1 and edge2
@@ -53,11 +50,20 @@ def straight_route(
 	"""
 	#TODO: error checking
 	width = width if width else edge1.width
-	glayer1 = glayer1 if glayer1 else pdk.layer_to_glayer(edge1.layer)
+	if not glayer1:
+		glayer1 = get_layer_from_port(edge1, pdk)
+	if not glayer2:
+		glayer2 = get_layer_from_port(edge2, pdk)
+
+	# Determine if we need a via at the start
 	front_via = None
-	if glayer1 != pdk.layer_to_glayer(edge1.layer):
-		front_via = via_stack(pdk,glayer1,pdk.layer_to_glayer(edge1.layer),fullbottom=fullbottom)
-	glayer2 = glayer2 if glayer2 else pdk.layer_to_glayer(edge2.layer)
+	try:
+		edge1_glayer = pdk.layer_to_glayer(edge1.layer)
+		if glayer1 != edge1_glayer:
+			front_via = via_stack(pdk,glayer1,edge1_glayer,fullbottom=fullbottom)
+	except (ValueError, KeyError):
+		# Edge1 layer not in PDK, assume no via needed
+		pass
 	assert_port_manhattan([edge1,edge2])
 	if edge1.orientation == edge2.orientation:
 		edge2 = set_port_orientation(edge2,edge2.orientation,flip180=True)
@@ -80,7 +86,10 @@ def straight_route(
 		size = (width,abs(extension))
 	# create route and via
 	route = Component()
-	route.add_polygon(primitive_rectangle((0,0),size,*pdk.get_glayer(glayer1)))
+	# In GDSFactory v9, add_polygon expects a list of points, not a gdstk.Polygon
+	# Extract points from the gdstk.Polygon object
+	poly = primitive_rectangle((0,0),size)
+	route.add_polygon(poly.points, layer=pdk.get_glayer(glayer1))
 	add_ports_perimeter(route,layer=pdk.get_glayer(glayer1),prefix="route_")
 	out_via = via_stack(pdk,glayer1,glayer2,fullbottom=fullbottom) if glayer1 != glayer2 else None
 	# place route and via
@@ -101,7 +110,7 @@ def straight_route(
 		via1_alignment = temp if i == 0 else via1_alignment
 		via2_alignment = temp if i == 1 else via2_alignment
 	route_ref = align_comp_to_port(route,edge1,alignment=alignment)
-	straightroute.add_ports(route_ref.get_ports_list())
+	straightroute.add_ports(route_ref.ports)
 	straightroute.add(route_ref)
 	if out_via is not None:
 		alignlayer2 = pdk.get_glayer(glayer1) if via2_alignment_layer is None else pdk.get_glayer(via2_alignment_layer)
@@ -109,6 +118,8 @@ def straight_route(
 	if front_via is not None:
 		alignlayer1 = pdk.get_glayer(glayer1) if via1_alignment_layer is None else pdk.get_glayer(via1_alignment_layer)
 		straightroute.add(align_comp_to_port(front_via,edge1,layer=alignlayer1,alignment=via1_alignment))
-	return straightroute.flatten()
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	straightroute.flatten()
+	return straightroute
 
 

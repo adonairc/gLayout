@@ -62,8 +62,9 @@ def sky130_add_opamp_2_labels(opamp_in: Component) -> Component:
 		alignment = ('c','b') if alignment is None else alignment
 		compref = align_comp_to_port(comp, prt, alignment=alignment)
 		opamp_in.add(compref)
-	return opamp_in.flatten()
-
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	opamp_in.flatten()
+	return opamp_in
 def sky130_add_opamp_3_labels(opamp_in: Component) -> Component:
 	"""adds opamp labels for extraction, without adding pads
 	this function does not need to be used with sky130_add_opamp_pads
@@ -120,8 +121,9 @@ def sky130_add_opamp_3_labels(opamp_in: Component) -> Component:
 		alignment = ('c','b') if alignment is None else alignment
 		compref = align_comp_to_port(comp, prt, alignment=alignment)
 		opamp_in.add(compref)
-	return opamp_in.flatten()
-
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	opamp_in.flatten()
+	return opamp_in
 if __name__=="__main__":
     opamp_comp = sky130_add_opamp_2_labels(opamp(pdk, add_output_stage=False))
     #opamp_comp.show()

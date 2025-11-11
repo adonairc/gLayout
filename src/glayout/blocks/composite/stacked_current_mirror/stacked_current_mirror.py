@@ -3,7 +3,7 @@ from gdsfactory.cell import cell, clear_cache
 from gdsfactory.component import Component, copy
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
-from typing import Optional, Union
+from typing import Union
 from glayout.primitives.fet import nmos, pmos, multiplier
 from glayout.blocks.elementary.diff_pair import diff_pair
 from glayout.primitives.guardring import tapring

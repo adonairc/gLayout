@@ -1,42 +1,43 @@
-from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from math import isclose
 from glayout.primitives.via_gen import via_stack, via_array
 from glayout.routing.straight_route import straight_route
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components import rectangle
 from glayout.util.comp_utils import evaluate_bbox, get_primitive_rectangle, to_float, prec_ref_center
-from glayout.util.port_utils import add_ports_perimeter, rename_ports_by_orientation, rename_ports_by_list, print_ports, set_port_width, set_port_orientation, get_orientation
+from glayout.util.port_utils import add_ports_perimeter, rename_ports_by_orientation, rename_ports_by_list, print_ports, set_port_width, set_port_orientation, get_orientation, get_layer_from_port
 from pydantic import validate_arguments
 from gdsfactory.snap import snap_to_grid
 
 
-@validate_arguments
-def __fill_empty_viastack__macro(pdk: MappedPDK, glayer: str, size: Optional[tuple[float,float]]=None) -> Component:
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
+def __fill_empty_viastack__macro(pdk: MappedPDK, glayer: str, size: tuple[float,float] | None=None) -> Component:
     """returns a rectangle with ports that pretend to be viastack ports
     by default creates a rectangle with size double the min width of the glayer"""
     if size is None:
         size = pdk.snap_to_2xgrid([2*pdk.get_grule(glayer)["min_width"],2*pdk.get_grule(glayer)["min_width"]])
     comp = rectangle(size=size,layer=pdk.get_glayer(glayer),centered=True)
-    return rename_ports_by_orientation(rename_ports_by_list(comp,replace_list=[("e","top_met_")])).flatten()
+    comp = rename_ports_by_orientation(rename_ports_by_list(comp,replace_list=[("e","top_met_")]))
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    comp.flatten()
+    return comp
 
-@cell
 def c_route(
-    pdk: MappedPDK, 
-    edge1: Port, 
-    edge2: Port, 
-    extension: Optional[float]=0.5, 
-    width1: Optional[float] = None, 
-    width2: Optional[float] = None,
-    cwidth: Optional[float] = None,
-    e1glayer: Optional[str] = None, 
-    e2glayer: Optional[str] = None, 
-    cglayer: Optional[str] = None, 
-    viaoffset: Optional[Union[bool,tuple[Optional[bool],Optional[bool]]]]=(True,True),
-    fullbottom: Optional[bool] = False,
-    extra_vias: Optional[bool] = False,
+    pdk: MappedPDK,
+    edge1: Port,
+    edge2: Port,
+    extension: float | None=0.5,
+    width1: float | None = None,
+    width2: float | None = None,
+    cwidth: float | None = None,
+    e1glayer: str | None = None,
+    e2glayer: str | None = None,
+    cglayer: str | None = None,
+    viaoffset: Union[bool,tuple[bool | None,bool | None]] | None=(True,True),
+    fullbottom: bool | None = False,
+    extra_vias: bool | None = False,
     debug=False
 ) -> Component:
     """creates a C shaped route between two Ports.
@@ -74,8 +75,9 @@ def c_route(
     width1 = width1 if width1 else edge1.width
     width2 = width2 if width2 else edge1.width
     cwidth = cwidth if cwidth else min(width1,width2)
-    e1glayer = e1glayer if e1glayer else pdk.layer_to_glayer(edge1.layer)
-    e2glayer = e2glayer if e2glayer else pdk.layer_to_glayer(edge2.layer)
+    # In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+    e1glayer = e1glayer if e1glayer else get_layer_from_port(edge1, pdk)
+    e2glayer = e2glayer if e2glayer else get_layer_from_port(edge2, pdk)
     eglayer_plusone = "met" + str(int(e1glayer[-1])+1)
     cglayer = cglayer if cglayer else eglayer_plusone
     if not "met" in e1glayer or not "met" in e2glayer or not "met" in cglayer:
@@ -154,8 +156,8 @@ def c_route(
             else:
                 e1_length += ydiff
     # move into position
-    e1_extension_comp = Component("edge1 extension")
-    e2_extension_comp = Component("edge2 extension")
+    e1_extension_comp = Component()
+    e2_extension_comp = Component()
     box_dims = [(e1_length, width1),(e2_length, width2)]
     if round(edge1.orientation) == 90 or round(edge1.orientation) == 270:
         box_dims = [(width1, e1_length),(width2, e2_length)]
@@ -166,8 +168,9 @@ def c_route(
     # TODO: make sure ports match bbox
     e1_extension = e1_extension_comp << rect_c1
     e2_extension = e2_extension_comp << rect_c2
-    e1_extension.move(destination=edge1.center)
-    e2_extension.move(destination=edge2.center)
+    # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+    e1_extension.movex(edge1.center[0] - e1_extension.center[0]).movey(edge1.center[1] - e1_extension.center[1])
+    e2_extension.movex(edge2.center[0] - e2_extension.center[0]).movey(edge2.center[1] - e2_extension.center[1])
     if round(edge1.orientation) == 0:# facing east
         e1_extension.movey(0-evaluate_bbox(e1_extension)[1]/2)
         e2_extension.movey(0-evaluate_bbox(e2_extension)[1]/2)
@@ -185,8 +188,8 @@ def c_route(
         e1_extension.movex(0-evaluate_bbox(e1_extension)[0]/2)
         e2_extension.movex(0-evaluate_bbox(e2_extension)[0]/2)
     # place viastacks
-    e1_extension_comp.add_ports(e1_extension.get_ports_list())
-    e2_extension_comp.add_ports(e2_extension.get_ports_list())
+    e1_extension_comp.add_ports(e1_extension.ports)
+    e2_extension_comp.add_ports(e2_extension.ports)
     me1 = prec_ref_center(viastack1)
     e1_extension_comp.add(me1)
     me2 = prec_ref_center(viastack2)
@@ -207,8 +210,11 @@ def c_route(
     via_flush2 = via_flush2 if viaoffset[1] else 0-via_flush2
     via_flush2 = 0 if viaoffset[1] is None else via_flush2
     if round(edge1.orientation) == 0:# facing east
-        me1.move(destination=e1_extension.ports["e_E"].center)
-        me2.move(destination=e2_extension.ports["e_E"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_E"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_E"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.ymax > me1.ymax else -1
         via_flush2 *= 1 if me2.ymax > me1.ymax else -1
         me1.movex(0-viastack1.xmax).movey(0-via_flush1)
@@ -218,8 +224,11 @@ def c_route(
         fix_connection_direction = "E"
         fix_ports = [me1.ports["top_met_E"],me2.ports["top_met_E"]]
     elif round(edge1.orientation) == 180:# facing west
-        me1.move(destination=e1_extension.ports["e_W"].center)
-        me2.move(destination=e2_extension.ports["e_W"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_W"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_W"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.ymax > me1.ymax else -1
         via_flush2 *= 1 if me2.ymax > me1.ymax else -1
         me1.movex(viastack1.xmax).movey(0-via_flush1)
@@ -229,8 +238,11 @@ def c_route(
         fix_connection_direction = "E"
         fix_ports = [me1.ports["top_met_E"],me2.ports["top_met_E"]]
     elif round(edge1.orientation) == 270:# facing south
-        me1.move(destination=e1_extension.ports["e_S"].center)
-        me2.move(destination=e2_extension.ports["e_S"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_S"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_S"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.xmax > me1.xmax else -1
         via_flush2 *= 1 if me2.xmax > me1.xmax else -1
         me1.movey(viastack1.xmax).movex(0-via_flush1)
@@ -240,8 +252,11 @@ def c_route(
         fix_connection_direction = "N"
         fix_ports = [me1.ports["top_met_N"],me2.ports["top_met_N"]]
     else:#facing north
-        me1.move(destination=e1_extension.ports["e_N"].center)
-        me2.move(destination=e2_extension.ports["e_N"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_N"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_N"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.xmax > me1.xmax else -1
         via_flush2 *= 1 if me2.xmax > me1.xmax else -1
         me1.movey(0-viastack1.xmax).movex(0-via_flush1)
@@ -268,5 +283,7 @@ def c_route(
         orta = get_orientation(port_to_add.orientation)
         route_ports[i] = set_port_orientation(port_to_add, orta)
     croute.add_ports(route_ports,prefix="con_")
-    return rename_ports_by_orientation(rename_ports_by_list(croute.flatten(), [("con_","con_")]))
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    croute.flatten()
+    return rename_ports_by_orientation(rename_ports_by_list(croute, [("con_","con_")]))
 

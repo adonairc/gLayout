@@ -5,11 +5,11 @@ from typing import Callable
 from glayout.primitives.fet import nmos, pmos
 from glayout.util.comp_utils import evaluate_bbox
 
-@validate_arguments
+@validate_arguments(config=dict(arbitrary_types_allowed=True))
 def two_transistor_place(
-	pdk: MappedPDK, 
-	pattern: str, 
-	deviceA: tuple[Callable, dict], 
+	pdk: MappedPDK,
+	pattern: str,
+	deviceA: tuple[Callable, dict],
 	deviceB: tuple[Callable, dict]
         ) -> Component:
     """Place two transitors according to the patter provided
@@ -20,7 +20,7 @@ def two_transistor_place(
     **** all rows must have same number of cols
     deviceA/deviceB = tuple(function to call, kwargs for function) kwargs must include pdk
     """
-    toplvlcomp = Component("2tranplace")
+    toplvlcomp = Component()
     # create the transistors
     tranA = deviceA[0](**deviceA[1])
     tranA_dims = evaluate_bbox(tranA)
@@ -52,5 +52,5 @@ def two_transistor_place(
             ymov = i * yspace
             xmov = j * xspace * (-1**(j%2))
             tranref.movex(xmov).movey(ymov)
-            toplvlcomp.add_ports(tranref.get_ports_list(), prefix=f"place{i}_{j}_")
+            toplvlcomp.add_ports(tranref.ports, prefix=f"place{i}_{j}_")
     return toplvlcomp

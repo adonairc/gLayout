@@ -3,7 +3,7 @@ from gdsfactory.component import Component, copy
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout.flow.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from glayout.flow.primitives.fet import nmos, pmos, multiplier
 from glayout.flow.blocks.elementary.diff_pair import diff_pair
 from glayout.flow.primitives.guardring import tapring
@@ -121,13 +121,13 @@ def __add_output_stage(
     # add ports, add bias/output pin, and return
     psuedo_out_port = movex(amp_fet_ref.ports["multiplier_0_source_E"].copy(),6*metal_sep)
     output_pin = opamp_top << straight_route(pdk, amp_fet_ref.ports["multiplier_0_source_E"], psuedo_out_port)
-    opamp_top.add_ports(amp_fet_ref.get_ports_list(),prefix="outputstage_amp_")
-    opamp_top.add_ports(cmirror_ibias.get_ports_list(),prefix="outputstage_bias_")
-    opamp_top.add_ports(output_pin.get_ports_list(),prefix="pin_output_")
+    opamp_top.add_ports(amp_fet_ref.ports,prefix="outputstage_amp_")
+    opamp_top.add_ports(cmirror_ibias.ports,prefix="outputstage_bias_")
+    opamp_top.add_ports(output_pin.ports,prefix="pin_output_")
     bias_pin = opamp_top << rectangle(size=(5,3),layer=pdk.get_glayer("met3"),centered=True)
     bias_pin.movex(cmirror_ibias.center[0]).movey(cmirror_ibias.ports["B_gate_S"].center[1]-bias_pin.ymax-5*metal_sep)
     opamp_top << straight_route(pdk, bias_pin.ports["e2"], cmirror_ibias.ports["B_gate_S"],width=1)
-    opamp_top.add_ports(bias_pin.get_ports_list(),prefix="pin_outputibias_")
+    opamp_top.add_ports(bias_pin.ports,prefix="pin_outputibias_")
 
     output_stage_netlist = opamp_output_stage_netlist(pdk, amp_fet_ref, biasParams)
     return opamp_top, output_stage_netlist
@@ -164,7 +164,7 @@ def opamp(
     mim_cap_rows=2,
     rmult: int = 2,
     with_antenna_diode_on_diffinputs: int=7, 
-    add_output_stage: Optional[bool] = False
+    add_output_stage: bool | None = False
 ) -> Component:
     """
     create a two stage opamp with an output buffer, args->

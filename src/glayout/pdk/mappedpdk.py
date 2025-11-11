@@ -3,9 +3,10 @@ usage: from mappedpdk import MappedPDK
 """
 import re
 from gdsfactory.pdk import Pdk
-from gdsfactory.typings import Component, PathType, Layer
+from gdsfactory.component import Component
+from gdsfactory.typings import  PathType, Layer
 from pydantic import validator, StrictStr, ValidationError
-from typing import ClassVar, Optional, Any, Union, Literal, Iterable, TypedDict
+from typing import ClassVar, Any, Union, Literal, Iterable, TypedDict
 from pathlib import Path
 from decimal import Decimal, ROUND_UP
 import tempfile
@@ -20,14 +21,14 @@ class SetupPDKFiles:
     """
 
     def __init__(
-        self, 
-        pdk_root: Optional[PathType] = None, 
-        klayout_drc_file: Optional[PathType] = None, 
-        lvs_schematic_ref_file: Optional[PathType] = None,
-        lvs_setup_tcl_file: Optional[PathType] = None, 
-        magic_drc_file: Optional[PathType] = None,
-        temp_dir: Optional[PathType] = None,
-        pdk: Optional[str] = 'sky130'
+        self,
+        pdk_root: PathType | None = None,
+        klayout_drc_file: PathType | None = None,
+        lvs_schematic_ref_file: PathType | None = None,
+        lvs_setup_tcl_file: PathType | None = None,
+        magic_drc_file: PathType | None = None,
+        temp_dir: PathType | None = None,
+        pdk: str | None = 'sky130'
     ):
         """Initializes the class with the required PDK files for DRC and LVS checks."""
         self.pdk = pdk
@@ -289,13 +290,14 @@ class MappedPDK(Pdk):
         "mimcap": ""
     }
 
+    grid_size: float = 0.005  # Default grid size in microns (5nm)
+
     glayers: dict[StrictStr, Union[StrictStr, tuple[int,int]]]
     # friendly way to implement a graph
-    grules: dict[StrictStr, dict[StrictStr, Optional[dict[StrictStr, Any]]]]
+    grules: dict[StrictStr, dict[StrictStr, dict[StrictStr, Any] | None]]
     pdk_files: dict[StrictStr, Union[PathType, None]]
 
     valid_bjt_sizes: dict[StrictStr,  list[tuple[float,float]]]
-
     @validator("models")
     def models_check(cls, models_obj: dict[StrictStr, StrictStr]):
         for model in models_obj.keys():
@@ -317,11 +319,11 @@ class MappedPDK(Pdk):
                 )
         return glayers_obj
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def drc(
         self,
         layout: Component | PathType,
-        output_dir_or_file: Optional[PathType] = None,
+        output_dir_or_file: PathType = None,
     ):
         """Returns true if the layout is DRC clean and false if not
         Also saves detailed results to output_dir_or_file location as lyrdb
@@ -413,14 +415,14 @@ class MappedPDK(Pdk):
         drc_error_count = len(drc_root[7])
         return (drc_error_count == 0)
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def drc_magic(
         self, 
         layout: Component | PathType, 
         design_name: str, 
-        pdk_root: Optional[PathType] = None, 
-        magic_drc_file: Optional[PathType] = None, 
-        output_file: Optional[PathType] = None 
+        pdk_root: PathType | None  = None, 
+        magic_drc_file: PathType | None  = None, 
+        output_file: PathType | None  = None 
     ) -> dict:
         """Runs DRC using magic on the either the component or the gds file path provided. Requires the design name and the pdk_root to be specified, handles importing the required magicrc and other setup files, if not specified. Accepts overriden magic_commands_file and magic_drc_file.
 
@@ -599,19 +601,19 @@ custom_drc_save_report $::env(DESIGN_NAME) $::env(REPORTS_DIR)/$::env(DESIGN_NAM
 
         return ret_dict
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def lvs_netgen(
         self,
         layout: Component | PathType, 
         design_name: str, 
-        pdk_root: Optional[PathType] = None,
-        lvs_setup_tcl_file: Optional[PathType] = None,
-        lvs_schematic_ref_file: Optional[PathType] = None,
-        magic_drc_file: Optional[PathType] = None, 
-        netlist: Optional[PathType] = None,
-        output_file_path: Optional[PathType] = None, 
-        copy_intermediate_files: Optional[bool] = False,
-        show_scripts: Optional[bool] = False,
+        pdk_root: PathType  | None  = None,
+        lvs_setup_tcl_file: PathType  | None = None,
+        lvs_schematic_ref_file: PathType | None  = None,
+        magic_drc_file: PathType | None  = None, 
+        netlist: PathType | None  = None,
+        output_file_path: PathType | None  = None, 
+        copy_intermediate_files: bool | None  = False,
+        show_scripts: bool | None  = False,
     ) -> dict:
         """ Runs LVS using netgen on the either the component or the gds file path provided. Requires the design name and the pdk_root to be specified, handles importing the required magicrc and other setup files, if not specified. Accepts overriden lvs_setup_tcl_file, lvs_schematic_ref_file, and magic_drc_file.
 
@@ -943,7 +945,7 @@ exit
         return {'magic_subproc_code': magic_subproc_code, 'netgen_subproc_code': netgen_subproc_code, 'result_str': result_str}
                     
     
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def has_required_glayers(self, layers_required: list[str]):
         """Raises ValueError if any of the generic layers in layers_required: list[str]
         are not mapped to anything in the pdk.glayers dictionary
@@ -954,37 +956,75 @@ exit
                     f"{layer!r} not in self.glayers {list(self.glayers.keys())}"
                 )
             if isinstance(self.glayers[layer], str):
-                self.validate_layers([self.glayers[layer]])
+                for layer in [self.glayers[layer]]:
+                    if layer not in [str(l) for l in self.layers]:
+                        raise ValueError(
+                             f"{layer} not in Pdk.layers {list(self.layers)}")
             elif not isinstance(self.glayers[layer], tuple):
                 raise TypeError("glayer mapped value should be str or tuple[int,int]")
 
 
-    @validate_arguments
-    def layer_to_glayer(self, layer: tuple[int, int]) -> str:
+
+
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
+    def layer_to_glayer(self, layer: tuple[int, int] | int) -> str:
         """if layer provided corresponds to a glayer, will return a glayer
         else will raise an exception
-        takes layer as a tuple(int,int)"""
+        takes layer as a tuple(int,int) or int (in which case we search for any matching layer number)"""
+        # In GDSFactory v9, port.layer may return just an integer
+        # If integer, search for any layer tuple with that layer number
+        layer_as_int = None
+        if isinstance(layer, int):
+            layer_as_int = layer
+            layer = (layer, 0)  # Try default datatype first
         # lambda for finding last matching key in dict from val
         find_last = lambda val, d: [x for x, y in d.items() if y == val].pop()
         if layer in self.glayers.values():
             return find_last(layer, self.glayers)
+
         elif self.layers is not None:
             # find glayer verfying presence along the way
-            pdk_real_layers = self.layers.values()
-            if layer in pdk_real_layers:
-                layer_name = find_last(layer, self.layers)
-                if layer_name in self.glayers.values():
-                    glayer_name = find_last(layer_name, self.glayers)
-                else:
-                    raise ValueError("layer does not correspond to a glayer")
-            else:
+            # In v9, self.layers is a LayerEnum, get the tuple values
+            pdk_real_layers = list(self.layers.__members__.values()) if hasattr(self.layers, '__members__') else self.layers.values()
+            # First try exact match with the layer tuple
+            layer_found = False
+            for enum_member in pdk_real_layers:
+                # In v9 LayerMap, use tuple() to convert enum to (layer, datatype)
+                enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
+                if enum_value == layer:
+                    layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(layer, self.layers)
+                    if layer_name in self.glayers.values():
+                        glayer_name = find_last(layer_name, self.glayers)
+                    else:
+                        raise ValueError("layer does not correspond to a glayer")
+                    layer_found = True
+                    break
+            # If not found and we have an integer layer, search by layer number
+            if not layer_found and layer_as_int is not None:
+                for enum_member in pdk_real_layers:
+                    # In v9 LayerMap, use tuple() to convert enum to (layer, datatype)
+                    enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
+                    # Match by layer number (first element of tuple)
+                    match = False
+                    if isinstance(enum_value, tuple) and len(enum_value) >= 1 and enum_value[0] == layer_as_int:
+                        match = True
+
+                    if match:
+                        layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(enum_value, self.layers)
+                        if layer_name in self.glayers.values():
+                            glayer_name = find_last(layer_name, self.glayers)
+                        else:
+                            raise ValueError("layer does not correspond to a glayer")
+                        layer_found = True
+                        break
+            if not layer_found:
                 raise ValueError("layer is not a layer present in the pdk")
             return glayer_name
         else:
             raise ValueError("layer might not be a layer present in the pdk")
 
     # TODO: implement LayerSpec type
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def get_glayer(self, layer: str) -> Layer:
         """Returns the pdk layer from the generic layer name"""
         direct_mapping = self.glayers[layer]
@@ -993,9 +1033,9 @@ exit
         else:
             return self.get_layer(direct_mapping)
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def get_grule(
-        self, glayer1: str, glayer2: Optional[str] = None, return_decimal = False
+        self, glayer1: str, glayer2: str | None = None, return_decimal = False
     ) -> dict[StrictStr, Union[float,Decimal]]:
         """Returns a dictionary describing the relationship between two layers
         If one layer is specified, returns a dictionary with all intra layer rules"""
@@ -1072,7 +1112,7 @@ exit
         return mappedpdk
 
     # util methods
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def util_max_metal_seperation(self, metal_levels: Union[list[int],list[str], str, int] = range(1,6)) -> float:
         """returns the maximum of the min_seperation rule for all layers specfied
         although the name of this function is util_max_metal_seperation, layers do not have to be metals
@@ -1093,7 +1133,7 @@ exit
             sep_rules.append(self.get_grule(met)["min_separation"])
         return self.snap_to_2xgrid(max(sep_rules))
 
-    @validate_arguments
+    @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def snap_to_2xgrid(self, dims: Union[list[Union[float,Decimal]], Union[float,Decimal]], return_type: Literal["decimal","float","same"]="float", snap4: bool=False) -> Union[list[Union[float,Decimal]], Union[float,Decimal]]:
         """snap all numbers in dims to double the grid size.
         This is useful when a generator accepts a size or dimension argument
