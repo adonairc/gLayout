@@ -1,8 +1,8 @@
 from glayout.pdk.mappedpdk import MappedPDK
-from gdsfactory import cell
+from gdsfactory import cell,  boolean
 from gdsfactory.component import Component
 # from gdsfactory.components import rectangular_ring
-from gdsfactory.components import rectangle, boolean
+from gdsfactory.components import rectangle
 from glayout.primitives.via_gen import via_array, via_stack
 from glayout.util.comp_utils import evaluate_bbox
 from glayout.util.snap_to_grid import component_snap_to_grid
