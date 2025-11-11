@@ -168,8 +168,9 @@ def c_route(
     # TODO: make sure ports match bbox
     e1_extension = e1_extension_comp << rect_c1
     e2_extension = e2_extension_comp << rect_c2
-    e1_extension.move(destination=edge1.center)
-    e2_extension.move(destination=edge2.center)
+    # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+    e1_extension.movex(edge1.center[0] - e1_extension.center[0]).movey(edge1.center[1] - e1_extension.center[1])
+    e2_extension.movex(edge2.center[0] - e2_extension.center[0]).movey(edge2.center[1] - e2_extension.center[1])
     if round(edge1.orientation) == 0:# facing east
         e1_extension.movey(0-evaluate_bbox(e1_extension)[1]/2)
         e2_extension.movey(0-evaluate_bbox(e2_extension)[1]/2)
@@ -209,8 +210,11 @@ def c_route(
     via_flush2 = via_flush2 if viaoffset[1] else 0-via_flush2
     via_flush2 = 0 if viaoffset[1] is None else via_flush2
     if round(edge1.orientation) == 0:# facing east
-        me1.move(destination=e1_extension.ports["e_E"].center)
-        me2.move(destination=e2_extension.ports["e_E"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_E"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_E"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.ymax > me1.ymax else -1
         via_flush2 *= 1 if me2.ymax > me1.ymax else -1
         me1.movex(0-viastack1.xmax).movey(0-via_flush1)
@@ -220,8 +224,11 @@ def c_route(
         fix_connection_direction = "E"
         fix_ports = [me1.ports["top_met_E"],me2.ports["top_met_E"]]
     elif round(edge1.orientation) == 180:# facing west
-        me1.move(destination=e1_extension.ports["e_W"].center)
-        me2.move(destination=e2_extension.ports["e_W"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_W"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_W"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.ymax > me1.ymax else -1
         via_flush2 *= 1 if me2.ymax > me1.ymax else -1
         me1.movex(viastack1.xmax).movey(0-via_flush1)
@@ -231,8 +238,11 @@ def c_route(
         fix_connection_direction = "E"
         fix_ports = [me1.ports["top_met_E"],me2.ports["top_met_E"]]
     elif round(edge1.orientation) == 270:# facing south
-        me1.move(destination=e1_extension.ports["e_S"].center)
-        me2.move(destination=e2_extension.ports["e_S"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_S"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_S"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.xmax > me1.xmax else -1
         via_flush2 *= 1 if me2.xmax > me1.xmax else -1
         me1.movey(viastack1.xmax).movex(0-via_flush1)
@@ -242,8 +252,11 @@ def c_route(
         fix_connection_direction = "N"
         fix_ports = [me1.ports["top_met_N"],me2.ports["top_met_N"]]
     else:#facing north
-        me1.move(destination=e1_extension.ports["e_N"].center)
-        me2.move(destination=e2_extension.ports["e_N"].center)
+        # In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+        target1 = e1_extension.ports["e_N"].center
+        me1.movex(target1[0] - me1.center[0]).movey(target1[1] - me1.center[1])
+        target2 = e2_extension.ports["e_N"].center
+        me2.movex(target2[0] - me2.center[0]).movey(target2[1] - me2.center[1])
         via_flush1 *= 1 if me2.xmax > me1.xmax else -1
         via_flush2 *= 1 if me2.xmax > me1.xmax else -1
         me1.movey(0-viastack1.xmax).movex(0-via_flush1)

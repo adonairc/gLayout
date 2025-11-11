@@ -90,7 +90,9 @@ def L_route(
 		hv_via = via_array(pdk, hglayer, vglayer, size=to_float((hwidth,vwidth)), lay_bottom=True)
 	h_to_v_via_ref = prec_ref_center(hv_via)
 	Lroute.add(h_to_v_via_ref)
-	h_to_v_via_ref.move(destination=(hport.center[0], vport.center[1]))
+	# In GDSFactory v9, move() signature changed - use movex/movey for absolute positioning
+	target = (hport.center[0], vport.center[1])
+	h_to_v_via_ref.movex(target[0] - h_to_v_via_ref.center[0]).movey(target[1] - h_to_v_via_ref.center[1])
 	if viaoffset[0] or viaoffset[1]:
 		viadim_osx = evaluate_bbox(h_to_v_via_ref,True)[0]/2
 		viaxofs = abs(hwidth/2-viadim_osx)
