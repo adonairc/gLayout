@@ -336,7 +336,11 @@ def __mult_array_macro(
     for pin in ["source","drain","gate"]:
         for side in ["N","E","S","W"]:
             aliasport = pin + "_" + side
-            actualport = "multiplier_0_" + aliasport
+            # In GDSFactory v9, gate ports have different naming (multiplier_0_gate_gate_N vs multiplier_0_gate_N)
+            if pin == "gate":
+                actualport = "multiplier_0_gate_gate_" + side
+            else:
+                actualport = "multiplier_0_" + aliasport
             multiplier_arr.add_port(port=multiplier_arr.ports[actualport],name=aliasport)
     # recenter
     final_arr = Component()
