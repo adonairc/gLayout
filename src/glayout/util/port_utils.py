@@ -226,6 +226,17 @@ def add_ports_perimeter(custom_comp: Component, layer: tuple[int, int], prefix: 
 	# height = compbbox.p2.y - compbbox.p1.y
 	width = compbbox.p2.x - compbbox.p1.x
 	height = compbbox.p2.y - compbbox.p1.y
+
+	# In GDSFactory v9, port widths must be even multiples of DBU (0.002 um)
+	# Round to nearest even multiple
+	def round_to_even_dbu(value):
+		"""Round value to nearest even multiple of 0.001 um (nearest 0.002 um)"""
+		# Assuming value is in um, round to nearest 0.002 um
+		return round(value / 0.002) * 0.002
+
+	width = round_to_even_dbu(width)
+	height = round_to_even_dbu(height)
+
 	custom_comp.add_port(name=prefix+"W",width=height,orientation=180,center=(compbbox.p1.x,compbbox.p1.y+height/2),layer=layer,port_type="electrical")
 	custom_comp.add_port(name=prefix+"N",width=width,orientation=90,center=(compbbox.p1.x+width/2,compbbox.p2.y),layer=layer,port_type="electrical")
 	custom_comp.add_port(name=prefix+"E",width=height,orientation=0,center=(compbbox.p2.x,compbbox.p1.y+height/2),layer=layer,port_type="electrical")
