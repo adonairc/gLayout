@@ -990,13 +990,15 @@ exit
             print(f"DEBUG: Searching for layer={layer}, layer_as_int={layer_as_int}")
             print(f"DEBUG: First 5 enum members:")
             for i, enum_member in enumerate(pdk_real_layers[:5]):
-                enum_value = enum_member.value if hasattr(enum_member, 'value') else enum_member
+                # In v9 LayerMap, use tuple() to get (layer, datatype), not .value
+                enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
                 enum_name = enum_member.name if hasattr(enum_member, 'name') else str(enum_member)
                 print(f"  {enum_name}: {enum_value}")
             # First try exact match with the layer tuple
             layer_found = False
             for enum_member in pdk_real_layers:
-                enum_value = enum_member.value if hasattr(enum_member, 'value') else enum_member
+                # In v9 LayerMap, use tuple() to convert enum to (layer, datatype)
+                enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
                 if enum_value == layer:
                     layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(layer, self.layers)
                     print(f"DEBUG: Found exact match! layer_name={layer_name}")
@@ -1011,12 +1013,11 @@ exit
             if not layer_found and layer_as_int is not None:
                 print(f"DEBUG: Searching by layer number {layer_as_int}")
                 for enum_member in pdk_real_layers:
-                    enum_value = enum_member.value if hasattr(enum_member, 'value') else enum_member
-                    # In v9, enum values can be integers (not tuples)
+                    # In v9 LayerMap, use tuple() to convert enum to (layer, datatype)
+                    enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
+                    # Match by layer number (first element of tuple)
                     match = False
-                    if isinstance(enum_value, int) and enum_value == layer_as_int:
-                        match = True
-                    elif isinstance(enum_value, tuple) and len(enum_value) >= 1 and enum_value[0] == layer_as_int:
+                    if isinstance(enum_value, tuple) and len(enum_value) >= 1 and enum_value[0] == layer_as_int:
                         match = True
 
                     if match:
