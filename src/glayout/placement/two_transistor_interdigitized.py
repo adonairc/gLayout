@@ -10,7 +10,7 @@ from glayout.routing.straight_route import straight_route
 from gdsfactory.functions import transformed
 from glayout.primitives.guardring import tapring
 from glayout.util.port_utils import add_ports_perimeter
-from gdsfactory.cell import clear_cache
+from gdsfactory import clear_cache
 from typing import Literal
 
 #from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized; from glayout.pdk.sky130_mapped import sky130_mapped_pdk as pdk; biasParams=[6,2,4]; rmult=2

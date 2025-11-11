@@ -1,5 +1,5 @@
 from gdsfactory.grid import grid
-from gdsfactory.cell import cell
+from gdsfactory import cell
 from gdsfactory.component import Component, copy
 from gdsfactory.components.rectangle import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
