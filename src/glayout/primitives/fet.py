@@ -421,9 +421,7 @@ def nmos(
         interfinger_rmult=interfinger_rmult,
         dummy_routes=dummy_routes
     )
-    multiplier_arr_ref = Component()
-    _tmp_mult = multiplier_arr.copy()
-    multiplier_arr_ref << _tmp_mult
+    multiplier_arr_ref = multiplier_arr.ref()
     nfet.add(multiplier_arr_ref)
     nfet.add_ports(multiplier_arr_ref.ports)
     # add tie if tie
