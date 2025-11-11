@@ -1,8 +1,8 @@
 from glayout.pdk.mappedpdk import MappedPDK
-from gdsfactory import cell,  boolean
+from gdsfactory import cell
 from gdsfactory.component import Component
 # from gdsfactory.components import rectangular_ring
-from gdsfactory.components import rectangle
+from gdsfactory.components import rectangle, boolean
 from glayout.primitives.via_gen import via_array, via_stack
 from glayout.util.comp_utils import evaluate_bbox
 from glayout.util.snap_to_grid import component_snap_to_grid
@@ -10,13 +10,13 @@ from glayout.routing.L_route import L_route
 from gdsfactory.typings import LayerSpec
 @cell
 def rectangular_ring(
-	enclosed_size = (4.0,2.0), 
+	enclosed_size = (4.0,2.0),
 	width: float = 0.5,
 	layer: LayerSpec = "WG",
 	centered: bool = False,
 ) -> Component:
 	"""Returns a Rectangular Ring
-	
+
 	Args:
 		enclosed_size = (width,hieght) of the enclosed area.
 		width = width of the ring.
@@ -24,12 +24,20 @@ def rectangular_ring(
 		centered: True sets center to (0,0), False sets south-west to (0,0).
 	"""
 	c = Component()
-	c_temp = Component()
-	rect_in = c_temp << rectangle(size = enclosed_size, centered=centered, layer=layer)
-	rect_out = c_temp << rectangle(size = [dim+2*width for dim in enclosed_size], centered=centered, layer=layer)
+	# Create inner and outer rectangles
+	rect_in_comp = rectangle(size=enclosed_size, centered=centered, layer=layer)
+	rect_out_comp = rectangle(size=[dim+2*width for dim in enclosed_size], centered=centered, layer=layer)
+
+	# Position inner rectangle if not centered
 	if not centered:
-		rect_in.move((width,width))
-	c << boolean(A=rect_out, B=rect_in, operation="A-B", layer=layer)
+		rect_in_ref = c << rect_in_comp
+		rect_in_ref.move((width, width))
+		# Get the positioned reference for boolean operation
+		ring = boolean(A=rect_out_comp, B=rect_in_ref, operation="A-B", layer=layer)
+	else:
+		ring = boolean(A=rect_out_comp, B=rect_in_comp, operation="A-B", layer=layer)
+
+	c << ring
 	return c
 
 
