@@ -302,8 +302,13 @@ def prec_ref_center(custom_comp: Union[Component,ComponentReference], destinatio
 	you can optionally specify a destination = tuple(x,y), by default, the destination is 0,0
 	returns component reference
 	"""
-	# In GDSFactory v9, always create a reference from Component
-	compref = custom_comp if isinstance(custom_comp, ComponentReference) else custom_comp.ref()
+	# In GDSFactory v9, create a reference using the << operator
+	if isinstance(custom_comp, ComponentReference):
+		compref = custom_comp
+	else:
+		# Use << operator to create a ComponentReference
+		_temp = Component()
+		compref = _temp << custom_comp
 	xcor, ycor = prec_center(compref, False)
 	if destination is not None:
 		xcor += destination[0]
