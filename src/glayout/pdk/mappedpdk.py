@@ -1012,7 +1012,14 @@ exit
                 print(f"DEBUG: Searching by layer number {layer_as_int}")
                 for enum_member in pdk_real_layers:
                     enum_value = enum_member.value if hasattr(enum_member, 'value') else enum_member
-                    if isinstance(enum_value, tuple) and len(enum_value) >= 1 and enum_value[0] == layer_as_int:
+                    # In v9, enum values can be integers (not tuples)
+                    match = False
+                    if isinstance(enum_value, int) and enum_value == layer_as_int:
+                        match = True
+                    elif isinstance(enum_value, tuple) and len(enum_value) >= 1 and enum_value[0] == layer_as_int:
+                        match = True
+
+                    if match:
                         layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(enum_value, self.layers)
                         print(f"DEBUG: Found by layer number! layer_name={layer_name}, enum_value={enum_value}")
                         print(f"DEBUG: glayers.values()={list(self.glayers.values())[:10]}")
