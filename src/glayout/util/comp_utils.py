@@ -213,7 +213,9 @@ def align_comp_to_port(
 		raise ValueError("please specify valid y alignment of t/b/c/None")
 	# make reference type, execute move
 	if isinstance(custom_comp, Component):
-		comp_ref = custom_comp.copy()
+		# In GDSFactory v9, use << operator to create ComponentReference
+		_temp = Component()
+		comp_ref = _temp << custom_comp
 	else:
 		comp_ref = custom_comp
 	comp_ref.movex(xmov).movey(ymov)
