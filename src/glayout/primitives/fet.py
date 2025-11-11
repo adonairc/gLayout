@@ -15,6 +15,45 @@ from glayout.routing.straight_route import straight_route
 from glayout.spice import Netlist
 
 
+def add_padding(component: Component, layer, enclosure: float) -> None:
+    """Add padding layer around a component.
+
+    Args:
+        component: Component to add padding to
+        layer: Layer to add padding on
+        enclosure: Amount of padding/enclosure around component bbox
+    """
+    bbox = component.bbox()
+    # DBox has left, right, top, bottom properties
+    bbox_width = bbox.right - bbox.left
+    bbox_height = bbox.top - bbox.bottom
+    padded_width = bbox_width + 2 * enclosure
+    padded_height = bbox_height + 2 * enclosure
+
+    padding_rect = rectangle(size=(padded_width, padded_height), layer=layer)
+    padding_ref = component << padding_rect
+    padding_ref.move((bbox.left - enclosure, bbox.bottom - enclosure))
+
+
+def netlist_to_dict(netlist: Netlist) -> dict:
+    """Convert Netlist object to dict for GDSFactory v9 component.info compatibility.
+
+    Args:
+        netlist: Netlist object to convert
+
+    Returns:
+        Dict representation of the netlist
+    """
+    return {
+        'circuit_name': netlist.circuit_name,
+        'nodes': netlist.nodes,
+        'global_nodes': netlist.global_nodes,
+        'source_netlist': netlist.source_netlist,
+        'instance_format': netlist.instance_format,
+        'parameters': netlist.parameters,
+    }
+
+
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float, width: float, poly_height: float, sdlayer: str, inter_finger_topmet: str) -> Component:
     """internal use: returns an array of fingers"""
@@ -351,7 +390,6 @@ def __mult_array_macro(
     return component_snap_to_grid(rename_ports_by_orientation(final_arr))
 
 
-#@cell
 def nmos(
     pdk,
     width: float = 3,
@@ -421,10 +459,7 @@ def nmos(
         interfinger_rmult=interfinger_rmult,
         dummy_routes=dummy_routes
     )
-    multiplier_arr_ref = Component()
-    _tmp_mult = multiplier_arr.copy()
-    multiplier_arr_ref << _tmp_mult
-    nfet.add(multiplier_arr_ref)
+    multiplier_arr_ref = nfet << multiplier_arr
     nfet.add_ports(multiplier_arr_ref.ports)
     # add tie if tie
     if with_tie:
@@ -452,17 +487,13 @@ def nmos(
                 except KeyError:
                     pass
     # add pwell
-    nfet.add_padding(
-        layers=(pdk.get_glayer("pwell"),),
-        default=pdk.get_grule("pwell", "active_tap")["min_enclosure"],
-    )
+    pwell_enc = pdk.get_grule("pwell", "active_tap")["min_enclosure"]
+    add_padding(nfet, pdk.get_glayer("pwell"), pwell_enc)
     nfet = add_ports_perimeter(nfet,layer=pdk.get_glayer("pwell"),prefix="well_")
     # add dnwell if dnwell
     if with_dnwell:
-        nfet.add_padding(
-            layers=(pdk.get_glayer("dnwell"),),
-            default=pdk.get_grule("pwell", "dnwell")["min_enclosure"],
-        )
+        dnwell_enc = pdk.get_grule("pwell", "dnwell")["min_enclosure"]
+        add_padding(nfet, pdk.get_glayer("dnwell"), dnwell_enc)
     # add substrate tap if with_substrate_tap
     if with_substrate_tap:
         substrate_tap_separation = pdk.get_grule("dnwell", "active_tap")[
@@ -486,7 +517,7 @@ def nmos(
     component = rename_ports_by_orientation(nfet)
     component.flatten()
 
-    component.info['netlist'] = fet_netlist(
+    component.info['netlist'] = netlist_to_dict(fet_netlist(
         pdk,
         circuit_name="NMOS",
         model=pdk.models['nfet'],
@@ -495,12 +526,11 @@ def nmos(
         fingers=fingers,
         multipliers=multipliers,
         with_dummy=with_dummy
-    )
+    ))
 
     return component
 
 
-#@cell
 def pmos(
     pdk,
     width: float = 3,
@@ -570,8 +600,7 @@ def pmos(
         sd_rmult=sd_rmult,
         dummy_routes=dummy_routes
     )
-    multiplier_arr_ref = multiplier_arr.ref()
-    pfet.add(multiplier_arr_ref)
+    multiplier_arr_ref = pfet << multiplier_arr
     pfet.add_ports(multiplier_arr_ref.ports)
     # add tie if tie
     if with_tie:
@@ -601,10 +630,8 @@ def pmos(
                     pass
     # add nwell
     nwell_glayer = "dnwell" if dnwell else "nwell"
-    pfet.add_padding(
-        layers=(pdk.get_glayer(nwell_glayer),),
-        default=pdk.get_grule("active_tap", nwell_glayer)["min_enclosure"],
-    )
+    nwell_enc = pdk.get_grule("active_tap", nwell_glayer)["min_enclosure"]
+    add_padding(pfet, pdk.get_glayer(nwell_glayer), nwell_enc)
     pfet = add_ports_perimeter(pfet,layer=pdk.get_glayer(nwell_glayer),prefix="well_")
     # add substrate tap if with_substrate_tap
     if with_substrate_tap:
@@ -626,7 +653,7 @@ def pmos(
     component = rename_ports_by_orientation(pfet)
     component.flatten()
 
-    component.info['netlist'] = fet_netlist(
+    component.info['netlist'] = netlist_to_dict(fet_netlist(
         pdk,
         circuit_name="PMOS",
         model=pdk.models['pfet'],
@@ -635,7 +662,7 @@ def pmos(
         fingers=fingers,
         multipliers=multipliers,
         with_dummy=with_dummy
-    )
+    ))
 
     return component
 
