@@ -35,6 +35,25 @@ def add_padding(component: Component, layer, enclosure: float) -> None:
     padding_ref.move((bbox.left - enclosure, bbox.bottom - enclosure))
 
 
+def netlist_to_dict(netlist: Netlist) -> dict:
+    """Convert Netlist object to dict for GDSFactory v9 component.info compatibility.
+
+    Args:
+        netlist: Netlist object to convert
+
+    Returns:
+        Dict representation of the netlist
+    """
+    return {
+        'circuit_name': netlist.circuit_name,
+        'nodes': netlist.nodes,
+        'global_nodes': netlist.global_nodes,
+        'source_netlist': netlist.source_netlist,
+        'instance_format': netlist.instance_format,
+        'parameters': netlist.parameters,
+    }
+
+
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float, width: float, poly_height: float, sdlayer: str, inter_finger_topmet: str) -> Component:
     """internal use: returns an array of fingers"""
@@ -499,7 +518,7 @@ def nmos(
     component = rename_ports_by_orientation(nfet)
     component.flatten()
 
-    component.info['netlist'] = fet_netlist(
+    component.info['netlist'] = netlist_to_dict(fet_netlist(
         pdk,
         circuit_name="NMOS",
         model=pdk.models['nfet'],
@@ -508,7 +527,7 @@ def nmos(
         fingers=fingers,
         multipliers=multipliers,
         with_dummy=with_dummy
-    )
+    ))
 
     return component
 
@@ -636,7 +655,7 @@ def pmos(
     component = rename_ports_by_orientation(pfet)
     component.flatten()
 
-    component.info['netlist'] = fet_netlist(
+    component.info['netlist'] = netlist_to_dict(fet_netlist(
         pdk,
         circuit_name="PMOS",
         model=pdk.models['pfet'],
@@ -645,7 +664,7 @@ def pmos(
         fingers=fingers,
         multipliers=multipliers,
         with_dummy=with_dummy
-    )
+    ))
 
     return component
 
