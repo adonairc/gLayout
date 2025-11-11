@@ -957,7 +957,11 @@ exit
                     f"{layer!r} not in self.glayers {list(self.glayers.keys())}"
                 )
             if isinstance(self.glayers[layer], str):
-                self.validate_layers([self.glayers[layer]])
+                # In GDSFactory v9, validate_layers() was removed
+                # Manually check if layer exists in self.layers
+                layer_name = self.glayers[layer]
+                if self.layers is not None and layer_name not in self.layers:
+                    raise ValueError(f"Layer {layer_name!r} not found in PDK layers")
             elif not isinstance(self.glayers[layer], tuple):
                 raise TypeError("glayer mapped value should be str or tuple[int,int]")
 
