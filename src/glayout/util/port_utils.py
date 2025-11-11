@@ -1,6 +1,6 @@
 from pydantic import validate_arguments
 from gdsfactory.component import Component, ComponentReference
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components import rectangle
 from gdsfactory.port import Port
 from typing import Callable, Union, Optional
 from decimal import Decimal

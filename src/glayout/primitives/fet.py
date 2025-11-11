@@ -1,7 +1,7 @@
 from gdsfactory.grid import grid
 from gdsfactory import cell
 from gdsfactory.component import Component, copy
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
 from typing import Union
 from glayout.primitives.via_gen import via_array, via_stack

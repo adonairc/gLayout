@@ -1,6 +1,6 @@
 from gdsfactory import cell
 from gdsfactory.component import Component
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
 from glayout.primitives.via_gen import via_array
 from glayout.util.comp_utils import prec_array, to_decimal, to_float

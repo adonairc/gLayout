@@ -1,6 +1,6 @@
 from gdsfactory import cell
 from gdsfactory.component import Component
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components import rectangle
 from pydantic import validate_arguments
 from glayout.pdk.mappedpdk import MappedPDK
 from math import floor
