@@ -50,7 +50,8 @@ def straight_route(
 	"""
 	#TODO: error checking
 	width = width if width else edge1.width
-	print(edge1.layer)
+	print(f"DEBUG straight_route: edge1.name={edge1.name}, edge1.layer={edge1.layer}, type={type(edge1.layer)}")
+	print(f"DEBUG straight_route: edge1 attributes: {dir(edge1)}")
 	glayer1 = glayer1 if glayer1 else pdk.layer_to_glayer(edge1.layer)
 	front_via = None
 	if glayer1 != pdk.layer_to_glayer(edge1.layer):
