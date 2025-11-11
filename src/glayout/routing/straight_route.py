@@ -109,7 +109,8 @@ def straight_route(
 		size = (width,abs(extension))
 	# create route and via
 	route = Component()
-	route.add_polygon(primitive_rectangle((0,0),size,*pdk.get_glayer(glayer1)))
+	# In GDSFactory v9, add_polygon expects layer as a keyword argument
+	route.add_polygon(primitive_rectangle((0,0),size), layer=pdk.get_glayer(glayer1))
 	add_ports_perimeter(route,layer=pdk.get_glayer(glayer1),prefix="route_")
 	out_via = via_stack(pdk,glayer1,glayer2,fullbottom=fullbottom) if glayer1 != glayer2 else None
 	# place route and via
