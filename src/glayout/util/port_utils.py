@@ -4,7 +4,7 @@ from gdsfactory.component import Component
 from gdsfactory.typings import Port
 # import kfactory as kf
 # from gdsfactory.typings import Port
-from typing import Callable, Union, Optional
+from typing import Callable, Union
 from pathlib import Path
 import pickle
 from PrettyPrint import PrettyPrintTree
@@ -212,7 +212,7 @@ def remove_ports_with_prefix(custom_comp: Component, prefix: str) -> Component:
 	return custom_comp
 
 #@validate_arguments
-def add_ports_perimeter(custom_comp: Component, layer: tuple[int, int], prefix: Optional[str] = "_") -> Component:
+def add_ports_perimeter(custom_comp: Component, layer: tuple[int, int], prefix: str | None = "_") -> Component:
 	"""adds ports to the outside perimeter of a cell
 	custom_comp = component to add ports to (returns the modified component)
 	layer = will extract this layer and take it as the bbox, ports will also be on this layer
@@ -287,7 +287,7 @@ def assert_ports_perpindicular(edge1: Port, edge2: Port) -> bool:
 	return True
 
 #@validate_arguments
-def set_port_orientation(custom_comp: Port, orientation: Union[float, int, str], flip180: Optional[bool]=False) -> Port:
+def set_port_orientation(custom_comp: Port, orientation: Union[float, int, str], flip180: bool | None = False) -> Port:
 	"""creates a new port with the desired orientation and returns the new port"""
 	if isinstance(orientation,str):
 		orientation = get_orientation(orientation, int_only=True)
@@ -325,7 +325,7 @@ def set_port_width(custom_comp: Port, width: float) -> Port:
 
 
 #@validate_arguments
-def print_ports(custom_comp: Union[Component, ComponentReference], names_only: Optional[bool] = True) -> None:
+def print_ports(custom_comp: Union[Component, ComponentReference], names_only: bool | None = True) -> None:
     """prints ports in comp in a nice way
     custom_comp = component to use
     names_only = only print names if True else print name and port
@@ -337,7 +337,7 @@ def print_ports(custom_comp: Union[Component, ComponentReference], names_only: O
             print()
 
 
-def create_private_ports(custom_comp: Union[Component, ComponentReference], port_paths: Optional[Union[str,list[str]]] = None) -> list[Port]:
+def create_private_ports(custom_comp: Union[Component, ComponentReference], port_paths: Union[str,list[str]] | None = None) -> list[Port]:
 	"""returns a list with a copy ports for children of the port_paths specified
 	the ports have _private appended
 	Args:
@@ -374,7 +374,7 @@ class PortTree:
 	"""
 
 	#@validate_arguments
-	def __init__(self, custom_comp: Union[Component, ComponentReference], name: Optional[str]=None):
+	def __init__(self, custom_comp: Union[Component, ComponentReference], name: str | None = None):
 		"""creates the tree structure from the ports where _ represent subdirectories
 		credit -> chatGPT
 		"""
@@ -391,7 +391,7 @@ class PortTree:
 		self.name = name if name else custom_comp.name
 	
 	#@validate_arguments
-	def ls(self, file_path: Optional[str] = None) -> list[str]:
+	def ls(self, file_path: str | None = None) -> list[str]:
 		"""tries to traverse the tree along the given path and prints all subdirectories in a psuedo directory
 		if the path given is not found in the tree, raises KeyError
 		path should not end with \"_\" char
@@ -433,7 +433,7 @@ class PortTree:
 		"""returns value of a node, (node might be a PortTree)"""
 		return node[0] if isinstance(node, tuple) else self.name
 	
-	def get_node(self, port_path: Optional[str] = None) -> tuple[str, dict]:
+	def get_node(self, port_path: str | None = None) -> tuple[str, dict]:
 		"""get a node name and children from a port_path
 		Args:
 			port_path (str, optional): psuedo path to a node in this PortTree. Defaults to None (returns root of the tree)
@@ -451,7 +451,7 @@ class PortTree:
 		return current_name, current_children
 
 	
-	def print(self, savetofile: bool=True, default_opts: bool=True, depth: Optional[int]=None, outfile_name: Optional[str]=None, **kwargs):
+	def print(self, savetofile: bool=True, default_opts: bool=True, depth: int | None = None, outfile_name: str | None = None, **kwargs):
 		"""prints output to terminal directly using prettyprinttree pypi package
 		args:
 		depth = max depth to print. this is a kwarg but since it so common, it should be specfied from depth arg

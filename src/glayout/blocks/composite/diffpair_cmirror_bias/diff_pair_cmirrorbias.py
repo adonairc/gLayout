@@ -4,7 +4,7 @@ from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout import MappedPDK, sky130,gf180
 from glayout.routing import c_route,L_route,straight_route
-from typing import Optional, Union
+from typing import Union
 from glayout.blocks.elementary.diff_pair import diff_pair
 from glayout.primitives.fet import nmos, pmos, multiplier
 from glayout.primitives.guardring import tapring
@@ -36,7 +36,7 @@ from glayout.placement.two_transistor_interdigitized import two_nfet_interdigiti
 from glayout.spice import Netlist
 from glayout.blocks.elementary.current_mirror import current_mirror_netlist
 
-def diff_pair_ibias_netlist(center_diffpair: Component, current_mirror: Component, antenna_diode: Optional[Component] = None) -> Netlist:
+def diff_pair_ibias_netlist(center_diffpair: Component, current_mirror: Component, antenna_diode: Component | None = None) -> Netlist:
     netlist = Netlist(
         circuit_name="DIFFPAIR_CMIRROR_BIAS",
         nodes=['VP', 'VN', 'VDD1', 'VDD2', 'IBIAS', 'VSS', 'B']

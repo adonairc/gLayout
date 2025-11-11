@@ -3,7 +3,7 @@ from gdsfactory.component import Component, copy
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout.flow.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from glayout.flow.primitives.fet import nmos, pmos, multiplier
 from glayout.flow.blocks.elementary.diff_pair import diff_pair
 from glayout.flow.primitives.guardring import tapring
@@ -164,7 +164,7 @@ def opamp(
     mim_cap_rows=2,
     rmult: int = 2,
     with_antenna_diode_on_diffinputs: int=7, 
-    add_output_stage: Optional[bool] = False
+    add_output_stage: bool | None = False
 ) -> Component:
     """
     create a two stage opamp with an output buffer, args->

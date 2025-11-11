@@ -4,7 +4,7 @@
 
 from glayout.pdk.mappedpdk import MappedPDK
 from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized, two_pfet_interdigitized
-from typing import Literal, Optional
+from typing import Literal
 from gdsfactory import Component
 from gdsfactory.component import ComponentReference
 from glayout.util.comp_utils import evaluate_bbox, movey, align_comp_to_port
@@ -180,8 +180,8 @@ def generic_4T_interdigitzed(
     numcols: int=3,
     length: float=None,
     with_substrate_tap: bool = True,
-    top_kwargs: Optional[dict]=None,
-    bottom_kwargs: Optional[dict]=None
+    top_kwargs: dict | None = None,
+    bottom_kwargs: dict | None = None
 ):
     if top_kwargs is None:
         top_kwargs = dict()

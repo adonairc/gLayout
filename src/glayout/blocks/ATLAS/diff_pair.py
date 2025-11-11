@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Union
 
 from gdsfactory.cell import cell
 from gdsfactory.component import Component, copy
@@ -99,7 +99,7 @@ def diff_pair(
 	pdk: MappedPDK,
 	width: float = 3,
 	fingers: int = 4,
-	length: Optional[float] = None,
+	length: float | None = None,
 	n_or_p_fet: bool = True,
 	plus_minus_seperation: float = 0,
 	rmult: int = 1,
@@ -235,7 +235,7 @@ def diff_pair_generic(
 	pdk: MappedPDK,
 	width: float = 3,
 	fingers: int = 4,
-	length: Optional[float] = None,
+	length: float | None = None,
 	n_or_p_fet: bool = True,
 	plus_minus_seperation: float = 0,
 	rmult: int = 1,

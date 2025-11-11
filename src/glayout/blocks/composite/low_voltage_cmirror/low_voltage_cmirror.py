@@ -14,7 +14,6 @@ from glayout.util.port_utils import add_ports_perimeter
 from glayout.blocks.elementary.FVF import fvf_netlist, flipped_voltage_follower
 
 from glayout.primitives.via_gen import via_stack
-from typing import Optional
 import time
 
 def add_lvcm_labels(lvcm_in: Component,

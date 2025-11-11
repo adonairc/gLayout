@@ -5,7 +5,7 @@ import os
 import math
 from gdsfactory.pdk import Pdk
 from pathlib import Path
-from typing import Union, Optional
+from typing import Union
 from pydantic import validate_arguments
 
 def get_files_with_extension(directory, extension):

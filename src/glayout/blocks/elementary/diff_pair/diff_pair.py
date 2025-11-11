@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Union
 from glayout import MappedPDK, sky130,gf180
 from glayout.spice.netlist import Netlist
 from glayout.routing import c_route,L_route,straight_route
@@ -214,7 +214,7 @@ def diff_pair(
 	pdk: MappedPDK,
 	width: float = 3,
 	fingers: int = 4,
-	length: Optional[float] = None,
+	length: float | None = None,
 	n_or_p_fet: bool = True,
 	plus_minus_seperation: float = 0,
 	rmult: int = 1,
@@ -350,7 +350,7 @@ def diff_pair_generic(
 	pdk: MappedPDK,
 	width: float = 3,
 	fingers: int = 4,
-	length: Optional[float] = None,
+	length: float | None = None,
 	n_or_p_fet: bool = True,
 	plus_minus_seperation: float = 0,
 	rmult: int = 1,

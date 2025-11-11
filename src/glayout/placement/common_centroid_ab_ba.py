@@ -8,7 +8,7 @@ from glayout.util.port_utils import set_port_orientation, rename_ports_by_orient
 from glayout.pdk.mappedpdk import MappedPDK
 from glayout.primitives.guardring import tapring
 from gdsfactory.components import rectangle
-from typing import Union, Optional
+from typing import Union
 from itertools import product
 
 from gdsfactory import Component
@@ -18,7 +18,7 @@ def common_centroid_ab_ba(
 	pdk: MappedPDK,
 	width: float = 3,
 	fingers: int = 4,
-	length: Optional[float] = None,
+	length: float | None = None,
 	n_or_p_fet: bool = True,
 	rmult: int = 1,
 	dummy: Union[bool, tuple[bool, bool]] = True,

@@ -24,7 +24,7 @@ from gdsfactory.cell import cell, clear_cache
 import numpy as np
 from subprocess import Popen
 from pathlib import Path
-from typing import Union, Optional, Literal, Iterable
+from typing import Union, Literal, Iterable
 from tempfile import TemporaryDirectory
 from shutil import copyfile, copytree
 from multiprocessing import Pool
@@ -215,7 +215,7 @@ def ota_parameters_serializer(
         dtype=np.float64
     )
 
-def ota_parameters_de_serializer(serialized_params: Optional[np.array]=None) -> dict:
+def ota_parameters_de_serializer(serialized_params: np.array | None = None) -> dict:
     """converts uniform numpy float format to ota kwargs"""
     if serialized_params is None:
         serialized_params = 18*[-987.654321]
@@ -252,7 +252,7 @@ def ota_results_serializer(
 
 
 def ota_results_de_serializer(
-    results: Optional[np.array]=None
+    results: np.array | None = None
 ) -> dict:
     results_length_const = 11
     if results is None:
@@ -497,7 +497,7 @@ def process_spice_testbench(testbench: Union[str,Path], temperature_info: tuple[
     with open(testbench, "w") as spice_file:
         spice_file.write(spicetb)
 
-def __run_single_brtfrc(index, parameters_ele, save_gds_dir, temperature_info: tuple[int,str]=(25,"normal model"), cload: float=80.0, noparasitics: bool=False, output_dir: Optional[Union[int,str,Path]] = None, hardfail=False):
+def __run_single_brtfrc(index, parameters_ele, save_gds_dir, temperature_info: tuple[int,str]=(25,"normal model"), cload: float=80.0, noparasitics: bool=False, output_dir: Union[int,str,Path] | None = None, hardfail=False):
     # pass pdk as global var to avoid pickling issues
     global pdk
     global PDK_ROOT
@@ -593,7 +593,7 @@ def brute_force_full_layout_and_PEXsim(sky130pdk: MappedPDK, parameter_list: np.
 
 
 # data gathering main function
-def get_training_data(test_mode: bool=True, temperature_info: tuple[int,str]=(25,"normal model"), cload: float=80.0, noparasitics: bool=False, parameter_array: Optional[np.array]=None, saverawsims=False) -> None:
+def get_training_data(test_mode: bool=True, temperature_info: tuple[int,str]=(25,"normal model"), cload: float=80.0, noparasitics: bool=False, parameter_array: np.array | None = None, saverawsims=False) -> None:
     if temperature_info[1] != "normal model" and temperature_info[1] != "cryo model":
         raise ValueError("model must be one of \"normal model\" or \"cryo model\"")
     if parameter_array is None:
@@ -606,7 +606,7 @@ def get_training_data(test_mode: bool=True, temperature_info: tuple[int,str]=(25
 
 
 #util function for pure simulation. sky130 is imported automatically
-def single_build_and_simulation(parameters: np.array, temp: int=25, output_dir: Optional[Union[str,Path]] = None, cload: float=80.0, noparasitics: bool=False,hardfail=False, index: int = 12345678987654321, save_gds_dir="./", return_dict: bool=True) -> dict:
+def single_build_and_simulation(parameters: np.array, temp: int=25, output_dir: Union[str,Path] | None = None, cload: float=80.0, noparasitics: bool=False,hardfail=False, index: int = 12345678987654321, save_gds_dir="./", return_dict: bool=True) -> dict:
     """Builds, extract, and simulates a single ota
     saves ota gds in current directory with name 12345678987654321.gds
     returns -987.654321 for all values IF phase margin < 60

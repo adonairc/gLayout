@@ -17,7 +17,6 @@ from glayout.flow.pdk.util.port_utils import add_ports_perimeter
 from glayout.flow.spice.netlist import Netlist
 from glayout.flow.blocks.elementary.LHS.fvf import fvf_netlist, flipped_voltage_follower
 from glayout.flow.primitives.via_gen import via_stack
-from typing import Optional
 from evaluator_wrapper import run_evaluation
 
 

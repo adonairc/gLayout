@@ -9,7 +9,7 @@ from glayout.util.port_utils import add_ports_perimeter,rename_ports_by_orientat
 from gdsfactory.component import Component
 from gdsfactory.cell import cell
 from glayout.util.comp_utils import evaluate_bbox, prec_center, prec_ref_center, align_comp_to_port
-from typing import Optional, Union 
+from typing import Union 
 from glayout.primitives.via_gen import via_stack
 from gdsfactory.components import text_freetype, rectangle
 
@@ -63,9 +63,9 @@ def current_mirror_netlist(
     width: float,
     length: float,
     multipliers: int, 
-    with_dummy: Optional[bool] = False,
-    n_or_p_fet: Optional[str] = 'nfet',
-    subckt_only: Optional[bool] = False
+    with_dummy: bool | None = False,
+    n_or_p_fet: str | None = 'nfet',
+    subckt_only: bool | None = False
 ) -> Netlist:
     if length is None:
         length = pdk.get_grule('poly')['min_width']
@@ -102,9 +102,9 @@ def current_mirror(
     pdk: MappedPDK, 
     numcols: int = 3,
     device: str = 'nfet',
-    with_dummy: Optional[bool] = True,
-    with_substrate_tap: Optional[bool] = False,
-    with_tie: Optional[bool] = True,
+    with_dummy: bool | None = True,
+    with_substrate_tap: bool | None = False,
+    with_tie: bool | None = True,
     tie_layers: tuple[str,str]=("met2","met1"),
     **kwargs
 ) -> Component:

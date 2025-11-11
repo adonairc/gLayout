@@ -3,7 +3,7 @@ from gdsfactory.component import Component, copy
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout.flow.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from glayout.flow.primitives.fet import nmos, pmos, multiplier
 from glayout.flow.blocks.elementary.diff_pair import diff_pair
 from glayout.flow.primitives.guardring import tapring

@@ -1,7 +1,7 @@
 import re
 import ast
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 import pandas as pd
@@ -131,9 +131,9 @@ def plot_hist(
     title: str,
     bins: int = 50,
     logy: bool = False,
-    xlabel: Optional[str] = None,
-    ylabel: Optional[str] = "Count",
-    formula: Optional[str] = None,
+    xlabel: str | None = None,
+    ylabel: str | None = "Count",
+    formula: str | None = None,
 ):
     data = series.dropna().values
     ax.hist(data, bins=bins, color="#4C78A8", alpha=0.85)
