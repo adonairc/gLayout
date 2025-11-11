@@ -1,15 +1,15 @@
 from glayout.pdk.mappedpdk import MappedPDK
 from pydantic import validate_arguments
 from gdsfactory.component import Component
+from gdsfactory.components import rectangle
 from glayout.primitives.fet import nmos, pmos, multiplier
-from glayout.util.comp_utils import evaluate_bbox, prec_ref_center, transformed
+from glayout.util.comp_utils import evaluate_bbox, prec_ref_center, transformed, align_comp_to_port
 from typing import Literal, Union
 from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, create_private_ports
 from glayout.routing.straight_route import straight_route
 from glayout.primitives.guardring import tapring
 from glayout.util.port_utils import add_ports_perimeter
 from gdsfactory import clear_cache
-from typing import Literal
 
 #from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized; from glayout.pdk.sky130_mapped import sky130_mapped_pdk as pdk; biasParams=[6,2,4]; rmult=2
 def add_two_int_labels(two_int_in: Component,
@@ -218,12 +218,13 @@ def two_nfet_interdigitized(
         base_multiplier.add_ports(tapring_ref.get_ports_list(),prefix="substratetap_")
     base_multiplier.info["route_genid"] = "two_transistor_interdigitized"
 
-    base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
-        pdk, 
-        width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
-        n_or_p_fet="nfet",
-        subckt_only=True
-    )
+    # TODO: Implement two_tran_interdigitized_netlist function
+    # base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
+    #     pdk,
+    #     width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
+    #     n_or_p_fet="nfet",
+    #     subckt_only=True
+    # )
     return base_multiplier
 
 
@@ -303,12 +304,13 @@ def two_pfet_interdigitized(
         base_multiplier.add_ports(tapring_ref.get_ports_list(),prefix="substratetap_")
     base_multiplier.info["route_genid"] = "two_transistor_interdigitized"
 
-    base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
-        pdk, 
-        width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
-        n_or_p_fet="pfet",
-        subckt_only=True
-    )
+    # TODO: Implement two_tran_interdigitized_netlist function
+    # base_multiplier.info['netlist'] = two_tran_interdigitized_netlist(
+    #     pdk,
+    #     width=kwargs.get('width', 3), length=kwargs.get('length', 0.15), fingers=kwargs.get('fingers', 1), multipliers=numcols, with_dummy=dummy,
+    #     n_or_p_fet="pfet",
+    #     subckt_only=True
+    # )
     return base_multiplier
 
 
