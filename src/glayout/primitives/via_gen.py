@@ -135,10 +135,10 @@ def via_stack(
         # update ports
         if level1==0:# both poly or active
             
-            viastack.add_ports(gf.port.get_ports_list(min_square),prefix="bottom_layer_")
+            viastack.add_ports(min_square.ports,prefix="bottom_layer_")
         else:# both mets
-            viastack.add_ports(gf.port.get_ports_list(min_square),prefix="top_met_")
-            viastack.add_ports(gf.port.get_ports_list(min_square),prefix="bottom_met_")
+            viastack.add_ports(min_square.ports,prefix="top_met_")
+            viastack.add_ports(min_square.ports,prefix="bottom_met_")
     else:
         ports_to_add = dict()
         for level in range(level1,level2+1):
@@ -155,18 +155,18 @@ def via_stack(
             lay_ref = viastack << rectangle(size=[layer_dim,layer_dim],layer=pdk.get_glayer(layer_name), centered=True)
             # update ports
             if layer_name == glayer1:
-                ports_to_add["bottom_layer_"] = gf.port.get_ports_list(lay_ref)
-                ports_to_add["bottom_via_"] = gf.port.get_ports_list(via_ref)
+                ports_to_add["bottom_layer_"] = lay_ref.ports
+                ports_to_add["bottom_via_"] = via_ref.ports
             if (level1==0 and level==1) or (level1>0 and layer_name==glayer1):
-                ports_to_add["bottom_met_"] =  gf.port.get_ports_list(lay_ref)
+                ports_to_add["bottom_met_"] =  lay_ref.ports
             if layer_name == glayer2:
-                ports_to_add["top_met_"] = gf.port.get_ports_list(lay_ref)
+                ports_to_add["top_met_"] = lay_ref.ports
         # implement fulltop and fullbottom options. update ports_to_add accordingly 
         if fullbottom:
             bot_ref = viastack << rectangle(size=evaluate_bbox(viastack),layer=pdk.get_glayer(glayer1), centered=True)
             if level1!=0:
-                ports_to_add["bottom_met_"] =  gf.port.get_ports_list(bot_ref)
-            ports_to_add["bottom_layer_"] = gf.port.get_ports_list(bot_ref)
+                ports_to_add["bottom_met_"] =  bot_ref.ports
+            ports_to_add["bottom_layer_"] = bot_ref.ports
         if fulltop:
             ports_to_add["top_met_"] = (viastack << rectangle(size=evaluate_bbox(viastack),layer=pdk.get_glayer(glayer2), centered=True)).ports
         # add all ports in ports_to_add
@@ -246,8 +246,9 @@ def via_array(
             raise ValueError("give at least 1: num_vias or size for each dim")
     # create array
     viaarray_ref = prec_ref_center(prec_array(viastack, columns=cnum_vias[0], rows=cnum_vias[1], spacing=2*[via_abs_spacing],absolute_spacing=True))
-    viaarray.add_ref(viaarray_ref)
-    viaarray.add_ports(gf.port.get_ports_list(viaarray_ref),prefix="array_")
+    # In GDSFactory v9, use add() for ComponentReference, not add_ref()
+    viaarray.add(viaarray_ref)
+    viaarray.add_ports(viaarray_ref.ports,prefix="array_")
     # find the what should be used as full dims
     viadims = evaluate_bbox(viaarray)
     if not size:
@@ -258,12 +259,12 @@ def via_array(
     if lay_bottom or fullbottom or lay_every_layer:
         bdims = evaluate_bbox(viaarray.extract(layers=[pdk.get_glayer(glayer1)]))
         bref = viaarray << rectangle(size=(size if fullbottom else bdims), layer=pdk.get_glayer(glayer1), centered=True)
-        viaarray.add_ports(gf.port.get_ports_list(bref), prefix="bottom_lay_")
+        viaarray.add_ports(bref.ports, prefix="bottom_lay_")
     else:
         viaarray = viaarray.remove_layers(layers=[pdk.get_glayer(glayer1)],recursive=False)
     # place top met
     tref = viaarray << rectangle(size=size, layer=pdk.get_glayer(glayer2), centered=True)
-    viaarray.add_ports(gf.port.get_ports_list(tref), prefix="top_met_")
+    viaarray.add_ports(tref.ports, prefix="top_met_")
     # place every layer in between if lay_every_layer
     if lay_every_layer:
         for i in range(level1+1,level2):

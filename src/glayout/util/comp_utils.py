@@ -277,7 +277,7 @@ def prec_array(custom_comp: Component, rows: int, columns: int, spacing: tuple[U
 			rowdisp = rownum * precspacing[1]
 			cref = precarray << custom_comp
 			cref.movex(to_float(coldisp)).movey(to_float(rowdisp))
-			precarray.add_ports(gf.port.get_ports_list(cref),prefix=f"row{rownum}_col{colnum}_")
+			precarray.add_ports(cref.ports,prefix=f"row{rownum}_col{colnum}_")
 	return precarray
 
 
