@@ -50,7 +50,33 @@ def straight_route(
 	"""
 	#TODO: error checking
 	width = width if width else edge1.width
-	# In GDSFactory v9, port.layer may not be reliable, try to infer from port name
+	# In GDSFactory v9, port.layer may not be reliable, try alternative methods
+	def get_layer_from_port(port, pdk):
+		"""Try to extract the correct layer from port using multiple methods"""
+		# Method 1: Try port.layer directly
+		try:
+			return pdk.layer_to_glayer(port.layer)
+		except (ValueError, KeyError):
+			pass
+
+		# Method 2: Check if port has cross_section with layer info
+		if hasattr(port, 'cross_section') and port.cross_section is not None:
+			try:
+				xs = port.cross_section
+				if hasattr(xs, 'layer'):
+					print(f"DEBUG: Found cross_section.layer = {xs.layer}")
+					return pdk.layer_to_glayer(xs.layer)
+			except (ValueError, KeyError, AttributeError):
+				pass
+
+		# Method 3: Check port_type (e.g., "electrical" might have specific layer)
+		if hasattr(port, 'port_type'):
+			print(f"DEBUG: port.port_type = {port.port_type}")
+
+		# Method 4: Infer from port name as fallback
+		print(f"DEBUG: Falling back to name inference for port {port.name}")
+		return infer_glayer_from_port_name(port.name)
+
 	def infer_glayer_from_port_name(port_name):
 		"""Infer glayer from port name patterns like 'bottom_met_N', 'gate_S', etc."""
 		if "met" in port_name.lower():
@@ -62,21 +88,13 @@ def straight_route(
 		return None
 
 	if not glayer1:
-		try:
-			glayer1 = pdk.layer_to_glayer(edge1.layer)
-		except (ValueError, KeyError):
-			# Fallback: infer from port name
-			glayer1 = infer_glayer_from_port_name(edge1.name)
-			if not glayer1:
-				raise ValueError(f"Cannot determine glayer for port {edge1.name} with layer {edge1.layer}")
+		glayer1 = get_layer_from_port(edge1, pdk)
+		if not glayer1:
+			raise ValueError(f"Cannot determine glayer for port {edge1.name} with layer {edge1.layer}")
 	if not glayer2:
-		try:
-			glayer2 = pdk.layer_to_glayer(edge2.layer)
-		except (ValueError, KeyError):
-			# Fallback: infer from port name
-			glayer2 = infer_glayer_from_port_name(edge2.name)
-			if not glayer2:
-				raise ValueError(f"Cannot determine glayer for port {edge2.name} with layer {edge2.layer}")
+		glayer2 = get_layer_from_port(edge2, pdk)
+		if not glayer2:
+			raise ValueError(f"Cannot determine glayer for port {edge2.name} with layer {edge2.layer}")
 
 	# Determine if we need a via at the start
 	front_via = None
