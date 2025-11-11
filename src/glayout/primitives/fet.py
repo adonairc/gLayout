@@ -15,6 +15,26 @@ from glayout.routing.straight_route import straight_route
 from glayout.spice import Netlist
 
 
+def add_padding(component: Component, layer, enclosure: float) -> None:
+    """Add padding layer around a component.
+
+    Args:
+        component: Component to add padding to
+        layer: Layer to add padding on
+        enclosure: Amount of padding/enclosure around component bbox
+    """
+    bbox = component.bbox()
+    # DBox has left, right, top, bottom properties
+    bbox_width = bbox.right - bbox.left
+    bbox_height = bbox.top - bbox.bottom
+    padded_width = bbox_width + 2 * enclosure
+    padded_height = bbox_height + 2 * enclosure
+
+    padding_rect = rectangle(size=(padded_width, padded_height), layer=layer)
+    padding_ref = component << padding_rect
+    padding_ref.move((bbox.left - enclosure, bbox.bottom - enclosure))
+
+
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float, width: float, poly_height: float, sdlayer: str, inter_finger_topmet: str) -> Component:
     """internal use: returns an array of fingers"""
@@ -450,22 +470,12 @@ def nmos(
                     pass
     # add pwell
     pwell_enc = pdk.get_grule("pwell", "active_tap")["min_enclosure"]
-    bbox = nfet.bbox()
-    pwell_width = bbox[1][0] - bbox[0][0] + 2 * pwell_enc
-    pwell_height = bbox[1][1] - bbox[0][1] + 2 * pwell_enc
-    pwell_rect = rectangle(size=(pwell_width, pwell_height), layer=pdk.get_glayer("pwell"))
-    pwell_ref = nfet << pwell_rect
-    pwell_ref.move((bbox[0][0] - pwell_enc, bbox[0][1] - pwell_enc))
+    add_padding(nfet, pdk.get_glayer("pwell"), pwell_enc)
     nfet = add_ports_perimeter(nfet,layer=pdk.get_glayer("pwell"),prefix="well_")
     # add dnwell if dnwell
     if with_dnwell:
         dnwell_enc = pdk.get_grule("pwell", "dnwell")["min_enclosure"]
-        bbox = nfet.bbox()
-        dnwell_width = bbox[1][0] - bbox[0][0] + 2 * dnwell_enc
-        dnwell_height = bbox[1][1] - bbox[0][1] + 2 * dnwell_enc
-        dnwell_rect = rectangle(size=(dnwell_width, dnwell_height), layer=pdk.get_glayer("dnwell"))
-        dnwell_ref = nfet << dnwell_rect
-        dnwell_ref.move((bbox[0][0] - dnwell_enc, bbox[0][1] - dnwell_enc))
+        add_padding(nfet, pdk.get_glayer("dnwell"), dnwell_enc)
     # add substrate tap if with_substrate_tap
     if with_substrate_tap:
         substrate_tap_separation = pdk.get_grule("dnwell", "active_tap")[
@@ -604,12 +614,7 @@ def pmos(
     # add nwell
     nwell_glayer = "dnwell" if dnwell else "nwell"
     nwell_enc = pdk.get_grule("active_tap", nwell_glayer)["min_enclosure"]
-    bbox = pfet.bbox()
-    nwell_width = bbox[1][0] - bbox[0][0] + 2 * nwell_enc
-    nwell_height = bbox[1][1] - bbox[0][1] + 2 * nwell_enc
-    nwell_rect = rectangle(size=(nwell_width, nwell_height), layer=pdk.get_glayer(nwell_glayer))
-    nwell_ref = pfet << nwell_rect
-    nwell_ref.move((bbox[0][0] - nwell_enc, bbox[0][1] - nwell_enc))
+    add_padding(pfet, pdk.get_glayer(nwell_glayer), nwell_enc)
     pfet = add_ports_perimeter(pfet,layer=pdk.get_glayer(nwell_glayer),prefix="well_")
     # add substrate tap if with_substrate_tap
     if with_substrate_tap:
