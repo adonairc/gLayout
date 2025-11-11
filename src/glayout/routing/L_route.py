@@ -2,7 +2,7 @@ from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from glayout.primitives.via_gen import via_stack, via_array
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port, to_decimal, to_float, prec_ref_center, get_primitive_rectangle
 from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, print_ports, assert_port_manhattan, assert_ports_perpindicular
@@ -14,11 +14,11 @@ def L_route(
 	pdk: MappedPDK,
 	edge1: Port,
 	edge2: Port,
-	vwidth: Optional[float] = None,
-	hwidth: Optional[float] = None,
-	hglayer: Optional[str] = None,
-	vglayer: Optional[str] = None,
-	viaoffset: Optional[Union[tuple[bool,bool],bool]]=True,
+	vwidth: float | None = None,
+	hwidth: float | None = None,
+	hglayer: str | None = None,
+	vglayer: str | None = None,
+	viaoffset: Union[tuple[bool,bool],bool] | None=True,
 	fullbottom: bool = True
 ) -> Component:
 	"""creates a L shaped route between two Ports.

@@ -2,7 +2,7 @@
 Geometry utility functions for Glayout.
 """
 
-from typing import Optional, Union, Tuple, List
+from typing import Union, Tuple, List
 from pathlib import Path
 
 from gdsfactory import cell
@@ -240,8 +240,8 @@ def movey(
 def align_comp_to_port(
     component: Component,
     port: ComponentOrReference,
-    alignment: tuple[Optional[str], Optional[str]] = (None, None),
-    layer: Optional[Layer] = None
+    alignment: tuple[str | None, str | None] = (None, None),
+    layer: Layer | None = None
 ) -> Reference:
     """Align component to port.
     

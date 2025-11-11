@@ -5,7 +5,7 @@ import re
 from gdsfactory.pdk import Pdk
 from gdsfactory.typings import Component, PathType, Layer
 from pydantic import validator, StrictStr, ValidationError
-from typing import ClassVar, Optional, Any, Union, Literal, Iterable, TypedDict
+from typing import ClassVar, Any, Union, Literal, Iterable, TypedDict
 from pathlib import Path
 from decimal import Decimal, ROUND_UP
 import tempfile
@@ -20,14 +20,14 @@ class SetupPDKFiles:
     """
 
     def __init__(
-        self, 
-        pdk_root: Optional[PathType] = None, 
-        klayout_drc_file: Optional[PathType] = None, 
-        lvs_schematic_ref_file: Optional[PathType] = None,
-        lvs_setup_tcl_file: Optional[PathType] = None, 
-        magic_drc_file: Optional[PathType] = None,
-        temp_dir: Optional[PathType] = None,
-        pdk: Optional[str] = 'sky130'
+        self,
+        pdk_root: PathType | None = None,
+        klayout_drc_file: PathType | None = None,
+        lvs_schematic_ref_file: PathType | None = None,
+        lvs_setup_tcl_file: PathType | None = None,
+        magic_drc_file: PathType | None = None,
+        temp_dir: PathType | None = None,
+        pdk: str | None = 'sky130'
     ):
         """Initializes the class with the required PDK files for DRC and LVS checks."""
         self.pdk = pdk
@@ -274,7 +274,7 @@ class MappedPDK(Pdk):
 
     glayers: dict[StrictStr, Union[StrictStr, tuple[int,int]]]
     # friendly way to implement a graph
-    grules: dict[StrictStr, dict[StrictStr, Optional[dict[StrictStr, Any]]]]
+    grules: dict[StrictStr, dict[StrictStr, dict[StrictStr, Any] | None]]
     pdk_files: dict[StrictStr, Union[PathType, None]]
 
     @validator("models")
@@ -302,7 +302,7 @@ class MappedPDK(Pdk):
     def drc(
         self,
         layout: Component | PathType,
-        output_dir_or_file: Optional[PathType] = None,
+        output_dir_or_file: PathType | None = None,
     ):
         """Returns true if the layout is DRC clean and false if not
         Also saves detailed results to output_dir_or_file location as lyrdb
@@ -370,12 +370,12 @@ class MappedPDK(Pdk):
 
     @validate_arguments
     def drc_magic(
-        self, 
-        layout: Component | PathType, 
-        design_name: str, 
-        pdk_root: Optional[PathType] = None, 
-        magic_drc_file: Optional[PathType] = None, 
-        output_file: Optional[PathType] = None 
+        self,
+        layout: Component | PathType,
+        design_name: str,
+        pdk_root: PathType | None = None,
+        magic_drc_file: PathType | None = None,
+        output_file: PathType | None = None
     ) -> dict:
         """Runs DRC using magic on the either the component or the gds file path provided. Requires the design name and the pdk_root to be specified, handles importing the required magicrc and other setup files, if not specified. Accepts overriden magic_commands_file and magic_drc_file.
 
@@ -555,16 +555,16 @@ custom_drc_save_report $::env(DESIGN_NAME) $::env(REPORTS_DIR)/$::env(DESIGN_NAM
     @validate_arguments
     def lvs_netgen(
         self,
-        layout: Component | PathType, 
-        design_name: str, 
-        pdk_root: Optional[PathType] = None,
-        lvs_setup_tcl_file: Optional[PathType] = None,
-        lvs_schematic_ref_file: Optional[PathType] = None,
-        magic_drc_file: Optional[PathType] = None, 
-        netlist: Optional[PathType] = None,
-        output_file_path: Optional[PathType] = None, 
-        copy_intermediate_files: Optional[bool] = False,
-        show_scripts: Optional[bool] = False,
+        layout: Component | PathType,
+        design_name: str,
+        pdk_root: PathType | None = None,
+        lvs_setup_tcl_file: PathType | None = None,
+        lvs_schematic_ref_file: PathType | None = None,
+        magic_drc_file: PathType | None = None,
+        netlist: PathType | None = None,
+        output_file_path: PathType | None = None,
+        copy_intermediate_files: bool | None = False,
+        show_scripts: bool | None = False,
     ) -> dict:
         """ Runs LVS using netgen on the either the component or the gds file path provided. Requires the design name and the pdk_root to be specified, handles importing the required magicrc and other setup files, if not specified. Accepts overriden lvs_setup_tcl_file, lvs_schematic_ref_file, and magic_drc_file.
 
@@ -948,7 +948,7 @@ exit
 
     @validate_arguments
     def get_grule(
-        self, glayer1: str, glayer2: Optional[str] = None, return_decimal = False
+        self, glayer1: str, glayer2: str | None = None, return_decimal = False
     ) -> dict[StrictStr, Union[float,Decimal]]:
         """Returns a dictionary describing the relationship between two layers
         If one layer is specified, returns a dictionary with all intra layer rules"""

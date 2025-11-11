@@ -8,7 +8,6 @@ from glayout.primitives.guardring import tapring
 from glayout.util.comp_utils import evaluate_bbox, add_ports_perimeter
 from gdsfactory.component import Component
 from gdsfactory.cell import cell 
-from typing import Optional
 
 @cell
 def resistor(
@@ -19,7 +18,7 @@ def resistor(
     with_substrate_tap: bool = False,
     with_tie: bool = False,
     with_dnwell: bool = False,
-    rmult: Optional[int] = None,
+    rmult: int | None = None,
     multipliers: int = 1,
     substrate_tap_layers: tuple[str, str] = ("met2", "met1"),
     tie_layers: tuple[str, str] = ("met2", "met1"),

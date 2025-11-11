@@ -2,7 +2,6 @@ from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.components.rectangle import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional
 from glayout.primitives.via_gen import via_array
 from glayout.util.comp_utils import prec_array, to_decimal, to_float
 from glayout.util.port_utils import rename_ports_by_orientation, add_ports_perimeter, print_ports
@@ -87,7 +86,7 @@ def mimcap(
     return component
 
 #@cell
-def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,float] = (5.0,5.0), rmult: Optional[int]=1) -> Component:
+def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,float] = (5.0,5.0), rmult: int | None=1) -> Component:
 	"""create mimcap array
 	args:
 	pdk to use

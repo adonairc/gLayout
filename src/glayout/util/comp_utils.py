@@ -3,7 +3,7 @@ from gdsfactory.snap import snap_to_grid
 from gdsfactory.typings import Component, ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from gdsfactory.port import Port
-from typing import Callable, Union, Optional, Iterable
+from typing import Callable, Union, Iterable
 from decimal import Decimal
 from gdsfactory.functions import transformed
 from gdsfactory.functions import move as __gf_move
@@ -13,7 +13,7 @@ from .port_utils import add_ports_perimeter, rename_ports_by_list, parse_directi
 
 
 @validate_arguments
-def evaluate_bbox(custom_comp: Union[Component, ComponentReference], return_decimal: Optional[bool]=False, padding: float=0) -> tuple[Union[float,Decimal],Union[float,Decimal]]:
+def evaluate_bbox(custom_comp: Union[Component, ComponentReference], return_decimal: bool | None=False, padding: float=0) -> tuple[Union[float,Decimal],Union[float,Decimal]]:
 	"""returns the length and height of a component like object"""
 	compbbox = custom_comp.bbox
 	width = abs(Decimal(str(compbbox[1][0])) - Decimal(str(compbbox[0][0]))) + 2*Decimal(str(padding))
@@ -50,7 +50,7 @@ def center_to_edge_distance(custom_comp: Union[Component, ComponentReference], d
 	return snap_to_grid(abs(distance),2)
 
 @validate_arguments
-def move(custom_comp: Union[Port, ComponentReference, Component], offsetxy: tuple[float,float] = (0,0), destination: Optional[tuple[Optional[float],Optional[float]]]=None, layer: Optional[tuple[int,int]]=None) -> Union[Port, ComponentReference, Component]:
+def move(custom_comp: Union[Port, ComponentReference, Component], offsetxy: tuple[float,float] = (0,0), destination: tuple[float | None,float | None] | None=None, layer: tuple[int,int] | None=None) -> Union[Port, ComponentReference, Component]:
 	"""moves custom_comp
 	moves by offset[0]=x offset, offset[1]=y offset
 	destination (x,y) if not none overrides offset option
@@ -89,7 +89,7 @@ def move(custom_comp: Union[Port, ComponentReference, Component], offsetxy: tupl
 
 
 @validate_arguments
-def movex(custom_comp: Union[Port, ComponentReference, Component], offsetx: Optional[float] = 0, destination: Optional[float]=None, layer: Optional[tuple[int,int]]=None) -> Union[Port, ComponentReference, Component]:
+def movex(custom_comp: Union[Port, ComponentReference, Component], offsetx: float | None = 0, destination: float | None=None, layer: tuple[int,int] | None=None) -> Union[Port, ComponentReference, Component]:
 	"""moves custom_comp by offsetx in the x direction
 	returns the modified custom_comp
 	"""
@@ -99,7 +99,7 @@ def movex(custom_comp: Union[Port, ComponentReference, Component], offsetx: Opti
 
 
 @validate_arguments
-def movey(custom_comp: Union[Port, ComponentReference, Component], offsety: Optional[float] = 0, destination: Optional[float]=None, layer: Optional[tuple[int,int]]=None) -> Union[Port, ComponentReference, Component]:
+def movey(custom_comp: Union[Port, ComponentReference, Component], offsety: float | None = 0, destination: float | None=None, layer: tuple[int,int] | None=None) -> Union[Port, ComponentReference, Component]:
 	"""moves custom_comp by offsety in the y direction
 	returns the modified custom_comp
 	"""
@@ -112,8 +112,8 @@ def movey(custom_comp: Union[Port, ComponentReference, Component], offsety: Opti
 def align_comp_to_port(
 	custom_comp: Union[Component,ComponentReference],
 	align_to: Port,
-	alignment: Optional[tuple[Optional[str],Optional[str]]] = None,
-	layer: Optional[tuple[int,int]] = None,
+	alignment: tuple[str | None,str | None] | None = None,
+	layer: tuple[int,int] | None = None,
 	rtr_comp_ref = True
 ) -> Union[Component,ComponentReference]:
 	"""Returns component/componentReference of component/componentReference aligned to port as specifed
@@ -228,7 +228,7 @@ def to_float(elements: Union[tuple,list,Decimal,float]):
 	return elements
 
 @validate_arguments
-def prec_array(custom_comp: Component, rows: int, columns: int, spacing: tuple[Union[float,Decimal],Union[float,Decimal]], absolute_spacing: Optional[bool]=False) -> Component:
+def prec_array(custom_comp: Component, rows: int, columns: int, spacing: tuple[Union[float,Decimal],Union[float,Decimal]], absolute_spacing: bool | None=False) -> Component:
 	"""instead of using the component.add_array function, if you are having grid snapping issues try using this function
 	works the same way as add_array but uses decimals and snaps to grid to mitigate grid snapping issues
 	args
@@ -272,7 +272,7 @@ def prec_center(custom_comp: Union[Component,ComponentReference], return_decimal
 	return to_float(correctionxy)
 
 @validate_arguments
-def prec_ref_center(custom_comp: Union[Component,ComponentReference], destination: Optional[tuple[float,float]]=None, snapmov2grid: bool=False) -> ComponentReference:
+def prec_ref_center(custom_comp: Union[Component,ComponentReference], destination: tuple[float,float] | None=None, snapmov2grid: bool=False) -> ComponentReference:
 	"""instead of using component.ref_center() to get a ref to center at origin,
 	use this function which will return a centered ref
 	you can then run component.add(prec_ref_center(custom_comp)) to add the reference to your component
@@ -294,11 +294,11 @@ def prec_ref_center(custom_comp: Union[Component,ComponentReference], destinatio
 def get_padding_points_cc(
 	custom_comp: Union[ComponentReference, Component, list],
 	default: float = 50.0,
-	top: Optional[float]=None,
-	bottom: Optional[float]=None,
-	right: Optional[float]=None,
-	left: Optional[float]=None,
-	pdk_for_snap2xgrid: Optional[MappedPDK]=None
+	top: float | None=None,
+	bottom: float | None=None,
+	right: float | None=None,
+	left: float | None=None,
+	pdk_for_snap2xgrid: MappedPDK | None=None
 ) -> list:
 	"""works like gdsfactory.add_padding.get_padding_points, but also accepts componentReference or bbox
 	additionally, if you optionally pass a pdk it will snap to 2x grid (else just operates like get_padding_points)"""

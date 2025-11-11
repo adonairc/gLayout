@@ -2,7 +2,6 @@ from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional
 from glayout.primitives.via_gen import via_stack, via_array
 from gdsfactory.components.rectangle import rectangle
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port
@@ -15,14 +14,14 @@ def straight_route(
 	pdk: MappedPDK,
 	edge1: Port,
 	edge2: Port,
-	glayer1: Optional[str] = None,
-	width: Optional[float] = None,
-	glayer2: Optional[str] = None,
-	via1_alignment: Optional[tuple[str, str]] = None,
-	via1_alignment_layer: Optional[str] = None,
-	via2_alignment: Optional[tuple[str, str]] = None,
-	via2_alignment_layer: Optional[str] = None,
-	fullbottom: Optional[bool] = False
+	glayer1: str | None = None,
+	width: float | None = None,
+	glayer2: str | None = None,
+	via1_alignment: tuple[str, str] | None = None,
+	via1_alignment_layer: str | None = None,
+	via2_alignment: tuple[str, str] | None = None,
+	via2_alignment_layer: str | None = None,
+	fullbottom: bool | None = False
 ) -> Component:
 	"""extends a route from edge1 until perpindicular with edge2, then places a via
 	This depends on the orientation of edge1 and edge2

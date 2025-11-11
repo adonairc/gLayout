@@ -2,7 +2,7 @@ from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.port import Port
 from glayout.pdk.mappedpdk import MappedPDK
-from typing import Optional, Union
+from typing import Union
 from math import isclose
 from glayout.primitives.via_gen import via_stack, via_array
 from glayout.routing.straight_route import straight_route
@@ -14,7 +14,7 @@ from gdsfactory.snap import snap_to_grid
 
 
 @validate_arguments
-def __fill_empty_viastack__macro(pdk: MappedPDK, glayer: str, size: Optional[tuple[float,float]]=None) -> Component:
+def __fill_empty_viastack__macro(pdk: MappedPDK, glayer: str, size: tuple[float,float] | None=None) -> Component:
     """returns a rectangle with ports that pretend to be viastack ports
     by default creates a rectangle with size double the min width of the glayer"""
     if size is None:
@@ -24,19 +24,19 @@ def __fill_empty_viastack__macro(pdk: MappedPDK, glayer: str, size: Optional[tup
 
 @cell
 def c_route(
-    pdk: MappedPDK, 
-    edge1: Port, 
-    edge2: Port, 
-    extension: Optional[float]=0.5, 
-    width1: Optional[float] = None, 
-    width2: Optional[float] = None,
-    cwidth: Optional[float] = None,
-    e1glayer: Optional[str] = None, 
-    e2glayer: Optional[str] = None, 
-    cglayer: Optional[str] = None, 
-    viaoffset: Optional[Union[bool,tuple[Optional[bool],Optional[bool]]]]=(True,True),
-    fullbottom: Optional[bool] = False,
-    extra_vias: Optional[bool] = False,
+    pdk: MappedPDK,
+    edge1: Port,
+    edge2: Port,
+    extension: float | None=0.5,
+    width1: float | None = None,
+    width2: float | None = None,
+    cwidth: float | None = None,
+    e1glayer: str | None = None,
+    e2glayer: str | None = None,
+    cglayer: str | None = None,
+    viaoffset: Union[bool,tuple[bool | None,bool | None]] | None=(True,True),
+    fullbottom: bool | None = False,
+    extra_vias: bool | None = False,
     debug=False
 ) -> Component:
     """creates a C shaped route between two Ports.

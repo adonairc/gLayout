@@ -1,5 +1,5 @@
 import warnings
-from typing import Optional, Union
+from typing import Union
 
 from gdsfactory import Component, ComponentReference
 from gdsfactory.port import Port
@@ -20,8 +20,8 @@ def smart_route(
     pdk: MappedPDK,
     edge1: Port,
     edge2: Port,
-    ref_comp: Optional[Union[Component, ComponentReference]]=None,
-    top_comp: Optional[Union[Component, ComponentReference]]=None,
+    ref_comp: Union[Component, ComponentReference] | None=None,
+    top_comp: Union[Component, ComponentReference] | None=None,
     auto_downscale_routing: bool = True,
     **kwargs
 ) -> Component:

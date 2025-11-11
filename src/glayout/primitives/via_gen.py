@@ -4,7 +4,7 @@ from gdsfactory.components.rectangle import rectangle
 from pydantic import validate_arguments
 from glayout.pdk.mappedpdk import MappedPDK
 from math import floor
-from typing import Optional, Union
+from typing import Union
 from glayout.util.comp_utils import evaluate_bbox, prec_array, to_float, move, prec_ref_center, to_decimal
 from glayout.util.port_utils import rename_ports_by_orientation, print_ports
 from glayout.util.snap_to_grid import component_snap_to_grid
@@ -182,9 +182,9 @@ def via_array(
     pdk: MappedPDK,
     glayer1: str,
     glayer2: str,
-    size: Optional[tuple[Optional[float],Optional[float]]] = None,
+    size: tuple[float | None,float | None] | None = None,
     minus1: bool = False,
-    num_vias: Optional[tuple[Optional[int],Optional[int]]] = None,
+    num_vias: tuple[int | None,int | None] | None = None,
     lay_bottom: bool = True,
     fullbottom: bool = False,
     no_exception: bool = False,

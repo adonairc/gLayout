@@ -4,7 +4,6 @@ from gdsfactory.component import Component
 from gdsfactory.components.rectangle import rectangle
 from gdsfactory.components.rectangular_ring import rectangular_ring
 from glayout.primitives.via_gen import via_array, via_stack
-from typing import Optional
 from glayout.util.comp_utils import to_decimal, to_float, evaluate_bbox
 from glayout.util.port_utils import print_ports
 from glayout.util.snap_to_grid import component_snap_to_grid
