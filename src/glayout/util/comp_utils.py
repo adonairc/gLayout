@@ -1,7 +1,7 @@
 from pydantic import validate_arguments
 from gdsfactory.snap import snap_to_grid
 from gdsfactory.component import Component, ComponentReference
-from gdsfactory.components import rectangle
+# from gdsfactory.components import rectangle
 from gdsfactory.port import Port
 from typing import Callable, Union, Iterable
 from decimal import Decimal

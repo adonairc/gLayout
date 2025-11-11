@@ -143,12 +143,11 @@ ihp130_mapped_pdk = MappedPDK(
         'pfet': 'sg13_lv_pmos',
         'mimcap': 'cap_cmim',
     },
-    layers=LAYER,
     pdk_files=pdk_files,
     grules=grulesobj,
     valid_bjt_sizes=ip130_valid_bjt_sizes
 )
-
+ihp130_mapped_pdk.layers = LAYER
 # Configure GDS write precision and cell decorator cache
-ihp130_mapped_pdk.gds_write_settings.precision = 1e-9 # 1nm precision , Check this setting with PDk documentration later
-ihp130_mapped_pdk.cell_decorator_settings.cache = False
+# ihp130_mapped_pdk.gds_write_settings.precision = 1e-9 # 1nm precision , Check this setting with PDk documentration later
+# ihp130_mapped_pdk.cell_decorator_settings.cache = False
