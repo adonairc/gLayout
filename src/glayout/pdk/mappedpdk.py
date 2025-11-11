@@ -986,21 +986,6 @@ exit
             # find glayer verfying presence along the way
             # In v9, self.layers is a LayerEnum, get the tuple values
             pdk_real_layers = list(self.layers.__members__.values()) if hasattr(self.layers, '__members__') else self.layers.values()
-            # Debug: print what we're searching for
-            print(f"DEBUG: Searching for layer={layer}, layer_as_int={layer_as_int}")
-            print(f"DEBUG: First 5 enum members:")
-            for i, enum_member in enumerate(pdk_real_layers[:5]):
-                # In v9 LayerMap, use tuple() to get (layer, datatype), not .value
-                enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
-                enum_name = enum_member.name if hasattr(enum_member, 'name') else str(enum_member)
-                print(f"  {enum_name}: {enum_value}")
-            # Print all layer numbers to see if 56 exists
-            all_layer_nums = set()
-            for enum_member in pdk_real_layers:
-                enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
-                if isinstance(enum_value, tuple) and len(enum_value) >= 1:
-                    all_layer_nums.add(enum_value[0])
-            print(f"DEBUG: All unique layer numbers in PDK: {sorted(all_layer_nums)}")
             # First try exact match with the layer tuple
             layer_found = False
             for enum_member in pdk_real_layers:
@@ -1008,8 +993,6 @@ exit
                 enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
                 if enum_value == layer:
                     layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(layer, self.layers)
-                    print(f"DEBUG: Found exact match! layer_name={layer_name}")
-                    print(f"DEBUG: glayers.values()={list(self.glayers.values())[:10]}")
                     if layer_name in self.glayers.values():
                         glayer_name = find_last(layer_name, self.glayers)
                     else:
@@ -1018,7 +1001,6 @@ exit
                     break
             # If not found and we have an integer layer, search by layer number
             if not layer_found and layer_as_int is not None:
-                print(f"DEBUG: Searching by layer number {layer_as_int}")
                 for enum_member in pdk_real_layers:
                     # In v9 LayerMap, use tuple() to convert enum to (layer, datatype)
                     enum_value = tuple(enum_member) if hasattr(self.layers, '__members__') else enum_member
@@ -1029,8 +1011,6 @@ exit
 
                     if match:
                         layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(enum_value, self.layers)
-                        print(f"DEBUG: Found by layer number! layer_name={layer_name}, enum_value={enum_value}")
-                        print(f"DEBUG: glayers.values()={list(self.glayers.values())[:10]}")
                         if layer_name in self.glayers.values():
                             glayer_name = find_last(layer_name, self.glayers)
                         else:
