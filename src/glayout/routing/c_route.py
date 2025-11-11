@@ -183,8 +183,8 @@ def c_route(
         e1_extension.movex(0-evaluate_bbox(e1_extension)[0]/2)
         e2_extension.movex(0-evaluate_bbox(e2_extension)[0]/2)
     # place viastacks
-    e1_extension_comp.add_ports(e1_extension.get_ports_list())
-    e2_extension_comp.add_ports(e2_extension.get_ports_list())
+    e1_extension_comp.add_ports(e1_extension.ports)
+    e2_extension_comp.add_ports(e2_extension.ports)
     me1 = prec_ref_center(viastack1)
     e1_extension_comp.add(me1)
     me2 = prec_ref_center(viastack2)

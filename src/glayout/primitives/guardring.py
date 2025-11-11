@@ -146,7 +146,7 @@ def tapring(
         refs_prefixes += [(brvia,"br_")]
     # add ports, flatten and return
     for ref_, prefix in refs_prefixes:
-        ptapring.add_ports(ref_.get_ports_list(),prefix=prefix)
+        ptapring.add_ports(ref_.ports,prefix=prefix)
     return component_snap_to_grid(ptapring)
 
 

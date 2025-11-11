@@ -144,12 +144,12 @@ def  flipped_voltage_follower(
     except:
         pass
     #Renaming Ports
-    top_level.add_ports(fet_1_ref.get_ports_list(), prefix="A_")
-    top_level.add_ports(fet_2_ref.get_ports_list(), prefix="B_")
-    top_level.add_ports(drain_1_via.get_ports_list(), prefix="A_drain_")
-    top_level.add_ports(source_1_via.get_ports_list(), prefix="A_source_")
-    top_level.add_ports(drain_2_via.get_ports_list(), prefix="B_drain_")
-    top_level.add_ports(gate_2_via.get_ports_list(), prefix="B_gate_")
+    top_level.add_ports(fet_1_ref.ports, prefix="A_")
+    top_level.add_ports(fet_2_ref.ports, prefix="B_")
+    top_level.add_ports(drain_1_via.ports, prefix="A_drain_")
+    top_level.add_ports(source_1_via.ports, prefix="A_source_")
+    top_level.add_ports(drain_2_via.ports, prefix="B_drain_")
+    top_level.add_ports(gate_2_via.ports, prefix="B_gate_")
     #add nwell
     if well == "nwell": 
         top_level.add_padding(layers=(pdk.get_glayer("nwell"),),default= 1 )

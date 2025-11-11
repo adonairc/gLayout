@@ -168,12 +168,12 @@ def  low_voltage_cmirror(
     top_level << straight_route(pdk, fet_3_ref.ports["multiplier_0_source_W"], fet_3_ref.ports["tie_W_top_met_W"], glayer1='met1', width=0.2)
     
 
-    top_level.add_ports(bias_fvf_ref.get_ports_list(), prefix="M_1_")
-    top_level.add_ports(cascode_fvf_ref.get_ports_list(), prefix="M_2_")
-    top_level.add_ports(fet_1_ref.get_ports_list(), prefix="M_3_B_")
-    top_level.add_ports(fet_2_ref.get_ports_list(), prefix="M_3_A_")
-    top_level.add_ports(fet_3_ref.get_ports_list(), prefix="M_4_B_")
-    top_level.add_ports(fet_4_ref.get_ports_list(), prefix="M_4_A_")
+    top_level.add_ports(bias_fvf_ref.ports, prefix="M_1_")
+    top_level.add_ports(cascode_fvf_ref.ports, prefix="M_2_")
+    top_level.add_ports(fet_1_ref.ports, prefix="M_3_B_")
+    top_level.add_ports(fet_2_ref.ports, prefix="M_3_A_")
+    top_level.add_ports(fet_3_ref.ports, prefix="M_4_B_")
+    top_level.add_ports(fet_4_ref.ports, prefix="M_4_A_")
     
     component = component_snap_to_grid(rename_ports_by_orientation(top_level))
     # Store netlist as string to avoid gymnasium info dict type restrictions

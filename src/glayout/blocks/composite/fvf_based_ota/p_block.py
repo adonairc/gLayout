@@ -86,7 +86,7 @@ def  p_block(
     top_level.add(nwell_rectangle_ref)
 
     #Renaming Ports
-    top_level.add_ports(p_block.get_ports_list())
+    top_level.add_ports(p_block.ports)
     
     component = component_snap_to_grid(rename_ports_by_orientation(top_level))
     # Store netlist as string to avoid gymnasium info dict type restrictions

@@ -87,7 +87,7 @@ def row_csamplifier_diff_to_single_ended_converter(pdk: MappedPDK, diff_to_singl
         halfMultp_ref.movex(direction * abs(x_dim_center + halfMultp_ref.xmax+1))
         label = "L_" if direction==-1 else "R_"
         # this special marker is used to rename these ports in the opamp to commonsource_Pamp_
-        pmos_comps.add_ports(halfMultp_ref.get_ports_list(),prefix="halfpspecialmarker_"+label)
+        pmos_comps.add_ports(halfMultp_ref.ports,prefix="halfpspecialmarker_"+label)
 
         __connect_cs_netlist(pmos_comps, halfMultp)
 
@@ -99,7 +99,7 @@ def row_csamplifier_diff_to_single_ended_converter(pdk: MappedPDK, diff_to_singl
     tapcenter_rect = [(evaluate_bbox(pmos_comps)[0] + 1), (evaluate_bbox(pmos_comps)[1] + 1)]
     topptap = prec_ref_center(tapring(pdk, tapcenter_rect, "p+s/d",vertical_glayer="met2"),destination=tuple(pmos_comps.center))
     pmos_comps.add(topptap)
-    pmos_comps.add_ports(topptap.get_ports_list(),prefix="top_ptap_")
+    pmos_comps.add_ports(topptap.ports,prefix="top_ptap_")
     # vdd taprings of the center components
     pmos_comps << straight_route(pdk, pmos_comps.ports["ptopAB_L_welltap_W_top_met_W"],pmos_comps.ports["halfpspecialmarker_L_tie_E_top_met_N"],width=2,glayer1="met2",via1_alignment=('c','c'),fullbottom=True)
     pmos_comps << straight_route(pdk, pmos_comps.ports["ptopAB_R_welltap_E_top_met_E"],pmos_comps.ports["halfpspecialmarker_R_tie_W_top_met_N"],width=2,glayer1="met2",via1_alignment=('c','c'),fullbottom=True)

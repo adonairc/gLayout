@@ -76,7 +76,7 @@ def mimcap(
     mim_cap.add_padding(layers=(pdk.get_glayer(capmetbottom),),default=bottom_met_enclosure)
     # flatten and create ports
     mim_cap = add_ports_perimeter(mim_cap, layer=pdk.get_glayer(capmetbottom), prefix="bottom_met_")
-    mim_cap.add_ports(top_met_ref.get_ports_list())
+    mim_cap.add_ports(top_met_ref.ports)
 
     # In GDSFactory v9, flatten() mutates in-place and returns None
     component = rename_ports_by_orientation(mim_cap)
@@ -104,7 +104,7 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
 	mimcap_single = mimcap(pdk, size)
 	mimcap_space = pdk.get_grule("capmet")["min_separation"] #+ evaluate_bbox(mimcap_single)[0]
 	array_ref = mimcap_arr << prec_array(mimcap_single, rows, columns, spacing=2*[mimcap_space])
-	mimcap_arr.add_ports(array_ref.get_ports_list())
+	mimcap_arr.add_ports(array_ref.ports)
 	# create a list of ports that should be routed to connect the array
 	port_pairs = list()
 	for rownum in range(rows):

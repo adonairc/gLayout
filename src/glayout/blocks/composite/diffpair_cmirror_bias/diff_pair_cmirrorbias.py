@@ -91,7 +91,7 @@ def diff_pair_ibias(
     # add antenna diodes if that option was specified
     diffpair_centered_ref = prec_ref_center(center_diffpair_comp)
     diffpair_i_.add(diffpair_centered_ref)
-    diffpair_i_.add_ports(diffpair_centered_ref.get_ports_list())
+    diffpair_i_.add_ports(diffpair_centered_ref.ports)
     antenna_diode_comp = None
     if with_antenna_diode_on_diffinputs:
         antenna_diode_comp = nmos(
@@ -179,7 +179,7 @@ def diff_pair_ibias(
         extension=metal_sep,
         viaoffset=False,
     )
-    cmirror.add_ports(srcshort.get_ports_list(), prefix="purposegndports")
+    cmirror.add_ports(srcshort.ports, prefix="purposegndports")
     # current mirror netlist
     cmirror.info['netlist'] = current_mirror_netlist(
         pdk,
@@ -200,7 +200,7 @@ def diff_pair_ibias(
     purposegndPort = tailcurrent_ref.ports["purposegndportscon_S"].copy()
     purposegndPort.name = "ibias_purposegndport"
     diffpair_i_.add_ports([purposegndPort])
-    diffpair_i_.add_ports(tailcurrent_ref.get_ports_list(), prefix="ibias_")
+    diffpair_i_.add_ports(tailcurrent_ref.ports, prefix="ibias_")
 
     diffpair_i_ref = prec_ref_center(diffpair_i_)
 

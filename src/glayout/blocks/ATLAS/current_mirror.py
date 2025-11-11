@@ -144,7 +144,7 @@ def current_mirror(
             with_tie=False, 
             **kwargs
         )
-    top_level.add_ports(interdigitized_fets.get_ports_list(), prefix="fet_")
+    top_level.add_ports(interdigitized_fets.ports, prefix="fet_")
     maxmet_sep = pdk.util_max_metal_seperation()
     # short source of the fets
     source_short = interdigitized_fets << c_route(pdk, interdigitized_fets.ports['A_source_E'], interdigitized_fets.ports['B_source_E'], extension=3*maxmet_sep, viaoffset=False)
@@ -169,7 +169,7 @@ def current_mirror(
         2 * (tap_sep + interdigitized_fets.ymax),
         )
         tie_ref = top_level << tapring(pdk, enclosed_rectangle = tap_encloses, sdlayer = tap_layer, horizontal_glayer = tie_layers[0], vertical_glayer = tie_layers[1])
-        top_level.add_ports(tie_ref.get_ports_list(), prefix="welltie_")
+        top_level.add_ports(tie_ref.ports, prefix="welltie_")
         try:
             top_level << straight_route(pdk, top_level.ports[f"fet_B_{numcols - 1}_dummy_R_gsdcon_top_met_E"],top_level.ports["welltie_E_top_met_E"],glayer2="met1")
             top_level << straight_route(pdk, top_level.ports["fet_A_0_dummy_L_gsdcon_top_met_W"],top_level.ports["welltie_W_top_met_W"],glayer2="met1")
@@ -199,9 +199,9 @@ def current_mirror(
             2.5 * (subtap_sep + interdigitized_fets.ymax),
         )
         subtap_ring = top_level << tapring(pdk, enclosed_rectangle = subtap_enclosure, sdlayer = "p+s/d", horizontal_glayer = "met2", vertical_glayer = "met1")
-        top_level.add_ports(subtap_ring.get_ports_list(), prefix="substrate_tap_")
+        top_level.add_ports(subtap_ring.ports, prefix="substrate_tap_")
   
-    top_level.add_ports(source_short.get_ports_list(), prefix='purposegndports')
+    top_level.add_ports(source_short.ports, prefix='purposegndports')
     
     
     top_level.info['netlist'] = current_mirror_netlist(

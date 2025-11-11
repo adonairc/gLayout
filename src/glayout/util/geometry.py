@@ -153,7 +153,7 @@ def prec_array(
         for col in range(columns):
             ref = array << component
             ref.move((col * x_spacing, row * y_spacing))
-            array.add_ports(ref.get_ports_list(), prefix=f"row{row}_col{col}_")
+            array.add_ports(ref.ports, prefix=f"row{row}_col{col}_")
     
     return array
 

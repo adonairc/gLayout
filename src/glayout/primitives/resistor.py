@@ -95,7 +95,7 @@ def resistor(
                 vertical_glayer=tie_layers[1],
             )
             tapring_ref = (toplvl << ringtoadd).movey(((evaluate_bbox(pfet_reference_0)[1] + max_sep) * ((num_series - 1)/2) ))
-            toplvl.add_ports(tapring_ref.get_ports_list(),prefix="tie_")
+            toplvl.add_ports(tapring_ref.ports,prefix="tie_")
             for row in range(multipliers):
                 for dummyside, tieside in [("L","W"),("R","E")]:
                     try:
@@ -128,9 +128,9 @@ def resistor(
                 vertical_glayer=substrate_tap_layers[1],
             )
             tapring_ref = (toplvl << ringtoadd).movey(((evaluate_bbox(pfet_reference_0)[1] + max_sep) * ((num_series - 1)/2) ))
-            toplvl.add_ports(tapring_ref.get_ports_list(),prefix="guardring_")
+            toplvl.add_ports(tapring_ref.ports,prefix="guardring_")
             
-        toplvl.add_ports(pfet_references[0].get_ports_list(), prefix='port1_')
-        toplvl.add_ports(pfet_references[-1].get_ports_list(), prefix='port2_')
+        toplvl.add_ports(pfet_references[0].ports, prefix='port1_')
+        toplvl.add_ports(pfet_references[-1].ports, prefix='port2_')
         
     return toplvl

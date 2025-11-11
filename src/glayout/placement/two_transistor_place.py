@@ -52,5 +52,5 @@ def two_transistor_place(
             ymov = i * yspace
             xmov = j * xspace * (-1**(j%2))
             tranref.movex(xmov).movey(ymov)
-            toplvlcomp.add_ports(tranref.get_ports_list(), prefix=f"place{i}_{j}_")
+            toplvlcomp.add_ports(tranref.ports, prefix=f"place{i}_{j}_")
     return toplvlcomp

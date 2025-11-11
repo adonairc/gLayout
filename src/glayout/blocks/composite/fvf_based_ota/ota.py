@@ -102,7 +102,7 @@ def super_class_AB_OTA(
     nb = n_block(pdk, input_pair_params=input_pair_params, fvf_shunt_params=fvf_shunt_params, ratio=ratio, current_mirror_params=current_mirror_params, global_current_bias_params=global_current_bias_params)
     n_block_ref = prec_ref_center(nb)
     top_level.add(n_block_ref)
-    top_level.add_ports(n_block_ref.get_ports_list())
+    top_level.add_ports(n_block_ref.ports)
 
     #local current mirrors
     local_c_bias = current_mirror(pdk, numcols=2, device='pfet', width=local_current_bias_params[0]/2, length=local_current_bias_params[1], fingers=1)
@@ -131,8 +131,8 @@ def super_class_AB_OTA(
     top_level << c_route(pdk, local_c_bias_2_ref.ports["fet_A_drain_E"], n_block_ref.ports["cbias_M_4_A_multiplier_0_drain_E"], viaoffset=False)
 
 
-    top_level.add_ports(local_c_bias_1_ref.get_ports_list(), prefix="cmirr_1_")
-    top_level.add_ports(local_c_bias_2_ref.get_ports_list(), prefix="cmirr_2_")
+    top_level.add_ports(local_c_bias_1_ref.ports, prefix="cmirr_1_")
+    top_level.add_ports(local_c_bias_2_ref.ports, prefix="cmirr_2_")
 
     #LCMFB resistors
     resistor = transmission_gate(pdk, width=(resistor_params[0],resistor_params[1]), length=(resistor_params[2],resistor_params[3]), sd_rmult=3)
@@ -148,8 +148,8 @@ def super_class_AB_OTA(
     top_level << c_route(pdk, n_block_ref.ports["Min_1_multiplier_0_drain_E"], res_1_ref.ports["N_multiplier_0_source_E"], cwidth=0.6)
     top_level << c_route(pdk, n_block_ref.ports["Min_2_multiplier_0_drain_W"], res_2_ref.ports["N_multiplier_0_source_E"], cwidth=0.6)
     
-    top_level.add_ports(res_1_ref.get_ports_list(), prefix="res_1_")
-    top_level.add_ports(res_2_ref.get_ports_list(), prefix="res_2_")
+    top_level.add_ports(res_1_ref.ports, prefix="res_1_")
+    top_level.add_ports(res_2_ref.ports, prefix="res_2_")
 
             
     #adding the p_block
@@ -167,7 +167,7 @@ def super_class_AB_OTA(
     top_level << c_route(pdk, p_block_ref.ports["bottom_A_0_drain_W"], res_1_ref.ports["P_multiplier_0_source_W"], cwidth=0.9, width2=0.29*3)
     top_level << c_route(pdk, p_block_ref.ports["bottom_B_1_drain_E"], res_2_ref.ports["P_multiplier_0_source_W"], cwidth=0.9, width2=0.29*3)
         
-    top_level.add_ports(p_block_ref.get_ports_list(), prefix="pblock_")
+    top_level.add_ports(p_block_ref.ports, prefix="pblock_")
     
     #adding output pin
     viam2m3 = via_stack(pdk, "met2", "met3", centered=True, fulltop=True)
@@ -179,7 +179,7 @@ def super_class_AB_OTA(
     op_int_via.move(n_block_ref.ports["op_cmirr_fet_B_drain_W"].center).movex(-1.5)
     top_level << straight_route(pdk, op_int_via.ports["bottom_met_E"], n_block_ref.ports["op_cmirr_fet_B_drain_W"], glayer1='met2', width=0.58)
     top_level << c_route(pdk, op_int_via.ports["top_met_N"], op_via.ports["bottom_met_N"], e1glayer='met3', e2glayer='met3', cglayer='met4', width1=0.6, width2=2, cwidth=2, extension=1.5, fullbottom=True)
-    top_level.add_ports(op_via.get_ports_list(), prefix="DIFFOUT_")
+    top_level.add_ports(op_via.ports, prefix="DIFFOUT_")
 
 
     #adding IBIAS pins 
@@ -187,25 +187,25 @@ def super_class_AB_OTA(
     IBIAS1_via.move(n_block_ref.ports["cbias_M_2_A_drain_bottom_met_W"].center).movex(-4).movey(-evaluate_bbox(nb)[1]/2)
     top_level.add(IBIAS1_via)
     top_level << L_route(pdk, n_block_ref.ports["cbias_M_1_A_drain_bottom_met_W"], IBIAS1_via.ports["bottom_met_N"], hwidth=2, vwidth=0.8)
-    top_level.add_ports(IBIAS1_via.get_ports_list(), prefix="IBIAS1_")
+    top_level.add_ports(IBIAS1_via.ports, prefix="IBIAS1_")
     
 
     IBIAS2_via = prec_ref_center(viam3m4)
     IBIAS2_via.movex(n_block_ref.xmax+5).movey(n_block_ref.ymin)
     top_level.add(IBIAS2_via)
     top_level << c_route(pdk, n_block_ref.ports["cbias_M_2_A_drain_top_met_N"], IBIAS2_via.ports["bottom_met_N"], e1glayer='met3', e2glayer='met3', cglayer='met4', width1=0.4, width2=1, cwidth=0.6, extension=1.5, fullbottom=True)
-    top_level.add_ports(IBIAS2_via.get_ports_list(), prefix="IBIAS2_")
+    top_level.add_ports(IBIAS2_via.ports, prefix="IBIAS2_")
 
     #adding differential input pins
     MINUS_via = top_level << viam3m4
     MINUS_via.move(n_block_ref.ports["gate_inA_top_met_W"].center).movex(local_c_bias_1_ref.xmin+3*input_pair_params[1])
     top_level << straight_route(pdk, n_block_ref.ports["gate_inA_top_met_W"], MINUS_via.ports["top_met_E"], width=0.6, glayer1='met4')
-    top_level.add_ports(MINUS_via.get_ports_list(), prefix="MINUS_")
+    top_level.add_ports(MINUS_via.ports, prefix="MINUS_")
     
     PLUS_via = top_level << viam3m4
     PLUS_via.move(n_block_ref.ports["gate_inB_top_met_E"].center).movex(local_c_bias_2_ref.xmax-3*input_pair_params[1])
     top_level << straight_route(pdk, n_block_ref.ports["gate_inB_top_met_E"], PLUS_via.ports["top_met_W"], width=0.6, glayer1='met4')
-    top_level.add_ports(PLUS_via.get_ports_list(), prefix="PLUS_")
+    top_level.add_ports(PLUS_via.ports, prefix="PLUS_")
     
     #adding VCC pin
     arrm2m3_1 = via_array(
@@ -219,7 +219,7 @@ def super_class_AB_OTA(
     VCC_via.movey(p_block_ref.ymax+5)
     top_level.add(VCC_via)
     top_level << straight_route(pdk, p_block_ref.ports["top_welltie_N_top_met_N"], VCC_via.ports["bottom_lay_S"], glayer1='met2', width=6, fullbottom=True)
-    top_level.add_ports(VCC_via.get_ports_list(), prefix="VCC_")
+    top_level.add_ports(VCC_via.ports, prefix="VCC_")
     
     arrm2m3_2 = via_array(
         pdk,
@@ -251,7 +251,7 @@ def super_class_AB_OTA(
     GND_via = top_level << arrm2m3_2
     GND_via.move(n_block_ref.ports["op_cmirr_welltie_S_top_met_S"].center).movey(-2).movex(local_c_bias_2_ref.xmax)
     top_level << L_route(pdk, n_block_ref.ports["op_cmirr_welltie_S_top_met_S"], GND_via.ports["bottom_lay_W"], vglayer='met2', hglayer='met2', vwidth=1.5, hwidth=1.5)
-    top_level.add_ports(GND_via.get_ports_list(), prefix="VSS_")
+    top_level.add_ports(GND_via.ports, prefix="VSS_")
 
     component = component_snap_to_grid(rename_ports_by_orientation(top_level))
     component.info['netlist'] = super_class_AB_OTA_netlist(local_c_bias_1_ref, local_c_bias_2_ref, res_1_ref, res_2_ref, nb, pblock)

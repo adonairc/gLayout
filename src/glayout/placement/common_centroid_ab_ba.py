@@ -83,7 +83,7 @@ def common_centroid_ab_ba(
     # if substrate tap place substrate tap, and route dummy to substrate tap
     if substrate_tap:
         tapref = comcentroid << tapring(pdk,evaluate_bbox(comcentroid,padding=1))#,horizontal_glayer="met1")
-        comcentroid.add_ports(tapref.get_ports_list(),prefix="tap_")
+        comcentroid.add_ports(tapref.ports,prefix="tap_")
         try:
             comcentroid<<straight_route(pdk,a_topl.ports["multiplier_0_dummy_L_gsdcon_top_met_W"],comcentroid.ports["tap_W_top_met_W"],glayer2="met1")
         except KeyError:
@@ -101,10 +101,10 @@ def common_centroid_ab_ba(
         except KeyError:
             pass
     # correct pwell place, add ports, flatten, and return
-    comcentroid.add_ports(a_topl.get_ports_list(),prefix="tl_")
-    comcentroid.add_ports(b_topr.get_ports_list(),prefix="tr_")
-    comcentroid.add_ports(b_botl.get_ports_list(),prefix="bl_")
-    comcentroid.add_ports(a_botr.get_ports_list(),prefix="br_")
+    comcentroid.add_ports(a_topl.ports,prefix="tl_")
+    comcentroid.add_ports(b_topr.ports,prefix="tr_")
+    comcentroid.add_ports(b_botl.ports,prefix="bl_")
+    comcentroid.add_ports(a_botr.ports,prefix="br_")
     # route asrc to asrc
     vsrca1 = comcentroid << g1g2via
     vsrca2 = comcentroid << g1g2via
@@ -157,7 +157,7 @@ def common_centroid_ab_ba(
     comcentroid << straight_route(pdk, vgatea2.ports["bottom_met_S"], comcentroid.ports["br_multiplier_0_gate_N"])
     g1extension = pdk.util_max_metal_seperation()+pdk.snap_to_2xgrid(comcentroid.ports["tr_multiplier_0_plusdoped_E"].center[0] - vgatea2.ports["top_met_E"].center[0])
     cext1 = comcentroid << c_route(pdk, vgatea2.ports["top_met_E"], vgatea1.ports["top_met_E"], cglayer=glayer2, extension=g1extension)
-    comcentroid.add_ports(ports=cext1.get_ports_list(),prefix="A_gate_route_")
+    comcentroid.add_ports(ports=cext1.ports,prefix="A_gate_route_")
     # bgate to bgate
     vgateb1 = comcentroid << g1g2via# first via
     align_comp_to_port(vgateb1,comcentroid.ports["bl_multiplier_0_gate_E"],alignment=("right","top"))
@@ -167,7 +167,7 @@ def common_centroid_ab_ba(
     comcentroid << straight_route(pdk, vgateb2.ports["bottom_met_N"], comcentroid.ports["tr_multiplier_0_gate_S"])
     g2extension = pdk.util_max_metal_seperation()+pdk.snap_to_2xgrid(abs(comcentroid.ports["tl_multiplier_0_plusdoped_W"].center[0] - vgateb1.ports["top_met_W"].center[0]))
     cext2 = comcentroid << c_route(pdk, vgateb2.ports["top_met_W"], vgateb1.ports["top_met_W"], cglayer=glayer2, extension=g2extension)
-    comcentroid.add_ports(ports=cext2.get_ports_list(),prefix="B_gate_route_")
+    comcentroid.add_ports(ports=cext2.ports,prefix="B_gate_route_")
     # create better toplevel ports
     b_drainENS = comcentroid << straight_route(pdk, comcentroid.ports["tr_multiplier_0_drain_E"], movex(cext1.ports["con_N"],cext2.ports["con_N"].width/2+pdk.util_max_metal_seperation()), glayer2=glayer1)
     a_drainENS = comcentroid << straight_route(pdk, comcentroid.ports["br_multiplier_0_drain_E"], movex(cext1.ports["con_N"],cext2.ports["con_N"].width/2+pdk.util_max_metal_seperation()), glayer2=glayer1)

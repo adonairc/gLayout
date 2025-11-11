@@ -101,7 +101,7 @@ def L_route(
 		viayofs = viayofs if viaoffset[1] else 0
 		h_to_v_via_ref.movex(viaxofs).movey(viayofs)
 	# add ports and return
-	Lroute.add_ports(h_to_v_via_ref.get_ports_list())
+	Lroute.add_ports(h_to_v_via_ref.ports)
 	return rename_ports_by_orientation(Lroute.flatten())
 
 

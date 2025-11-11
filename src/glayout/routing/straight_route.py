@@ -98,7 +98,7 @@ def straight_route(
 		via1_alignment = temp if i == 0 else via1_alignment
 		via2_alignment = temp if i == 1 else via2_alignment
 	route_ref = align_comp_to_port(route,edge1,alignment=alignment)
-	straightroute.add_ports(route_ref.get_ports_list())
+	straightroute.add_ports(route_ref.ports)
 	straightroute.add(route_ref)
 	if out_via is not None:
 		alignlayer2 = pdk.get_glayer(glayer1) if via2_alignment_layer is None else pdk.get_glayer(via2_alignment_layer)

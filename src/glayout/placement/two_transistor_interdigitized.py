@@ -115,7 +115,7 @@ def macro_two_transistor_interdigitized(
         refs[-1].movex(i*(xdisp))
         devletter = "B" if i%2 else "A"
         prefix=devletter+"_"+str(int(i/2))+"_"
-        idplace.add_ports(refs[-1].get_ports_list(), prefix=prefix)
+        idplace.add_ports(refs[-1].ports, prefix=prefix)
     # extend poly layer for equal parasitics
     for i in range(2*numcols):
         desired_end_layer = pdk.layer_to_glayer(refs[i].ports["row0_col0_rightsd_top_met_N"].layer)
@@ -136,7 +136,7 @@ def macro_two_transistor_interdigitized(
     # add route ports and return
     prefixes = ["A_source","B_source","A_drain","B_drain","A_gate","B_gate"]
     for i, ref in enumerate([A_src, B_src, A_drain, B_drain, A_gate, B_gate]):
-        idplace.add_ports(ref.get_ports_list(),prefix=prefixes[i])
+        idplace.add_ports(ref.ports,prefix=prefixes[i])
     idplace = transformed(prec_ref_center(idplace))
     idplace.unlock()
     idplace.add_ports(create_private_ports(idplace, prefixes))
@@ -182,7 +182,7 @@ def two_nfet_interdigitized(
             horizontal_glayer=tie_layers[0],
             vertical_glayer=tie_layers[1],
         )
-        base_multiplier.add_ports(tiering_ref.get_ports_list(), prefix="welltie_")
+        base_multiplier.add_ports(tiering_ref.ports, prefix="welltie_")
         try:
             base_multiplier<<straight_route(pdk,base_multiplier.ports["A_0_dummy_L_gsdcon_top_met_W"],base_multiplier.ports["welltie_W_top_met_W"],glayer2="met1")
         except KeyError:
@@ -215,7 +215,7 @@ def two_nfet_interdigitized(
             vertical_glayer="met1",
         )
         tapring_ref = base_multiplier << ringtoadd
-        base_multiplier.add_ports(tapring_ref.get_ports_list(),prefix="substratetap_")
+        base_multiplier.add_ports(tapring_ref.ports,prefix="substratetap_")
     base_multiplier.info["route_genid"] = "two_transistor_interdigitized"
 
     # TODO: Implement two_tran_interdigitized_netlist function
@@ -268,7 +268,7 @@ def two_pfet_interdigitized(
             horizontal_glayer=tie_layers[0],
             vertical_glayer=tie_layers[1],
         )
-        base_multiplier.add_ports(tiering_ref.get_ports_list(), prefix="welltie_")
+        base_multiplier.add_ports(tiering_ref.ports, prefix="welltie_")
         try:
             base_multiplier<<straight_route(pdk,base_multiplier.ports["A_0_dummy_L_gsdcon_top_met_W"],base_multiplier.ports["welltie_W_top_met_W"],glayer2="met1")
         except KeyError:
@@ -301,7 +301,7 @@ def two_pfet_interdigitized(
             vertical_glayer="met1",
         )
         tapring_ref = base_multiplier << ringtoadd
-        base_multiplier.add_ports(tapring_ref.get_ports_list(),prefix="substratetap_")
+        base_multiplier.add_ports(tapring_ref.ports,prefix="substratetap_")
     base_multiplier.info["route_genid"] = "two_transistor_interdigitized"
 
     # TODO: Implement two_tran_interdigitized_netlist function

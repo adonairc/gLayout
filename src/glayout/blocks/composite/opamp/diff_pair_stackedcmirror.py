@@ -30,7 +30,7 @@ def __add_diff_pair_and_bias(pdk: MappedPDK, toplevel_stacked: Component, half_d
     clear_cache()
     diffpair_i_ref = diff_pair_ibias(pdk, half_diffpair_params, diffpair_bias, rmult, with_antenna_diode_on_diffinputs)
     toplevel_stacked.add(diffpair_i_ref)
-    toplevel_stacked.add_ports(diffpair_i_ref.get_ports_list(),prefix="diffpair_")
+    toplevel_stacked.add_ports(diffpair_i_ref.ports,prefix="diffpair_")
 
     toplevel_stacked.info['netlist'] = diffpair_i_ref.info['netlist']
 
@@ -56,8 +56,8 @@ def __add_common_source_nbias_transistors(pdk: MappedPDK, toplevel_stacked: Comp
         toplevel_stacked.add(cmirrorref_ref)
         toplevel_stacked.add(cmirrorout_ref)
         side = "R" if i==0 else "L"
-        toplevel_stacked.add_ports(cmirrorout_ref.get_ports_list(), prefix="commonsource_cmirror_output_"+side+"_")
-        toplevel_stacked.add_ports(cmirrorref_ref.get_ports_list(), prefix="commonsource_cmirror_ref_"+side+"_")
+        toplevel_stacked.add_ports(cmirrorout_ref.ports, prefix="commonsource_cmirror_output_"+side+"_")
+        toplevel_stacked.add_ports(cmirrorref_ref.ports, prefix="commonsource_cmirror_ref_"+side+"_")
         toplevel_stacked << straight_route(pdk, toplevel_stacked.ports["commonsource_cmirror_output_"+side+"_tie_S_top_met_S"], toplevel_stacked.ports["commonsource_cmirror_ref_"+side+"_tie_N_top_met_N"])
     return toplevel_stacked
 
@@ -125,6 +125,6 @@ def diff_pair_stackedcmirror(
     gndpin.movey(pdk.snap_to_2xgrid(toplevel_stacked.ymin-pdk.util_max_metal_seperation()-gndpin.ymax))
     # route bottom ncomps except drain of nbias (still need to place common source pmos amp)
     toplevel_stacked, halfmultn_drain_routeref, halfmultn_gate_routeref, _cref = __route_bottom_ncomps_except_drain_nbias(pdk, toplevel_stacked, gndpin, half_common_source_nbias[3])
-    toplevel_stacked.add_ports(gndpin.get_ports_list(), prefix="pin_gnd_")
+    toplevel_stacked.add_ports(gndpin.ports, prefix="pin_gnd_")
 
     return toplevel_stacked, halfmultn_drain_routeref, halfmultn_gate_routeref, _cref

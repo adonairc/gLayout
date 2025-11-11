@@ -356,7 +356,7 @@ def create_private_ports(custom_comp: Union[Component, ComponentReference], port
 			port_paths = [port_paths]
 	# find all matching ports
 	ports_to_add = list()
-	for port in custom_comp.get_ports_list():
+	for port in custom_comp.ports:
 		if any([port.name.startswith(port_path) for port_path in port_paths]) or bypass:
 			ports_to_add.append(port.copy(name=port.name+"_private"))
 	return ports_to_add

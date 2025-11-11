@@ -208,9 +208,9 @@ def generic_4T_interdigitzed(
         substrate_tap = tapring(pdk, enclosed_rectangle=pdk.snap_to_2xgrid(evaluate_bbox(toplvl_temp,padding=0.34)))
         substrate_tap_ref = toplvl << movey(substrate_tap,destination=pdk.snap_to_2xgrid(toplvl_temp.center[1],snap4=True))
     # add ports
-    toplvl.add_ports(substrate_tap_ref.get_ports_list(),prefix="substratetap_")
-    toplvl.add_ports(toprow.get_ports_list(),prefix="top_")
-    toplvl.add_ports(bottomrow.get_ports_list(),prefix="bottom_")
+    toplvl.add_ports(substrate_tap_ref.ports,prefix="substratetap_")
+    toplvl.add_ports(toprow.ports,prefix="top_")
+    toplvl.add_ports(bottomrow.ports,prefix="bottom_")
     # flag for smart route
     toplvl.info["route_genid"] = "four_transistor_interdigitized"
     if top_row_device==bottom_row_device and top_row_device=="nfet":

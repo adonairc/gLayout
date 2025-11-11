@@ -168,7 +168,7 @@ def via_stack(
                 ports_to_add["bottom_met_"] =  gf.port.get_ports_list(bot_ref)
             ports_to_add["bottom_layer_"] = gf.port.get_ports_list(bot_ref)
         if fulltop:
-            ports_to_add["top_met_"] = (viastack << rectangle(size=evaluate_bbox(viastack),layer=pdk.get_glayer(glayer2), centered=True)).get_ports_list()
+            ports_to_add["top_met_"] = (viastack << rectangle(size=evaluate_bbox(viastack),layer=pdk.get_glayer(glayer2), centered=True)).ports
         # add all ports in ports_to_add
         for prefix, ports_list in ports_to_add.items():
             viastack.add_ports(ports_list,prefix=prefix)

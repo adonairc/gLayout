@@ -150,7 +150,7 @@ def diff_pair(
 	# if substrate tap place substrate tap
 	if substrate_tap:
 		tapref = diffpair << tapring(pdk,evaluate_bbox(diffpair,padding=1),horizontal_glayer="met1")
-		diffpair.add_ports(tapref.get_ports_list(),prefix="tap_")
+		diffpair.add_ports(tapref.ports,prefix="tap_")
 		try:
 			diffpair<<straight_route(pdk,a_topl.ports["multiplier_0_dummy_L_gsdcon_top_met_W"],diffpair.ports["tap_W_top_met_W"],glayer2="met1")
 		except KeyError:
@@ -209,18 +209,18 @@ def diff_pair(
 	MINUSgate_routeW = diffpair << c_route(pdk, set_port_orientation(b_botl.ports["multiplier_0_gate_E"],"W"), bar_minus.ports["e1"], extension=get_left_extension(bar_minus))
 	PLUSgate_routeE = diffpair << c_route(pdk, set_port_orientation(a_botr.ports["multiplier_0_gate_W"],"E"), bar_plus.ports["e3"], extension=get_right_extension(bar_plus))
 	# correct pwell place, add ports, flatten, and return
-	diffpair.add_ports(a_topl.get_ports_list(),prefix="tl_")
-	diffpair.add_ports(b_topr.get_ports_list(),prefix="tr_")
-	diffpair.add_ports(b_botl.get_ports_list(),prefix="bl_")
-	diffpair.add_ports(a_botr.get_ports_list(),prefix="br_")
-	diffpair.add_ports(source_routeE.get_ports_list(),prefix="source_routeE_")
-	diffpair.add_ports(source_routeW.get_ports_list(),prefix="source_routeW_")
-	diffpair.add_ports(drain_routeTR_BL.get_ports_list(),prefix="drain_routeTR_BL_")
-	diffpair.add_ports(drain_routeTL_BR.get_ports_list(),prefix="drain_routeTL_BR_")
-	diffpair.add_ports(MINUSgate_routeW.get_ports_list(),prefix="MINUSgateroute_W_")
-	diffpair.add_ports(MINUSgate_routeE.get_ports_list(),prefix="MINUSgateroute_E_")
-	diffpair.add_ports(PLUSgate_routeW.get_ports_list(),prefix="PLUSgateroute_W_")
-	diffpair.add_ports(PLUSgate_routeE.get_ports_list(),prefix="PLUSgateroute_E_")
+	diffpair.add_ports(a_topl.ports,prefix="tl_")
+	diffpair.add_ports(b_topr.ports,prefix="tr_")
+	diffpair.add_ports(b_botl.ports,prefix="bl_")
+	diffpair.add_ports(a_botr.ports,prefix="br_")
+	diffpair.add_ports(source_routeE.ports,prefix="source_routeE_")
+	diffpair.add_ports(source_routeW.ports,prefix="source_routeW_")
+	diffpair.add_ports(drain_routeTR_BL.ports,prefix="drain_routeTR_BL_")
+	diffpair.add_ports(drain_routeTL_BR.ports,prefix="drain_routeTL_BR_")
+	diffpair.add_ports(MINUSgate_routeW.ports,prefix="MINUSgateroute_W_")
+	diffpair.add_ports(MINUSgate_routeE.ports,prefix="MINUSgateroute_E_")
+	diffpair.add_ports(PLUSgate_routeW.ports,prefix="PLUSgateroute_W_")
+	diffpair.add_ports(PLUSgate_routeE.ports,prefix="PLUSgateroute_E_")
 	diffpair.add_padding(layers=(pdk.get_glayer(well),), default=0)
 
 	component = component_snap_to_grid(rename_ports_by_orientation(diffpair))
