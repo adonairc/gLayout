@@ -273,6 +273,8 @@ class MappedPDK(Pdk):
         "mimcap": ""
     }
 
+    grid_size: float = 0.005  # Default grid size in microns (5nm)
+
     glayers: dict[StrictStr, Union[StrictStr, tuple[int,int]]]
     # friendly way to implement a graph
     grules: dict[StrictStr, dict[StrictStr, dict[StrictStr, Any] | None]]
