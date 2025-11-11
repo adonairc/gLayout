@@ -7,7 +7,7 @@ from pathlib import Path
 
 from gdsfactory import cell
 from gdsfactory.component import Component
-from gdsfactory import ComponentReference as Reference
+from gdsfactory.component import ComponentReference as Reference
 from gdsfactory.typings import Layer, ComponentOrReference
 from pydantic import validate_arguments
 
