@@ -4,7 +4,7 @@ from glayout.pdk.mappedpdk import MappedPDK
 from typing import Union
 from glayout.primitives.via_gen import via_stack, via_array
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port, to_decimal, to_float, prec_ref_center, get_primitive_rectangle
-from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, print_ports, assert_port_manhattan, assert_ports_perpindicular
+from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, print_ports, assert_port_manhattan, assert_ports_perpindicular, get_layer_from_port
 from decimal import Decimal
 
 
@@ -61,8 +61,9 @@ def L_route(
 	# arg setup
 	vwidth = to_decimal(vwidth if vwidth else vport.width)
 	hwidth = to_decimal(hwidth if hwidth else hport.width)
-	hglayer = hglayer if hglayer else pdk.layer_to_glayer(vport.layer)
-	vglayer = vglayer if vglayer else pdk.layer_to_glayer(hport.layer)
+	# In GDSFactory v9, use get_layer_from_port() for reliable layer extraction
+	hglayer = hglayer if hglayer else get_layer_from_port(vport, pdk)
+	vglayer = vglayer if vglayer else get_layer_from_port(hport, pdk)
 	if isinstance(viaoffset,bool):
 		viaoffset = (True,True) if viaoffset else (False,False)
 	# compute required dimensions

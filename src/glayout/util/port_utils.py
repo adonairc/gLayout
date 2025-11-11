@@ -486,6 +486,76 @@ class PortTree:
 				outputfile.write(rtrstr)
 
 
+def infer_glayer_from_port_name(port_name: str) -> str | None:
+	"""Infer glayer from port name patterns like 'bottom_met_N', 'gate_S', etc.
+
+	Args:
+		port_name (str): The name of the port
+
+	Returns:
+		str | None: The inferred glayer name, or None if no pattern matches
+	"""
+	port_lower = port_name.lower()
+	if "met" in port_lower:
+		return "met1"  # Default to met1 for metal ports
+	elif "poly" in port_lower or "gate" in port_lower:
+		return "poly"  # Gates are on poly layer
+	elif "diff" in port_lower or "active" in port_lower:
+		return "active_diff"
+	return None
+
+
+def get_layer_from_port(port: Port, pdk) -> str:
+	"""Extract layer information from a port using multiple methods for GDSFactory v9.
+
+	In GDSFactory v9, port.layer may not be reliable. This function tries multiple
+	methods to extract the correct layer:
+	1. Try port.layer directly
+	2. Check port.cross_section.layer (most reliable in v9)
+	3. Fall back to inferring from port name
+
+	Args:
+		port (Port): The port to extract layer information from
+		pdk: The PDK instance with layer mapping
+
+	Returns:
+		str: The glayer name corresponding to the port's layer
+
+	Raises:
+		ValueError: If the layer cannot be determined
+	"""
+	# Method 1: Try port.layer directly
+	try:
+		return pdk.layer_to_glayer(port.layer)
+	except (ValueError, KeyError):
+		pass
+
+	# Method 2: Check if port has cross_section with layer info (most reliable in v9)
+	if hasattr(port, 'cross_section') and port.cross_section is not None:
+		try:
+			xs = port.cross_section
+			if hasattr(xs, 'layer'):
+				# xs.layer can be LayerInfo (KLayout), LayerEnum, or tuple
+				if isinstance(xs.layer, tuple):
+					layer_tuple = xs.layer
+				elif hasattr(xs.layer, 'layer') and hasattr(xs.layer, 'datatype'):
+					# KLayout LayerInfo object
+					layer_tuple = (xs.layer.layer, xs.layer.datatype)
+				else:
+					# Try tuple() conversion for LayerEnum
+					layer_tuple = tuple(xs.layer)
+				return pdk.layer_to_glayer(layer_tuple)
+		except (ValueError, KeyError, AttributeError, TypeError):
+			pass
+
+	# Method 3: Infer from port name as fallback
+	glayer = infer_glayer_from_port_name(port.name)
+	if glayer:
+		return glayer
+
+	raise ValueError(f"Cannot determine glayer for port {port.name} with layer {port.layer}")
+
+
 def print_port_tree_all_cells() -> list:
 	"""print the PortTree for most of the glayout.flow.cells and save as a text file.
 	returns a list of components

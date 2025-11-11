@@ -4,7 +4,7 @@ from glayout.pdk.mappedpdk import MappedPDK
 from glayout.primitives.via_gen import via_stack, via_array
 from gdsfactory.components import rectangle
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port
-from glayout.util.port_utils import assert_port_manhattan, set_port_orientation, add_ports_perimeter
+from glayout.util.port_utils import assert_port_manhattan, set_port_orientation, add_ports_perimeter, get_layer_from_port
 from gdstk import rectangle as primitive_rectangle
 
 
@@ -50,62 +50,10 @@ def straight_route(
 	"""
 	#TODO: error checking
 	width = width if width else edge1.width
-	# In GDSFactory v9, port.layer may not be reliable, try alternative methods
-	def get_layer_from_port(port, pdk):
-		"""Try to extract the correct layer from port using multiple methods"""
-		# Method 1: Try port.layer directly
-		try:
-			return pdk.layer_to_glayer(port.layer)
-		except (ValueError, KeyError):
-			pass
-
-		# Method 2: Check if port has cross_section with layer info
-		if hasattr(port, 'cross_section') and port.cross_section is not None:
-			try:
-				xs = port.cross_section
-				if hasattr(xs, 'layer'):
-					print(f"DEBUG: Found cross_section.layer = {xs.layer}, type = {type(xs.layer)}")
-					# xs.layer can be LayerInfo (KLayout), LayerEnum, or tuple
-					if isinstance(xs.layer, tuple):
-						layer_tuple = xs.layer
-					elif hasattr(xs.layer, 'layer') and hasattr(xs.layer, 'datatype'):
-						# KLayout LayerInfo object
-						layer_tuple = (xs.layer.layer, xs.layer.datatype)
-					else:
-						# Try tuple() conversion for LayerEnum
-						layer_tuple = tuple(xs.layer)
-					print(f"DEBUG: Converted to tuple = {layer_tuple}")
-					return pdk.layer_to_glayer(layer_tuple)
-			except (ValueError, KeyError, AttributeError, TypeError) as e:
-				print(f"DEBUG: Failed to use cross_section.layer: {e}")
-				pass
-
-		# Method 3: Check port_type (e.g., "electrical" might have specific layer)
-		if hasattr(port, 'port_type'):
-			print(f"DEBUG: port.port_type = {port.port_type}")
-
-		# Method 4: Infer from port name as fallback
-		print(f"DEBUG: Falling back to name inference for port {port.name}")
-		return infer_glayer_from_port_name(port.name)
-
-	def infer_glayer_from_port_name(port_name):
-		"""Infer glayer from port name patterns like 'bottom_met_N', 'gate_S', etc."""
-		if "met" in port_name.lower():
-			return "met1"  # Default to met1 for metal ports
-		elif "poly" in port_name.lower() or "gate" in port_name.lower():
-			return "poly"  # Gates are on poly layer
-		elif "diff" in port_name.lower() or "active" in port_name.lower():
-			return "active_diff"
-		return None
-
 	if not glayer1:
 		glayer1 = get_layer_from_port(edge1, pdk)
-		if not glayer1:
-			raise ValueError(f"Cannot determine glayer for port {edge1.name} with layer {edge1.layer}")
 	if not glayer2:
 		glayer2 = get_layer_from_port(edge2, pdk)
-		if not glayer2:
-			raise ValueError(f"Cannot determine glayer for port {edge2.name} with layer {edge2.layer}")
 
 	# Determine if we need a via at the start
 	front_via = None
