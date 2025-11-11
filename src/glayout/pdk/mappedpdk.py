@@ -984,30 +984,33 @@ exit
             
         elif self.layers is not None:
             # find glayer verfying presence along the way
-            print(self.layers)
-            pdk_real_layers = self.layers
-            if layer in pdk_real_layers:
-                layer_name = find_last(layer.name, self.layers.items())
-                if layer_name in self.glayers.values():
-                    glayer_name = find_last(layer_name, self.glayers)
-                else:
-                    raise ValueError("layer does not correspond to a glayer")
-            elif layer_as_int is not None:
-                # Search for any layer tuple with matching layer number
-                matching_layer = None
-                for pdk_layer in pdk_real_layers:
-                    if isinstance(pdk_layer, tuple) and len(pdk_layer) >= 1 and pdk_layer[0] == layer_as_int:
-                        matching_layer = pdk_layer
-                        break
-                if matching_layer:
-                    layer_name = find_last(matching_layer, self.layers)
+            # In v9, self.layers is a LayerEnum, get the tuple values
+            pdk_real_layers = list(self.layers.__members__.values()) if hasattr(self.layers, '__members__') else self.layers.values()
+            # First try exact match with the layer tuple
+            layer_found = False
+            for enum_member in pdk_real_layers:
+                enum_value = enum_member.value if hasattr(enum_member, 'value') else enum_member
+                if enum_value == layer:
+                    layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(layer, self.layers)
                     if layer_name in self.glayers.values():
                         glayer_name = find_last(layer_name, self.glayers)
                     else:
                         raise ValueError("layer does not correspond to a glayer")
-                else:
-                    raise ValueError("layer is not a layer present in the pdk")
-            else:
+                    layer_found = True
+                    break
+            # If not found and we have an integer layer, search by layer number
+            if not layer_found and layer_as_int is not None:
+                for enum_member in pdk_real_layers:
+                    enum_value = enum_member.value if hasattr(enum_member, 'value') else enum_member
+                    if isinstance(enum_value, tuple) and len(enum_value) >= 1 and enum_value[0] == layer_as_int:
+                        layer_name = enum_member.name if hasattr(enum_member, 'name') else find_last(enum_value, self.layers)
+                        if layer_name in self.glayers.values():
+                            glayer_name = find_last(layer_name, self.glayers)
+                        else:
+                            raise ValueError("layer does not correspond to a glayer")
+                        layer_found = True
+                        break
+            if not layer_found:
                 raise ValueError("layer is not a layer present in the pdk")
             return glayer_name
         else:
