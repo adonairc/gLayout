@@ -19,7 +19,10 @@ def __fill_empty_viastack__macro(pdk: MappedPDK, glayer: str, size: tuple[float,
     if size is None:
         size = pdk.snap_to_2xgrid([2*pdk.get_grule(glayer)["min_width"],2*pdk.get_grule(glayer)["min_width"]])
     comp = rectangle(size=size,layer=pdk.get_glayer(glayer),centered=True)
-    return rename_ports_by_orientation(rename_ports_by_list(comp,replace_list=[("e","top_met_")])).flatten()
+    comp = rename_ports_by_orientation(rename_ports_by_list(comp,replace_list=[("e","top_met_")]))
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    comp.flatten()
+    return comp
 
 def c_route(
     pdk: MappedPDK,
@@ -266,5 +269,7 @@ def c_route(
         orta = get_orientation(port_to_add.orientation)
         route_ports[i] = set_port_orientation(port_to_add, orta)
     croute.add_ports(route_ports,prefix="con_")
-    return rename_ports_by_orientation(rename_ports_by_list(croute.flatten(), [("con_","con_")]))
+    # In GDSFactory v9, flatten() mutates in-place and returns None
+    croute.flatten()
+    return rename_ports_by_orientation(rename_ports_by_list(croute, [("con_","con_")]))
 

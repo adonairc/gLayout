@@ -141,6 +141,8 @@ def straight_route(
 	if front_via is not None:
 		alignlayer1 = pdk.get_glayer(glayer1) if via1_alignment_layer is None else pdk.get_glayer(via1_alignment_layer)
 		straightroute.add(align_comp_to_port(front_via,edge1,layer=alignlayer1,alignment=via1_alignment))
-	return straightroute.flatten()
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	straightroute.flatten()
+	return straightroute
 
 

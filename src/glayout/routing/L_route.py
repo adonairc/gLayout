@@ -102,6 +102,8 @@ def L_route(
 		h_to_v_via_ref.movex(viaxofs).movey(viayofs)
 	# add ports and return
 	Lroute.add_ports(h_to_v_via_ref.ports)
-	return rename_ports_by_orientation(Lroute.flatten())
+	# In GDSFactory v9, flatten() mutates in-place and returns None
+	Lroute.flatten()
+	return rename_ports_by_orientation(Lroute)
 
 
