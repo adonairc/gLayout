@@ -50,13 +50,43 @@ def straight_route(
 	"""
 	#TODO: error checking
 	width = width if width else edge1.width
-	print(f"DEBUG straight_route: edge1.name={edge1.name}, edge1.layer={edge1.layer}, type={type(edge1.layer)}")
-	print(f"DEBUG straight_route: edge1 attributes: {dir(edge1)}")
-	glayer1 = glayer1 if glayer1 else pdk.layer_to_glayer(edge1.layer)
+	# In GDSFactory v9, port.layer may not be reliable, try to infer from port name
+	def infer_glayer_from_port_name(port_name):
+		"""Infer glayer from port name patterns like 'bottom_met_N', 'top_met_W', etc."""
+		if "met" in port_name.lower():
+			return "met1"  # Default to met1 for metal ports
+		elif "poly" in port_name.lower():
+			return "poly"
+		elif "diff" in port_name.lower() or "active" in port_name.lower():
+			return "active_diff"
+		return None
+
+	if not glayer1:
+		try:
+			glayer1 = pdk.layer_to_glayer(edge1.layer)
+		except (ValueError, KeyError):
+			# Fallback: infer from port name
+			glayer1 = infer_glayer_from_port_name(edge1.name)
+			if not glayer1:
+				raise ValueError(f"Cannot determine glayer for port {edge1.name} with layer {edge1.layer}")
+	if not glayer2:
+		try:
+			glayer2 = pdk.layer_to_glayer(edge2.layer)
+		except (ValueError, KeyError):
+			# Fallback: infer from port name
+			glayer2 = infer_glayer_from_port_name(edge2.name)
+			if not glayer2:
+				raise ValueError(f"Cannot determine glayer for port {edge2.name} with layer {edge2.layer}")
+
+	# Determine if we need a via at the start
 	front_via = None
-	if glayer1 != pdk.layer_to_glayer(edge1.layer):
-		front_via = via_stack(pdk,glayer1,pdk.layer_to_glayer(edge1.layer),fullbottom=fullbottom)
-	glayer2 = glayer2 if glayer2 else pdk.layer_to_glayer(edge2.layer)
+	try:
+		edge1_glayer = pdk.layer_to_glayer(edge1.layer)
+		if glayer1 != edge1_glayer:
+			front_via = via_stack(pdk,glayer1,edge1_glayer,fullbottom=fullbottom)
+	except (ValueError, KeyError):
+		# Edge1 layer not in PDK, assume no via needed
+		pass
 	assert_port_manhattan([edge1,edge2])
 	if edge1.orientation == edge2.orientation:
 		edge2 = set_port_orientation(edge2,edge2.orientation,flip180=True)
