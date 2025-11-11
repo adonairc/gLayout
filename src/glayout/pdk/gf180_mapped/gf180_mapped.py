@@ -6,44 +6,44 @@ from ..gf180_mapped.gf180_grules import grulesobj
 from ..mappedpdk import MappedPDK, SetupPDKFiles
 from pathlib import Path
 import os
-
+from gdsfactory.typings import LayerSpec
+from gdsfactory.technology import LayerMap
+from gdsfactory.typings import Layer
 # Actual Pin definations for GlobalFoundries 180nmMCU from the PDK manual
 # Ref: https://gf180mcu-pdk.readthedocs.io/en/latest/
 
 #LAYER["fusetop"]=(75, 0)
-LAYER = {
-    "metal5": (81, 0),
-    "via4": (41, 0),
-    "metal4": (46, 0),
-    "via3": (40, 0),
-    "metal3": (42, 0),
-    "via2": (38, 0),
-    "metal2": (36, 0),
-    "via1": (35, 0),
-    "metal1": (34, 0),
-    "contact": (33, 0),
-    "poly2": (30, 0),
-    "comp": (22, 0),
-    "nplus": (32, 0),
-    "pplus": (31, 0),
-    "nwell": (21, 0),
-    "lvpwell": (204, 0),
-    "dnwell": (12, 0),
-    "CAP_MK": (117, 5),
-    # BJT layers
-    "drc_bjt": (127, 5),
-    "lvs_bjt": (118, 5),
+class LayerMapGf180(LayerMap):
+    metal5: Layer =  (81, 0)
+    via4: Layer =  (41, 0)
+    metal4: Layer =  (46, 0)
+    via3: Layer =  (40, 0)
+    metal3: Layer =  (42, 0)
+    via2: Layer =  (38, 0)
+    metal2: Layer =  (36, 0)
+    via1: Layer =  (35, 0)
+    metal1: Layer =  (34, 0)
+    contact: Layer =  (33, 0)
+    poly2: Layer =  (30, 0)
+    comp: Layer =  (22, 0)
+    nplus: Layer =  (32, 0)
+    pplus: Layer =  (31, 0)
+    nwell: Layer =  (21, 0)
+    lvpwell: Layer =  (204, 0)
+    dnwell: Layer =  (12, 0)
+    CAP_MK: Layer =  (117, 5)
     # _Label Layer Definations
-    "metal5_label": (81,10),
-    "metal4_label": (46,10),
-    "metal3_label": (42,10),
-    "metal2_label": (36,10),
-    "metal1_label": (34,10),
-    "poly2_label": (30,10),
-    "comp_label": (22,10),
-}
+    metal5_label: Layer =  (81,10)
+    metal4_label: Layer =  (46,10)
+    metal3_label: Layer =  (42,10)
+    metal2_label: Layer =  (36,10)
+    metal1_label: Layer =  (34,10)
+    poly2_label: Layer =  (30,10)
+    comp_label: Layer =  (22,10)
 
-gf180_glayer_mapping = {
+LAYER = LayerMapGf180
+
+gf180_glayer_mapping: dict[str,LayerSpec]  = {
     "met5": "metal5",
     "via4": "via4",
     "met4": "metal4",
@@ -63,9 +63,6 @@ gf180_glayer_mapping = {
     "pwell": "lvpwell",
     "dnwell": "dnwell",
     "capmet": "CAP_MK",
-    # bjt layer
-    "drc_bjt": "drc_bjt",
-    "lvs_bjt": "lvs_bjt",
     # _pin layer ampping
     "met5_pin": "metal5_label",
     "met4_pin": "metal4_label",
@@ -83,8 +80,6 @@ gf180_glayer_mapping = {
     "poly_label": "poly2_label",
     "active_diff_label": "comp_label",
 }
-
-# Add valid BJT sizes
 
 gf180_valid_bjt_sizes = {
     "npn" : [
@@ -110,8 +105,8 @@ gf180_lydrc_file_path = Path(__file__).resolve().parent / "gf180mcu_drc.lydrc"
 # pdk_root = Path('/usr/bin/miniconda3/share/pdk/')
 pdk_root = Path(os.getenv('PDK_ROOT'))
 lvs_schematic_ref_file = Path(__file__).resolve().parent / "gf180mcu_osu_sc_9T.spice"
-magic_drc_file = pdk_root / "gf180mcuD" / "libs.tech" / "magic" / "gf180mcuD.magicrc"
-lvs_setup_tcl_file = pdk_root / "gf180mcuD" / "libs.tech" / "netgen" / "gf180mcuD_setup.tcl"
+magic_drc_file = pdk_root / "gf180mcuC" / "libs.tech" / "magic" / "gf180mcuC.magicrc"
+lvs_setup_tcl_file = pdk_root / "gf180mcuC" / "libs.tech" / "netgen" / "gf180mcuC_setup.tcl"
 temp_dir = None
 
 
@@ -133,14 +128,13 @@ gf180_mapped_pdk = MappedPDK(
 		'pfet': 'pfet_03v3',
 		'mimcap': 'mimcap_1p0fF'
     },
+    layers=LAYER,
     pdk_files=pdk_files,
     grules=grulesobj,
     valid_bjt_sizes=gf180_valid_bjt_sizes
 )
-# Set layers after initialization to avoid GDSFactory v9 validation
-gf180_mapped_pdk.layers = LAYER
 
-# Note: gds_write_settings and cell_decorator_settings no longer exist in GDSFactory v9
-# These settings are now handled differently or are deprecated
+# configure the grid size and other settings
 # gf180_mapped_pdk.gds_write_settings.precision = 5*10**-9
 # gf180_mapped_pdk.cell_decorator_settings.cache=False
+gf180_mapped_pdk.layers = LAYER

@@ -4,7 +4,7 @@ usage: from mappedpdk import MappedPDK
 import re
 from gdsfactory.pdk import Pdk
 from gdsfactory.component import Component
-from gdsfactory.typings import PathType, Layer
+from gdsfactory.typings import  PathType, Layer
 from pydantic import validator, StrictStr, ValidationError
 from typing import ClassVar, Any, Union, Literal, Iterable, TypedDict
 from pathlib import Path
@@ -298,7 +298,6 @@ class MappedPDK(Pdk):
     pdk_files: dict[StrictStr, Union[PathType, None]]
 
     valid_bjt_sizes: dict[StrictStr,  list[tuple[float,float]]]
-
     @validator("models")
     def models_check(cls, models_obj: dict[StrictStr, StrictStr]):
         for model in models_obj.keys():
@@ -324,7 +323,7 @@ class MappedPDK(Pdk):
     def drc(
         self,
         layout: Component | PathType,
-        output_dir_or_file: PathType | None = None,
+        output_dir_or_file: PathType = None,
     ):
         """Returns true if the layout is DRC clean and false if not
         Also saves detailed results to output_dir_or_file location as lyrdb
@@ -418,12 +417,12 @@ class MappedPDK(Pdk):
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def drc_magic(
-        self,
-        layout: Component | PathType,
-        design_name: str,
-        pdk_root: PathType | None = None,
-        magic_drc_file: PathType | None = None,
-        output_file: PathType | None = None
+        self, 
+        layout: Component | PathType, 
+        design_name: str, 
+        pdk_root: PathType | None  = None, 
+        magic_drc_file: PathType | None  = None, 
+        output_file: PathType | None  = None 
     ) -> dict:
         """Runs DRC using magic on the either the component or the gds file path provided. Requires the design name and the pdk_root to be specified, handles importing the required magicrc and other setup files, if not specified. Accepts overriden magic_commands_file and magic_drc_file.
 
@@ -605,16 +604,16 @@ custom_drc_save_report $::env(DESIGN_NAME) $::env(REPORTS_DIR)/$::env(DESIGN_NAM
     @validate_arguments(config=dict(arbitrary_types_allowed=True))
     def lvs_netgen(
         self,
-        layout: Component | PathType,
-        design_name: str,
-        pdk_root: PathType | None = None,
-        lvs_setup_tcl_file: PathType | None = None,
-        lvs_schematic_ref_file: PathType | None = None,
-        magic_drc_file: PathType | None = None,
-        netlist: PathType | None = None,
-        output_file_path: PathType | None = None,
-        copy_intermediate_files: bool | None = False,
-        show_scripts: bool | None = False,
+        layout: Component | PathType, 
+        design_name: str, 
+        pdk_root: PathType  | None  = None,
+        lvs_setup_tcl_file: PathType  | None = None,
+        lvs_schematic_ref_file: PathType | None  = None,
+        magic_drc_file: PathType | None  = None, 
+        netlist: PathType | None  = None,
+        output_file_path: PathType | None  = None, 
+        copy_intermediate_files: bool | None  = False,
+        show_scripts: bool | None  = False,
     ) -> dict:
         """ Runs LVS using netgen on the either the component or the gds file path provided. Requires the design name and the pdk_root to be specified, handles importing the required magicrc and other setup files, if not specified. Accepts overriden lvs_setup_tcl_file, lvs_schematic_ref_file, and magic_drc_file.
 
@@ -957,13 +956,14 @@ exit
                     f"{layer!r} not in self.glayers {list(self.glayers.keys())}"
                 )
             if isinstance(self.glayers[layer], str):
-                # In GDSFactory v9, validate_layers() was removed
-                # Manually check if layer exists in self.layers
-                layer_name = self.glayers[layer]
-                if self.layers is not None and layer_name not in self.layers:
-                    raise ValueError(f"Layer {layer_name!r} not found in PDK layers")
+                for layer in [self.glayers[layer]]:
+                    if layer not in [str(l) for l in self.layers]:
+                        raise ValueError(
+                             f"{layer} not in Pdk.layers {list(self.layers)}")
             elif not isinstance(self.glayers[layer], tuple):
                 raise TypeError("glayer mapped value should be str or tuple[int,int]")
+
+
 
 
     @validate_arguments(config=dict(arbitrary_types_allowed=True))

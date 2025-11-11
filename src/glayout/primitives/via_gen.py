@@ -1,9 +1,10 @@
+import gdsfactory as gf
 from gdsfactory.component import Component
-from gdsfactory.components import rectangle
+from gdsfactory.components.shapes import rectangle
 from pydantic import validate_arguments
 from glayout.pdk.mappedpdk import MappedPDK
 from math import floor
-from typing import Union
+from typing import Optional, Union
 from glayout.util.comp_utils import evaluate_bbox, prec_array, to_float, move, prec_ref_center, to_decimal
 from glayout.util.port_utils import rename_ports_by_orientation, print_ports
 from glayout.util.snap_to_grid import component_snap_to_grid
@@ -88,6 +89,7 @@ def __get_viastack_minseperation(pdk: MappedPDK, viastack: Component, ordered_la
     return pdk.snap_to_2xgrid([via_spacing, 2*top_enclosure], return_type="float")
 
 
+# @gf.cell
 def via_stack(
     pdk: MappedPDK,
     glayer1: str,
@@ -132,10 +134,11 @@ def via_stack(
         min_square = viastack << rectangle(size=2*[pdk.get_grule(glayer1)["min_width"]],layer=pdk.get_glayer(glayer1), centered=centered)
         # update ports
         if level1==0:# both poly or active
-            viastack.add_ports(min_square.get_ports_list(),prefix="bottom_layer_")
+            
+            viastack.add_ports(gf.port.get_ports_list(min_square),prefix="bottom_layer_")
         else:# both mets
-            viastack.add_ports(min_square.get_ports_list(),prefix="top_met_")
-            viastack.add_ports(min_square.get_ports_list(),prefix="bottom_met_")
+            viastack.add_ports(gf.port.get_ports_list(min_square),prefix="top_met_")
+            viastack.add_ports(gf.port.get_ports_list(min_square),prefix="bottom_met_")
     else:
         ports_to_add = dict()
         for level in range(level1,level2+1):
@@ -152,18 +155,18 @@ def via_stack(
             lay_ref = viastack << rectangle(size=[layer_dim,layer_dim],layer=pdk.get_glayer(layer_name), centered=True)
             # update ports
             if layer_name == glayer1:
-                ports_to_add["bottom_layer_"] = lay_ref.get_ports_list()
-                ports_to_add["bottom_via_"] = via_ref.get_ports_list()
+                ports_to_add["bottom_layer_"] = gf.port.get_ports_list(lay_ref)
+                ports_to_add["bottom_via_"] = gf.port.get_ports_list(via_ref)
             if (level1==0 and level==1) or (level1>0 and layer_name==glayer1):
-                ports_to_add["bottom_met_"] = lay_ref.get_ports_list()
+                ports_to_add["bottom_met_"] =  gf.port.get_ports_list(lay_ref)
             if layer_name == glayer2:
-                ports_to_add["top_met_"] = lay_ref.get_ports_list()
+                ports_to_add["top_met_"] = gf.port.get_ports_list(lay_ref)
         # implement fulltop and fullbottom options. update ports_to_add accordingly 
         if fullbottom:
             bot_ref = viastack << rectangle(size=evaluate_bbox(viastack),layer=pdk.get_glayer(glayer1), centered=True)
             if level1!=0:
-                ports_to_add["bottom_met_"] = bot_ref.get_ports_list()
-            ports_to_add["bottom_layer_"] = bot_ref.get_ports_list()
+                ports_to_add["bottom_met_"] =  gf.port.get_ports_list(bot_ref)
+            ports_to_add["bottom_layer_"] = gf.port.get_ports_list(bot_ref)
         if fulltop:
             ports_to_add["top_met_"] = (viastack << rectangle(size=evaluate_bbox(viastack),layer=pdk.get_glayer(glayer2), centered=True)).get_ports_list()
         # add all ports in ports_to_add
@@ -172,16 +175,18 @@ def via_stack(
         # move SW corner to 0,0 if centered=False
         if not centered:
             viastack = move(viastack,(viastack.xmax,viastack.ymax))
-    return rename_ports_by_orientation(viastack.flatten())
+    print("via stack")
+    return rename_ports_by_orientation(viastack)
 
 
+# @gf.cell
 def via_array(
     pdk: MappedPDK,
     glayer1: str,
     glayer2: str,
-    size: tuple[float | None,float | None] | None = None,
+    size: Optional[tuple[Optional[float],Optional[float]]] = None,
     minus1: bool = False,
-    num_vias: tuple[int | None,int | None] | None = None,
+    num_vias: Optional[tuple[Optional[int],Optional[int]]] = None,
     lay_bottom: bool = True,
     fullbottom: bool = False,
     no_exception: bool = False,
@@ -241,8 +246,8 @@ def via_array(
             raise ValueError("give at least 1: num_vias or size for each dim")
     # create array
     viaarray_ref = prec_ref_center(prec_array(viastack, columns=cnum_vias[0], rows=cnum_vias[1], spacing=2*[via_abs_spacing],absolute_spacing=True))
-    viaarray.add(viaarray_ref)
-    viaarray.add_ports(viaarray_ref.get_ports_list(),prefix="array_")
+    viaarray.add_ref(viaarray_ref)
+    viaarray.add_ports(gf.port.get_ports_list(viaarray_ref),prefix="array_")
     # find the what should be used as full dims
     viadims = evaluate_bbox(viaarray)
     if not size:
@@ -253,12 +258,12 @@ def via_array(
     if lay_bottom or fullbottom or lay_every_layer:
         bdims = evaluate_bbox(viaarray.extract(layers=[pdk.get_glayer(glayer1)]))
         bref = viaarray << rectangle(size=(size if fullbottom else bdims), layer=pdk.get_glayer(glayer1), centered=True)
-        viaarray.add_ports(bref.get_ports_list(), prefix="bottom_lay_")
+        viaarray.add_ports(gf.port.get_ports_list(bref), prefix="bottom_lay_")
     else:
-        viaarray = viaarray.remove_layers(layers=[pdk.get_glayer(glayer1)])
+        viaarray = viaarray.remove_layers(layers=[pdk.get_glayer(glayer1)],recursive=False)
     # place top met
     tref = viaarray << rectangle(size=size, layer=pdk.get_glayer(glayer2), centered=True)
-    viaarray.add_ports(tref.get_ports_list(), prefix="top_met_")
+    viaarray.add_ports(gf.port.get_ports_list(tref), prefix="top_met_")
     # place every layer in between if lay_every_layer
     if lay_every_layer:
         for i in range(level1+1,level2):

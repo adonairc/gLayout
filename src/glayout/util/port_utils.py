@@ -1,16 +1,16 @@
-from pydantic import validate_arguments
-from gdsfactory.component import Component, ComponentReference
-from gdsfactory.components import rectangle
-from gdsfactory.port import Port
+# from pydantic import validate_arguments, BaseModel
+from gdsfactory import ComponentReference
+from gdsfactory.component import Component
+from gdsfactory.typings import Port
+# import kfactory as kf
+# from gdsfactory.typings import Port
 from typing import Callable, Union, Optional
-from decimal import Decimal
 from pathlib import Path
 import pickle
 from PrettyPrint import PrettyPrintTree
-import math
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def parse_direction(direction: Union[int, str]) -> int:
 	"""returns 1,2,3,4 (W,N,E,S)
 
@@ -52,11 +52,11 @@ def proc_angle(angle: float) -> int:
 	angle = round(angle)
 	angle = angle % 360
 	if angle > 180:
-	    angle -= 360
-	return angle
+		angle -= 360
+	return(angle)
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def ports_parallel(edge1: Port, edge2: Port) -> bool:
 	"""returns True if the provided ports are parralel (same or 180degree opposite directions)
 	Requires ports are manhattan
@@ -76,7 +76,7 @@ def ports_parallel(edge1: Port, edge2: Port) -> bool:
 	return False
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def ports_inline(edge1: Port, edge2: Port, abstolerance: float=0.1) -> bool:
 	"""Check if two ports are inline within a tolerance.
 
@@ -103,36 +103,42 @@ def ports_inline(edge1: Port, edge2: Port, abstolerance: float=0.1) -> bool:
 
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def rename_component_ports(custom_comp: Union[Component, ComponentReference], rename_function: Callable[[str, Port], str]) -> Union[Component, ComponentReference]:
-    """uses rename_function(str, Port) -> str to decide which ports to rename.
-    rename_function accepts the current port name (string) and current port (Port) then returns the new port name
-    rename_function can return new name = current port name, in which case the name will not change
-    rename_function should raise error if custom requirments for rename are not met
-    if you want to pass additional args to rename_function, implement a functor
-    custom_comp is the components to modify. the modified component is returned
-    """
-    names_to_modify = list()
-    # find ports and get new names
-    for pname, pobj in custom_comp.ports.items():
-        # error checking
-        if not pname == pobj.name:
-            raise ValueError("component may have an invalid ports dict")
-        new_name = rename_function(pname, pobj)
-        names_to_modify.append((pname,new_name))
-    # modify names
-    for namepair in names_to_modify:
-        if namepair[0] in custom_comp.ports.keys():
-            portobj = custom_comp.ports.pop(namepair[0])
-            portobj.name = namepair[1]
-            custom_comp.ports[namepair[1]] = portobj
-        else:
-            raise KeyError("name "+str(namepair[0])+" not in component ports")
-    # returns modified component/component ref
-    return custom_comp
+	"""uses rename_function(str, Port) -> str to decide which ports to rename.
+	rename_function accepts the current port name (string) and current port (Port) then returns the new port name
+	rename_function can return new name = current port name, in which case the name will not change
+	rename_function should raise error if custom requirments for rename are not met
+	if you want to pass additional args to rename_function, implement a functor
+	custom_comp is the components to modify. the modified component is returned
+	"""
+	names_to_modify = list()
+	ports = custom_comp.ports.get_all_named()
+	renamed_comp = custom_comp.copy()
+	renamed_comp.ports.clear() 
+	# find ports and get new names
+	# for pname, pobj in custom_comp.ports.items():
+	for pname in ports.keys():
+		# pname, pobj 
+		# error checking
+		pobj = ports[pname]
+		if not pname == pobj.name:
+			raise ValueError("component may have an invalid ports dict")
+		new_name = rename_function(pname, pobj)
+		names_to_modify.append((pname,new_name))
+	# modify names
+	for namepair in names_to_modify:
+		if namepair[0] in ports.keys():
+			portobj =  custom_comp.ports[namepair[0]]
+			portobj.name = namepair[1]
+			renamed_comp.ports.add_port(name= namepair[1], port=portobj)
+		else:
+			raise KeyError("name "+str(namepair[0])+" not in component ports")
+	# returns modified component/component ref
+	return renamed_comp
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def rename_ports_by_orientation__call(old_name: str, pobj: Port) -> str:
 	"""internal implementation of port orientation rename"""
 	if not "_" in old_name and not any(old_name==edge for edge in ["e1","e2","e3","e4"]):
@@ -158,7 +164,7 @@ def rename_ports_by_orientation__call(old_name: str, pobj: Port) -> str:
 	new_name = "_".join(old_str_split)
 	return new_name
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def rename_ports_by_orientation(custom_comp: Union[Component, ComponentReference]) -> Union[Component, ComponentReference]:
     """replaces the last part of the port name 
     (after the last underscore, unless name is e1/2/3/4) with a direction
@@ -167,14 +173,13 @@ def rename_ports_by_orientation(custom_comp: Union[Component, ComponentReference
     """
     return rename_component_ports(custom_comp, rename_ports_by_orientation__call)
 
-
 class rename_ports_by_list__call: 
 	def __init__(self, replace_list: list[tuple[str,str]] = []): 
 		self.replace_list = dict(replace_list)
 		self.replace_history = dict.fromkeys(self.replace_list.keys())
 		for keyword in self.replace_history:
 			self.replace_history[keyword] = 0
-	@validate_arguments(config=dict(arbitrary_types_allowed=True))
+	#@validate_arguments
 	def __call__(self, old_name: str, pobj: Port) -> str:
 		for keyword, newname in self.replace_list.items():
 			if keyword in old_name:
@@ -184,7 +189,7 @@ class rename_ports_by_list__call:
 				return replace_name
 		return old_name
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def rename_ports_by_list(custom_comp: Component, replace_list: list[tuple[str,str]]) -> Component:
     """replace_list is a list of tuple(string, string)
     if a port name contains tuple[0], the port will be renamed to tuple[1]
@@ -193,7 +198,6 @@ def rename_ports_by_list(custom_comp: Component, replace_list: list[tuple[str,st
     since we cannot have duplicate port names, different ports that end up with the same name get numbered"""
     rename_func = rename_ports_by_list__call(replace_list)
     return rename_component_ports(custom_comp, rename_func)
-
 
 def remove_ports_with_prefix(custom_comp: Component, prefix: str) -> Component:
 	"""remove all ports in custom_comp which begin with prefix"""
@@ -207,8 +211,7 @@ def remove_ports_with_prefix(custom_comp: Component, prefix: str) -> Component:
 		custom_comp.ports.pop(prt)
 	return custom_comp
 
-
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def add_ports_perimeter(custom_comp: Component, layer: tuple[int, int], prefix: Optional[str] = "_") -> Component:
 	"""adds ports to the outside perimeter of a cell
 	custom_comp = component to add ports to (returns the modified component)
@@ -218,17 +221,18 @@ def add_ports_perimeter(custom_comp: Component, layer: tuple[int, int], prefix: 
 	"""
 	if "_" not in prefix:
 		raise ValueError("you need underscore char in prefix")
-	compbbox = custom_comp.extract(layers=(layer,)).bbox
-	width = compbbox[1][0] - compbbox[0][0]
-	height = compbbox[1][1] - compbbox[0][1]
-	custom_comp.add_port(name=prefix+"W",width=height,orientation=180,center=(compbbox[0][0],compbbox[0][1]+height/2),layer=layer,port_type="electrical")
-	custom_comp.add_port(name=prefix+"N",width=width,orientation=90,center=(compbbox[0][0]+width/2,compbbox[1][1]),layer=layer,port_type="electrical")
-	custom_comp.add_port(name=prefix+"E",width=height,orientation=0,center=(compbbox[1][0],compbbox[0][1]+height/2),layer=layer,port_type="electrical")
-	custom_comp.add_port(name=prefix+"S",width=width,orientation=270,center=(compbbox[0][0]+width/2,compbbox[0][1]),layer=layer,port_type="electrical")
+	compbbox = custom_comp.extract(layers=(layer,)).bbox()
+	# width = compbbox.p2.x - compbbox.p1.x
+	# height = compbbox.p2.y - compbbox.p1.y
+	width = compbbox.p2.x - compbbox.p1.x
+	height = compbbox.p2.y - compbbox.p1.y
+	custom_comp.add_port(name=prefix+"W",width=height,orientation=180,center=(compbbox.p1.x,compbbox.p1.y+height/2),layer=layer,port_type="electrical")
+	custom_comp.add_port(name=prefix+"N",width=width,orientation=90,center=(compbbox.p1.x+width/2,compbbox.p2.y),layer=layer,port_type="electrical")
+	custom_comp.add_port(name=prefix+"E",width=height,orientation=0,center=(compbbox.p2.x,compbbox.p1.y+height/2),layer=layer,port_type="electrical")
+	custom_comp.add_port(name=prefix+"S",width=width,orientation=270,center=(compbbox.p1.x+width/2,compbbox.p1.y),layer=layer,port_type="electrical")
 	return custom_comp
 
-
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def get_orientation(orientation: Union[int,float,str], int_only: bool=False) -> Union[float,int,str]:
 	"""returns the angle corresponding to port orientation
 	orientation must contain N/n,E/e,S/s,W/w
@@ -262,8 +266,7 @@ def get_orientation(orientation: Union[int,float,str], int_only: bool=False) -> 
 			raise ValueError("orientation must be 0,90,180,270 to use this function")
 		return orientation
 
-
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def assert_port_manhattan(edges: Union[list[Port],Port]) -> bool:
 	"""raises assertionerror if port is not vertical or horizontal"""
 	if isinstance(edges, Port):
@@ -273,8 +276,7 @@ def assert_port_manhattan(edges: Union[list[Port],Port]) -> bool:
 			raise AssertionError("edge is not vertical or horizontal")
 	return True
 
-
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def assert_ports_perpindicular(edge1: Port, edge2: Port) -> bool:
 	"""raises assertionerror if edges are not perindicular"""
 	or1 = round(edge1.orientation)
@@ -284,8 +286,7 @@ def assert_ports_perpindicular(edge1: Port, edge2: Port) -> bool:
 		raise AssertionError("edges are not perpindicular")
 	return True
 
-
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def set_port_orientation(custom_comp: Port, orientation: Union[float, int, str], flip180: Optional[bool]=False) -> Port:
 	"""creates a new port with the desired orientation and returns the new port"""
 	if isinstance(orientation,str):
@@ -296,17 +297,17 @@ def set_port_orientation(custom_comp: Port, orientation: Union[float, int, str],
 		name = custom_comp.name,
 		center = custom_comp.center,
 		orientation = orientation,
-		parent = custom_comp.parent,
-		port_type = custom_comp.port_type,
-		cross_section = custom_comp.cross_section,
-		shear_angle = custom_comp.shear_angle,
+		# parent = custom_comp.parent,
+		# port_type = custom_comp.port_type,
+		# cross_section = custom_comp.cross_section,
+		# shear_angle = custom_comp.shear_angle,
 		layer = custom_comp.layer,
 		width = custom_comp.width,
 	)
 	return newport
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def set_port_width(custom_comp: Port, width: float) -> Port:
 	"""creates a new port with the desired width and returns the new port"""
 	newport = Port(
@@ -323,7 +324,7 @@ def set_port_width(custom_comp: Port, width: float) -> Port:
 	return newport
 
 
-@validate_arguments(config=dict(arbitrary_types_allowed=True))
+#@validate_arguments
 def print_ports(custom_comp: Union[Component, ComponentReference], names_only: Optional[bool] = True) -> None:
     """prints ports in comp in a nice way
     custom_comp = component to use
@@ -372,7 +373,7 @@ class PortTree:
 	since the PortTree is not a node type (PortTree is not a real tree class), the root node is: (self.name, self.tree)
 	"""
 
-	@validate_arguments(config=dict(arbitrary_types_allowed=True))
+	#@validate_arguments
 	def __init__(self, custom_comp: Union[Component, ComponentReference], name: Optional[str]=None):
 		"""creates the tree structure from the ports where _ represent subdirectories
 		credit -> chatGPT
@@ -389,7 +390,7 @@ class PortTree:
 		self.tree = directory_tree
 		self.name = name if name else custom_comp.name
 	
-	@validate_arguments(config=dict(arbitrary_types_allowed=True))
+	#@validate_arguments
 	def ls(self, file_path: Optional[str] = None) -> list[str]:
 		"""tries to traverse the tree along the given path and prints all subdirectories in a psuedo directory
 		if the path given is not found in the tree, raises KeyError
@@ -405,7 +406,7 @@ class PortTree:
 			current_dir = current_dir[path_component]
 		return list(current_dir.keys())
 	
-	@validate_arguments(config=dict(arbitrary_types_allowed=True))
+	#@validate_arguments
 	def save_to_disk(self, savedir: Union[Path, str]="./"):
 		savedir = Path(savedir).resolve()
 		savedir.mkdir(exist_ok=True,parents=True)
