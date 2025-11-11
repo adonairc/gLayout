@@ -65,8 +65,12 @@ def straight_route(
 				xs = port.cross_section
 				if hasattr(xs, 'layer'):
 					print(f"DEBUG: Found cross_section.layer = {xs.layer}")
-					return pdk.layer_to_glayer(xs.layer)
-			except (ValueError, KeyError, AttributeError):
+					# xs.layer is a LayerEnum member, convert to tuple for layer_to_glayer
+					layer_tuple = tuple(xs.layer) if not isinstance(xs.layer, tuple) else xs.layer
+					print(f"DEBUG: Converted to tuple = {layer_tuple}")
+					return pdk.layer_to_glayer(layer_tuple)
+			except (ValueError, KeyError, AttributeError) as e:
+				print(f"DEBUG: Failed to use cross_section.layer: {e}")
 				pass
 
 		# Method 3: Check port_type (e.g., "electrical" might have specific layer)
