@@ -1,13 +1,13 @@
 from glayout.pdk.mappedpdk import MappedPDK
-from gdsfactory import cell
+from gdsfactory import cell, boolean
 from gdsfactory.component import Component
-# from gdsfactory.components import rectangular_ring
-from gdsfactory.components import rectangle, boolean
+from gdsfactory.components import rectangle
 from glayout.primitives.via_gen import via_array, via_stack
 from glayout.util.comp_utils import evaluate_bbox
 from glayout.util.snap_to_grid import component_snap_to_grid
 from glayout.routing.L_route import L_route
 from gdsfactory.typings import LayerSpec
+
 @cell
 def rectangular_ring(
 	enclosed_size = (4.0,2.0),
@@ -41,7 +41,6 @@ def rectangular_ring(
 	return c
 
 
-#@cell
 def tapring(
     pdk: MappedPDK,
     enclosed_rectangle=(2.0, 4.0),

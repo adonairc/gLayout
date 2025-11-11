@@ -86,4 +86,5 @@ __all__ = [
     "align_comp_to_port",
     "sky130",
     "gf180",
+    "ihp130"
 ] 

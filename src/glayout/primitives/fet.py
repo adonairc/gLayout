@@ -390,7 +390,6 @@ def __mult_array_macro(
     return component_snap_to_grid(rename_ports_by_orientation(final_arr))
 
 
-#@cell
 def nmos(
     pdk,
     width: float = 3,
@@ -532,7 +531,6 @@ def nmos(
     return component
 
 
-#@cell
 def pmos(
     pdk,
     width: float = 3,
