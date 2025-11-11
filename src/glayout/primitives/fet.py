@@ -30,7 +30,7 @@ def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float,
     met1_minsep = pdk.get_grule("met1")["min_separation"]
     poly_spacing += met1_minsep if length < met1_minsep else 0
     # create a single finger
-    finger = Component("finger")
+    finger = Component()
     gate = finger << rectangle(size=(length, poly_height), layer=pdk.get_glayer("poly"), centered=True)
     sd_viaarr = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
     interfinger_correction = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None))
@@ -278,7 +278,7 @@ def __mult_array_macro(
     # create multiplier array
     pdk.activate()
     # TODO: error checking
-    multiplier_arr = Component("temp multiplier array")
+    multiplier_arr = Component()
     multiplier_comp = multiplier(
         pdk,
         sdlayer,

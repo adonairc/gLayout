@@ -154,8 +154,8 @@ def c_route(
             else:
                 e1_length += ydiff
     # move into position
-    e1_extension_comp = Component("edge1 extension")
-    e2_extension_comp = Component("edge2 extension")
+    e1_extension_comp = Component()
+    e2_extension_comp = Component()
     box_dims = [(e1_length, width1),(e2_length, width2)]
     if round(edge1.orientation) == 90 or round(edge1.orientation) == 270:
         box_dims = [(width1, e1_length),(width2, e2_length)]

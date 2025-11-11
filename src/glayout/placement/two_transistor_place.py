@@ -20,7 +20,7 @@ def two_transistor_place(
     **** all rows must have same number of cols
     deviceA/deviceB = tuple(function to call, kwargs for function) kwargs must include pdk
     """
-    toplvlcomp = Component("2tranplace")
+    toplvlcomp = Component()
     # create the transistors
     tranA = deviceA[0](**deviceA[1])
     tranA_dims = evaluate_bbox(tranA)

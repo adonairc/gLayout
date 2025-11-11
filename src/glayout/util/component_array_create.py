@@ -48,7 +48,7 @@ def write_component_matrix(components_dir: Union[str,Path,list]="./", xspace: fl
 	col_len = round(math.sqrt(len(c_comp_list)))
 	col_index = 0
 	row_index = 0
-	big_comp = Component("big comp")
+	big_comp = Component()
 	for comp_v in c_comp_list:
 		if comp_v is None:
 			continue
