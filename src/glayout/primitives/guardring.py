@@ -102,43 +102,60 @@ def tapring(
         centered=True,
         layer=pdk.get_glayer(sdlayer),
     )
-    # create via arrs
+    # create via arrs - compute dimensions
     via_width_horizontal = evaluate_bbox(via_stack(pdk, "active_tap", horizontal_glayer))[0]
     arr_size_horizontal = enclosed_rectangle[0]
-    horizontal_arr = via_array(
-        pdk,
-        "active_tap",
-        horizontal_glayer,
-        (arr_size_horizontal, via_width_horizontal),
-        minus1=True,
-        lay_every_layer=True
-    )
     via_width_vertical = evaluate_bbox(via_stack(pdk, "active_tap", vertical_glayer))[1]
     arr_size_vertical = enclosed_rectangle[1]
-    vertical_arr = via_array(
-        pdk,
-        "active_tap",
-        vertical_glayer,
-        (via_width_vertical, arr_size_vertical),
-        minus1=True,
-        lay_every_layer=True
-    )
-    # add via arrs
+
+    # add via arrs - create separate instances for each side to avoid reference conflicts
     refs_prefixes = list()
-    if sides[1]:
-        metal_ref_n = ptapring << horizontal_arr
+    if sides[1]:  # North
+        horizontal_arr_n = via_array(
+            pdk,
+            "active_tap",
+            horizontal_glayer,
+            (arr_size_horizontal, via_width_horizontal),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_n = ptapring << horizontal_arr_n
         metal_ref_n.movey(round(0.5 * (enclosed_rectangle[1] + tap_width),4))
         refs_prefixes.append((metal_ref_n,"N_"))
-    if sides[2]:
-        metal_ref_e = ptapring << vertical_arr
+    if sides[2]:  # East
+        vertical_arr_e = via_array(
+            pdk,
+            "active_tap",
+            vertical_glayer,
+            (via_width_vertical, arr_size_vertical),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_e = ptapring << vertical_arr_e
         metal_ref_e.movex(round(0.5 * (enclosed_rectangle[0] + tap_width),4))
         refs_prefixes.append((metal_ref_e,"E_"))
-    if sides[3]:
-        metal_ref_s = ptapring << horizontal_arr
+    if sides[3]:  # South
+        horizontal_arr_s = via_array(
+            pdk,
+            "active_tap",
+            horizontal_glayer,
+            (arr_size_horizontal, via_width_horizontal),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_s = ptapring << horizontal_arr_s
         metal_ref_s.movey(round(-0.5 * (enclosed_rectangle[1] + tap_width),4))
         refs_prefixes.append((metal_ref_s,"S_"))
-    if sides[0]:
-        metal_ref_w = ptapring << vertical_arr
+    if sides[0]:  # West
+        vertical_arr_w = via_array(
+            pdk,
+            "active_tap",
+            vertical_glayer,
+            (via_width_vertical, arr_size_vertical),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_w = ptapring << vertical_arr_w
         metal_ref_w.movex(round(-0.5 * (enclosed_rectangle[0] + tap_width),4))
         refs_prefixes.append((metal_ref_w,"W_"))
     # connect vertices
