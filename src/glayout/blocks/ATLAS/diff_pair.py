@@ -1,4 +1,5 @@
 from typing import Union
+import uuid
 
 from gdsfactory.cell import cell
 from gdsfactory.component import Component, copy
@@ -117,7 +118,8 @@ def diff_pair(
 	"""
 	# TODO: error checking
 	pdk.activate()
-	diffpair = Component()
+	basename = "diffpair"
+	diffpair = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# create transistors
 	well = None
 	if isinstance(dummy, bool):

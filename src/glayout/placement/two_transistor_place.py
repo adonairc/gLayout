@@ -4,6 +4,7 @@ from gdsfactory.component import Component
 from typing import Callable
 from glayout.primitives.fet import nmos, pmos
 from glayout.util.comp_utils import evaluate_bbox
+import uuid
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def two_transistor_place(
@@ -20,7 +21,8 @@ def two_transistor_place(
     **** all rows must have same number of cols
     deviceA/deviceB = tuple(function to call, kwargs for function) kwargs must include pdk
     """
-    toplvlcomp = Component()
+    basename = "toplvlcomp"
+    toplvlcomp = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     # create the transistors
     tranA = deviceA[0](**deviceA[1])
     tranA_dims = evaluate_bbox(tranA)

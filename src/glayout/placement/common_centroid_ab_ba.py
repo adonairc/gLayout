@@ -12,6 +12,7 @@ from typing import Union
 from itertools import product
 
 from gdsfactory import Component
+import uuid
 
 
 def common_centroid_ab_ba(
@@ -34,7 +35,8 @@ def common_centroid_ab_ba(
     """
     # TODO: error checking
     pdk.activate()
-    comcentroid = Component()
+    basename = "comcentroid"
+    comcentroid = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     # create transistors
     well = None
     if isinstance(dummy, bool):

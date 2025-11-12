@@ -14,6 +14,7 @@ from glayout.util.port_utils import add_ports_perimeter
 from glayout.spice.netlist import Netlist
 from glayout.primitives.via_gen import via_stack
 from gdsfactory.components import text_freetype, rectangle
+import uuid
 try:
     from evaluator_wrapper import run_evaluation
 except ImportError:
@@ -165,9 +166,10 @@ def  transmission_gate(
     tuples are in (NMOS,PMOS) order
     **kwargs are any kwarg that is supported by nmos and pmos
     """
-   
+
     #top level component
-    top_level = Component()
+    basename = "top_level"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     #two fets
     nfet = nmos(pdk, width=width[0], fingers=fingers[0], multipliers=multipliers[0], with_dummy=True, with_dnwell=False,  with_substrate_tap=False, length=length[0], **kwargs)

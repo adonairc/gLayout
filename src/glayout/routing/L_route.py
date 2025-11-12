@@ -6,6 +6,7 @@ from glayout.primitives.via_gen import via_stack, via_array
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port, to_decimal, to_float, prec_ref_center, get_primitive_rectangle
 from glayout.util.port_utils import rename_ports_by_orientation, rename_ports_by_list, print_ports, assert_port_manhattan, assert_ports_perpindicular, get_layer_from_port
 from decimal import Decimal
+import uuid
 
 
 def L_route(
@@ -49,7 +50,8 @@ def L_route(
 	assert_port_manhattan([edge1,edge2])
 	assert_ports_perpindicular(edge1,edge2)
 	pdk.activate()
-	Lroute = Component()
+	basename = "Lroute"
+	Lroute = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# figure out which port is vertical
 	vport = None
 	hport = None

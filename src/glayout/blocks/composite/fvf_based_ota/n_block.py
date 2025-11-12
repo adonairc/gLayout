@@ -1,5 +1,6 @@
 from glayout.flow.pdk.mappedpdk import MappedPDK
 from glayout.flow.pdk.sky130_mapped import sky130_mapped_pdk
+import uuid
 from gdsfactory import Component
 from gdsfactory.cell import cell
 from gdsfactory.component_reference import ComponentReference
@@ -49,9 +50,10 @@ def n_block(
     current_mirror_params: output stage N-type currrent mirrors - (width, length)
     ratio: current mirroring ratio at output stage
     global_current_bias_params: A low voltage current mirror for biasing - consists of 7 nmoses of (W/L) and one nmos of (W'/L) - (W,W',L)
-    """ 
+    """
     # Create a top level component
-    top_level = Component("n_block")
+    basename = "n_block"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     
     #input differential pair
     fet_in = nmos(pdk, width=input_pair_params[0], length=input_pair_params[1], fingers=1, with_dnwell=False, with_tie=True, with_substrate_tap=False, sd_rmult=3)

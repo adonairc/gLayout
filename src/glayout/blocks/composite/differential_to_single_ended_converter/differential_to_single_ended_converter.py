@@ -18,15 +18,18 @@ from glayout.util.snap_to_grid import component_snap_to_grid
 from pydantic import validate_arguments
 from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized
 from glayout.spice import Netlist
+import uuid
 
 
 
 @validate_arguments
 def __create_sharedgatecomps(pdk: MappedPDK, rmult: int, half_pload: tuple[float,float,int]) -> tuple:
     # add diffpair current mirror loads (this is a pmos current mirror split into 2 for better matching/compensation)
-    shared_gate_comps = Component("shared gate components")
+    basename = "shared_gate_components"
+    shared_gate_comps = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     # create the 2*2 multiplier transistors (placed twice later)
-    twomultpcomps = Component("2 multiplier shared gate comps")
+    basename2 = "2mult_shared_gate_comps"
+    twomultpcomps = Component(name=f"{basename2}_{uuid.uuid4().hex[:6]}")
     pcompR = multiplier(pdk, "p+s/d", width=half_pload[0], length=half_pload[1], fingers=half_pload[2], dummy=True,rmult=rmult).copy()
     tapref = pcompR << tapring(pdk, evaluate_bbox(pcompR,padding=0.3+pdk.get_grule("n+s/d", "active_tap")["min_enclosure"]),"n+s/d","met1","met1")
     pcompR.add_padding(layers=(pdk.get_glayer("nwell"),), default=pdk.get_grule("active_tap", "nwell")["min_enclosure"])

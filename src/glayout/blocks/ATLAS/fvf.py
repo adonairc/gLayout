@@ -1,5 +1,6 @@
 from glayout.flow.pdk.mappedpdk import MappedPDK
 from glayout.flow.pdk.sky130_mapped import sky130_mapped_pdk
+import uuid
 from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory import Component
@@ -121,9 +122,10 @@ def  flipped_voltage_follower(
     sd_rmult: sd_rmult for both fets
     **kwargs: any kwarg that is supported by nmos and pmos
     """
-   
+
     #top level component
-    top_level = Component()
+    basename = "fvf"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     #two fets
     device_map = {

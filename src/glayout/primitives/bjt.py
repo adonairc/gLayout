@@ -13,6 +13,7 @@ from glayout.primitives.via_gen import via_array, via_stack
 from glayout.routing.straight_route import straight_route
 from gdsfactory.cell import cell
 from gdsfactory import Component
+import uuid
 from gdsfactory.components import text_freetype, rectangle, rectangular_ring
 
 
@@ -35,7 +36,8 @@ def fill_comp_with_contacts(pdk: MappedPDK,reference: Component, contact_layer:s
 def fill_area_with_contacts(pdk: MappedPDK, dims, center, contact_layer:str,
                        padding, spacing, contact_size):
 
-    component = Component()
+    basename = f"contacts_{contact_layer}"
+    component = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     n_contacts = get_number_contacts(dims, contact_size, padding, spacing)
 
@@ -84,7 +86,8 @@ def draw_metal_over_ring(pdk: MappedPDK,ring_dims:dict[str,np.ndarray[Any]],
     l_metal_dims= get_rectangle_dims_over_ring(ring_dims)
     l_metal_center_position = get_mid_points_over_ring(ring_dims)
 
-    component = Component()
+    basename = f"metal_ring_{metal_layer}"
+    component = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     for direction in l_metal_dims:
         metal = component << rectangle(layer=pdk.get_glayer(metal_layer), centered=True,
@@ -109,7 +112,8 @@ def fill_ring_with_contacts(pdk: MappedPDK,ring_dims:dict[str,np.ndarray[Any]],
     l_metal_center_position = get_mid_points_over_ring(ring_dims)
 
     #print(l_metal_dims)
-    component = Component()
+    basename = f"ring_contacts_{contact_layer}"
+    component = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     for direction in l_metal_dims:
 
@@ -194,7 +198,8 @@ def get_bjt_dimensions (pdk: MappedPDK, active_area: tuple[float, float], bjt_ty
 def draw_bjt(pdk: MappedPDK, active_area: tuple[float,float], bjt_type: str,
              draw_dnwell: bool = False, with_labels=True)->Component:
 
-    component = Component()
+    basename = f"bjt_{bjt_type}"
+    component = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     # Validate the size parameter
     if bjt_type not in pdk.valid_bjt_sizes.keys():
@@ -704,7 +709,8 @@ def __mult_array_macro(
                 actualport = "multiplier_0_" + aliasport
                 multiplier_arr.add_port(port=multiplier_arr.ports[actualport],name=aliasport)
     # recenter
-    final_arr = Component()
+    basename = "bjt_mult_array"
+    final_arr = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     marrref = final_arr << multiplier_arr
     if centered:
         correctionxy = prec_center(marrref)
@@ -1000,7 +1006,8 @@ def pnp(
     dummy_routes: bool default=True, if true add add vias and short dummy emitter, collector and base
     """
     pdk.activate()
-    pnp = Component()
+    basename = "pnp"
+    pnp = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     if rmult:
         if rmult<1:
             raise ValueError("rmult must be positive int")
@@ -1118,7 +1125,8 @@ def npn(
     dummy_routes: bool default=True, if true add add vias and short dummy emitter, collector and base
     """
     pdk.activate()
-    npn = Component()
+    basename = "npn"
+    npn = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     if rmult:
         if rmult<1:
             raise ValueError("rmult must be positive int")

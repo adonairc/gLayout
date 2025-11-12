@@ -1,5 +1,6 @@
 from glayout import MappedPDK, sky130,gf180
 from glayout.spice.netlist import Netlist
+import uuid
 from glayout.routing import c_route,L_route,straight_route
 from gdsfactory.cell import cell
 from gdsfactory.component import Component
@@ -94,9 +95,10 @@ def  flipped_voltage_follower(
     sd_rmult: sd_rmult for both fets
     **kwargs: any kwarg that is supported by nmos and pmos
     """
-   
+
     #top level component
-    top_level = Component()
+    basename = "fvf"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     #two fets
     device_map = {

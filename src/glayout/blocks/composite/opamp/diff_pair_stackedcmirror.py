@@ -1,5 +1,6 @@
 from gdsfactory.cell import cell, clear_cache
 from gdsfactory.component import Component, copy
+import uuid
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout.flow.pdk.mappedpdk import MappedPDK
@@ -114,7 +115,8 @@ def diff_pair_stackedcmirror(
     with_antenna_diode_on_diffinputs: int
 ) -> Component:
     # create toplevel_stacked component
-    toplevel_stacked = Component()
+    basename = "toplevel_stacked"
+    toplevel_stacked = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     # place nmos components
     diffpair_and_bias = __add_diff_pair_and_bias(pdk, toplevel_stacked, half_diffpair_params, diffpair_bias, rmult, with_antenna_diode_on_diffinputs)
     # create and position each half of the nmos bias transistor for the common source stage symetrically

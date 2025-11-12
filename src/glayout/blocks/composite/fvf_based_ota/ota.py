@@ -1,5 +1,6 @@
 from glayout.flow.pdk.mappedpdk import MappedPDK
 from glayout.flow.pdk.sky130_mapped import sky130_mapped_pdk
+import uuid
 from gdsfactory import Component
 from gdsfactory.cell import cell
 from gdsfactory.component_reference import ComponentReference
@@ -94,9 +95,10 @@ def super_class_AB_OTA(
     current_mirror_params: output stage N-type currrent mirrors - (width, length)
     resistor_params: passgates are used as resistors for LCMFB - (width of nmos, width of pmos,length of nmos, length of pmos)
     global_current_bias_params: A low voltage current mirror for biasing - consists of 7 nmoses of (W/L) and one nmos of (W'/L) - (W,W',L)
-    """ 
+    """
     # Create a top level component
-    top_level = Component("Super_class_AB_OTA")
+    basename = "Super_class_AB_OTA"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     
     #input differential pair
     nb = n_block(pdk, input_pair_params=input_pair_params, fvf_shunt_params=fvf_shunt_params, ratio=ratio, current_mirror_params=current_mirror_params, global_current_bias_params=global_current_bias_params)

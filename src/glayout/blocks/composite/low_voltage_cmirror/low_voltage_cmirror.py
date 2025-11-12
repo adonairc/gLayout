@@ -1,5 +1,6 @@
 from glayout import MappedPDK, sky130,gf180
 from glayout import nmos, pmos, tapring,via_stack
+import uuid
 from glayout.spice.netlist import Netlist
 from glayout.routing import c_route,L_route,straight_route
 from gdsfactory.component import Component
@@ -90,7 +91,8 @@ def  low_voltage_cmirror(
     The default values are used to mirror 10uA.
     """
     #top level component
-    top_level = Component("Low_voltage_N-type_current_mirror")
+    basename = "Low_voltage_N_type_current_mirror"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     #input branch 2
     cascode_fvf = flipped_voltage_follower(pdk, width=(width[0],width[0]), length=(length,length), fingers=(fingers[0],fingers[0]), multipliers=(multipliers[0],multipliers[0]), with_dnwell=False)

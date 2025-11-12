@@ -6,6 +6,7 @@ from gdsfactory.components import rectangle
 from glayout.util.comp_utils import evaluate_bbox, align_comp_to_port
 from glayout.util.port_utils import assert_port_manhattan, set_port_orientation, add_ports_perimeter, get_layer_from_port
 from gdstk import rectangle as primitive_rectangle
+import uuid
 
 
 def straight_route(
@@ -85,7 +86,8 @@ def straight_route(
 		alignment = ("c","t") if extension > 0 else ("c","b")
 		size = (width,abs(extension))
 	# create route and via
-	route = Component()
+	basename = "route"
+	route = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# In GDSFactory v9, add_polygon expects a list of points, not a gdstk.Polygon
 	# Extract points from the gdstk.Polygon object
 	poly = primitive_rectangle((0,0),size)
@@ -93,7 +95,8 @@ def straight_route(
 	add_ports_perimeter(route,layer=pdk.get_glayer(glayer1),prefix="route_")
 	out_via = via_stack(pdk,glayer1,glayer2,fullbottom=fullbottom) if glayer1 != glayer2 else None
 	# place route and via
-	straightroute = Component()
+	basename = "straightroute"
+	straightroute = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	for i, edge in enumerate([edge1,edge2]):
 		temp = via1_alignment if i == 0 else via2_alignment
 		if temp is None:

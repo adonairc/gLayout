@@ -10,6 +10,7 @@ from glayout.util.comp_utils import evaluate_bbox, get_primitive_rectangle, to_f
 from glayout.util.port_utils import add_ports_perimeter, rename_ports_by_orientation, rename_ports_by_list, print_ports, set_port_width, set_port_orientation, get_orientation, get_layer_from_port
 from pydantic import validate_arguments
 from gdsfactory.snap import snap_to_grid
+import uuid
 
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -89,7 +90,8 @@ def c_route(
     pdk.activate()
     extension = snap_to_grid(extension)
     # create route
-    croute = Component()
+    basename = "croute"
+    croute = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     viastack1 = via_stack(pdk,e1glayer,cglayer,fullbottom=fullbottom,assume_bottom_via=True,fulltop=True)
     viastack2 = via_stack(pdk,e2glayer,cglayer,fullbottom=fullbottom,assume_bottom_via=True,fulltop=True)
     
@@ -156,8 +158,8 @@ def c_route(
             else:
                 e1_length += ydiff
     # move into position
-    e1_extension_comp = Component()
-    e2_extension_comp = Component()
+    e1_extension_comp = Component(name=f"e1_ext_{uuid.uuid4().hex[:6]}")
+    e2_extension_comp = Component(name=f"e2_ext_{uuid.uuid4().hex[:6]}")
     box_dims = [(e1_length, width1),(e2_length, width2)]
     if round(edge1.orientation) == 90 or round(edge1.orientation) == 270:
         box_dims = [(width1, e1_length),(width2, e2_length)]

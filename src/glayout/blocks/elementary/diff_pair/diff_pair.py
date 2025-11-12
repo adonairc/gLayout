@@ -1,4 +1,5 @@
 from typing import Union
+import uuid
 from glayout import MappedPDK, sky130,gf180
 from glayout.spice.netlist import Netlist
 from glayout.routing import c_route,L_route,straight_route
@@ -235,7 +236,8 @@ def diff_pair(
 	"""
 	# TODO: error checking
 	pdk.activate()
-	diffpair = Component()
+	basename = "diffpair"
+	diffpair = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# create transistors
 	well = None
 	if isinstance(dummy, bool):

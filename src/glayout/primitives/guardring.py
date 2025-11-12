@@ -7,6 +7,7 @@ from glayout.util.comp_utils import evaluate_bbox
 from glayout.util.snap_to_grid import component_snap_to_grid
 from glayout.routing.L_route import L_route
 from gdsfactory.typings import LayerSpec
+import uuid
 
 @cell
 def rectangular_ring(
@@ -23,7 +24,8 @@ def rectangular_ring(
 		layer = Specific layer to put polygon geometry on.
 		centered: True sets center to (0,0), False sets south-west to (0,0).
 	"""
-	c = Component()
+	basename = "rect_ring"
+	c = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# Create inner and outer rectangles
 	rect_in_comp = rectangle(size=enclosed_size, centered=centered, layer=layer)
 	rect_out_comp = rectangle(size=[dim+2*width for dim in enclosed_size], centered=centered, layer=layer)
@@ -71,7 +73,8 @@ def tapring(
         [sdlayer, "active_tap", "mcon", horizontal_glayer, vertical_glayer]
     )
     pdk.activate()
-    ptapring = Component()
+    basename = f"tapring_{sdlayer}"
+    ptapring = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     if not "met" in horizontal_glayer or not "met" in vertical_glayer:
         raise ValueError("both horizontal and vertical glayers should be metals")
     # check that ring is not too small
