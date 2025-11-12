@@ -1,5 +1,5 @@
 from glayout.pdk.mappedpdk import MappedPDK
-from gdsfactory import cell, boolean
+from gdsfactory import boolean
 from gdsfactory.component import Component
 from gdsfactory.components import rectangle
 from glayout.primitives.via_gen import via_array, via_stack
@@ -9,7 +9,6 @@ from glayout.routing.L_route import L_route
 from gdsfactory.typings import LayerSpec
 import uuid
 
-@cell
 def rectangular_ring(
 	enclosed_size = (4.0,2.0),
 	width: float = 0.5,
