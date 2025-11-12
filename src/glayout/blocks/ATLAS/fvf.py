@@ -152,11 +152,11 @@ def  flipped_voltage_follower(
         fet_2_ref.movey(fet_1_ref.ymin - ref_dimensions[1]/2 - pdk.util_max_metal_seperation()-1)
     
     #Routing
-    viam2m3 = via_stack(pdk, "met2", "met3", centered=True)
-    drain_1_via = top_level << viam2m3
-    source_1_via = top_level << viam2m3
-    drain_2_via = top_level << viam2m3
-    gate_2_via = top_level << viam2m3
+    # Create separate via instances to avoid reuse conflicts
+    drain_1_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
+    source_1_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
+    drain_2_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
+    gate_2_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     drain_1_via.move(fet_1_ref.ports["multiplier_0_drain_W"].center).movex(-0.5*evaluate_bbox(fet_1)[1])
     source_1_via.move(fet_1_ref.ports["multiplier_0_source_E"].center).movex(1.5)
     drain_2_via.move(fet_2_ref.ports["multiplier_0_drain_W"].center).movex(-1.5)

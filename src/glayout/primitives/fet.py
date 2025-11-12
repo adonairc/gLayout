@@ -70,16 +70,20 @@ def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float,
     # create a single finger
     finger = Component()
     gate = finger << rectangle(size=(length, poly_height), layer=pdk.get_glayer("poly"), centered=True)
-    sd_viaarr = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
-    interfinger_correction = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None))
-    sd_viaarr << interfinger_correction
-    sd_viaarr_ref = finger << sd_viaarr
+    sd_viaarr_right = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
+    interfinger_correction_right = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None))
+    sd_viaarr_right << interfinger_correction_right
+    sd_viaarr_ref = finger << sd_viaarr_right
     sd_viaarr_ref.movex((poly_spacing+length) / 2)
     finger.add_ports(gate.ports,prefix="gate_")
     finger.add_ports(sd_viaarr_ref.ports,prefix="rightsd_")
     # create finger array
     fingerarray = prec_array(finger, columns=fingers, rows=1, spacing=(poly_spacing+length, 1),absolute_spacing=True)
-    sd_via_ref_left = fingerarray << sd_viaarr
+    # Create separate via_array instance for left side to avoid reference conflicts
+    sd_viaarr_left = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
+    interfinger_correction_left = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None))
+    sd_viaarr_left << interfinger_correction_left
+    sd_via_ref_left = fingerarray << sd_viaarr_left
     sd_via_ref_left.movex(0-(poly_spacing+length)/2)
     fingerarray.add_ports(sd_via_ref_left.ports,prefix="leftsd_")
     # center finger array and add ports

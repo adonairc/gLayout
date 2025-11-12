@@ -69,13 +69,14 @@ def common_centroid_ab_ba(
     glayer1 = pdk.layer_to_glayer(a_topl.ports["multiplier_0_drain_E"].layer)
     glayer2 = glayer1[0:-1] + str(int(glayer1[-1])+1)
     glayer0 = glayer1[0:-1] + str(int(glayer1[-1])-1)
-    g1g2via = via_stack(pdk,glayer1,glayer2)
-    g0g1via = via_stack(pdk,glayer0,glayer1)
+    # Create individual via instances to avoid reuse conflicts
+    g1g2via_sizing = via_stack(pdk,glayer1,glayer2)
+    g0g1via_sizing = via_stack(pdk,glayer0,glayer1)
     # move transistors into position
-    min_spacing_y = pdk.snap_to_2xgrid(1*(g1g2via.ysize - pdk.get_grule(glayer1)["min_width"])+pdk.get_grule(glayer1)["min_separation"])
+    min_spacing_y = pdk.snap_to_2xgrid(1*(g1g2via_sizing.ysize - pdk.get_grule(glayer1)["min_width"])+pdk.get_grule(glayer1)["min_separation"])
     extra_g1g2_spacing = pdk.snap_to_2xgrid(max(pdk.get_grule(glayer2)["min_separation"]-pdk.get_grule(glayer1)["min_separation"],0))
     min_spacing_y += extra_g1g2_spacing
-    min_spacing_x = 3*pdk.get_grule(glayer1)["min_separation"] + 2*g0g1via.xsize - 2*pdk.get_grule("active_diff",sdglayer)["min_enclosure"]
+    min_spacing_x = 3*pdk.get_grule(glayer1)["min_separation"] + 2*g0g1via_sizing.xsize - 2*pdk.get_grule("active_diff",sdglayer)["min_enclosure"]
     min_spacing_x = pdk.snap_to_2xgrid(max(min_spacing_x, pdk.get_grule(sdglayer)["min_separation"]))
     a_topl.movex(0-fetLdims[0]/2-min_spacing_x/2).movey(pdk.snap_to_2xgrid(fetRdims[1]/2+min_spacing_y/2))
     b_topr.movex(fetLdims[0]/2+min_spacing_x/2).movey(pdk.snap_to_2xgrid(fetLdims[1]/2+min_spacing_y/2))
@@ -108,14 +109,14 @@ def common_centroid_ab_ba(
     comcentroid.add_ports(b_botl.ports,prefix="bl_")
     comcentroid.add_ports(a_botr.ports,prefix="br_")
     # route asrc to asrc
-    vsrca1 = comcentroid << g1g2via
-    vsrca2 = comcentroid << g1g2via
+    vsrca1 = comcentroid << via_stack(pdk,glayer1,glayer2)
+    vsrca2 = comcentroid << via_stack(pdk,glayer1,glayer2)
     align_comp_to_port(vsrca1,movey(comcentroid.ports["tl_multiplier_0_drain_W"],-extra_g1g2_spacing),alignment=("right","bottom"))
     align_comp_to_port(vsrca2,movey(comcentroid.ports["br_multiplier_0_drain_W"],extra_g1g2_spacing),alignment=("right","top"))
     comcentroid << L_route(pdk, movey(vsrca1.ports["top_met_W"],extra_g1g2_spacing), vsrca2.ports["top_met_N"])
     # route bsrc to bsrc
-    vsrcb1 = comcentroid << g1g2via
-    vsrcb2 = comcentroid << g1g2via
+    vsrcb1 = comcentroid << via_stack(pdk,glayer1,glayer2)
+    vsrcb2 = comcentroid << via_stack(pdk,glayer1,glayer2)
     align_comp_to_port(vsrcb1,comcentroid.ports["tr_multiplier_0_drain_E"],alignment=("left","bottom"))
     align_comp_to_port(vsrcb2,comcentroid.ports["bl_multiplier_0_drain_E"],alignment=("left","top"))
     intermediate_port = comcentroid.ports["bl_multiplier_0_source_E"].copy()
@@ -123,12 +124,12 @@ def common_centroid_ab_ba(
     comcentroid << L_route(pdk, vsrcb1.ports["top_met_S"], intermediate_port)
     comcentroid << L_route(pdk,intermediate_port, vsrcb2.ports["top_met_S"])
     # route adrain to adrain
-    vdraina1 = comcentroid << g0g1via # first via
+    vdraina1 = comcentroid << via_stack(pdk,glayer0,glayer1) # first via
     align_comp_to_port(vdraina1, comcentroid.ports[f"tl_multiplier_0_row0_col{fingers-1}_rightsd_top_met_N"],alignment=("right","top"))
     align_comp_to_port(vdraina1, comcentroid.ports["tl_multiplier_0_drain_E"],alignment=("right","none"))
     vdraina1.movex(pdk.get_grule(glayer1)["min_separation"])
     comcentroid << straight_route(pdk, vdraina1.ports["top_met_W"],comcentroid.ports["tr_multiplier_0_leftsd_top_met_E"],glayer2=glayer1)
-    vdraina2 = comcentroid << g0g1via # second via
+    vdraina2 = comcentroid << via_stack(pdk,glayer0,glayer1) # second via
     align_comp_to_port(vdraina2, comcentroid.ports["tl_multiplier_0_drain_E"],alignment=("right","c"))
     vdraina2.movex(pdk.get_grule(glayer1)["min_separation"])
     vdraina2_mdprt = movex(vdraina2.ports["bottom_met_S"],pdk.get_grule("met2","via1")["min_enclosure"])
@@ -136,13 +137,13 @@ def common_centroid_ab_ba(
     comcentroid << straight_route(pdk, vdraina2_mdprt, vdraina1.ports["bottom_met_N"])
     comcentroid << L_route(pdk, vdraina2.ports["top_met_N"],comcentroid.ports["bl_multiplier_0_source_E"])
     # route bdrain to bdrain
-    vdrainb1 = comcentroid << g0g1via # first via
+    vdrainb1 = comcentroid << via_stack(pdk,glayer0,glayer1) # first via
     align_comp_to_port(vdrainb1, comcentroid.ports["br_multiplier_0_leftsd_top_met_N"],alignment=("left","bottom"))
     align_comp_to_port(vdrainb1, comcentroid.ports["br_multiplier_0_drain_W"],alignment=("left","none"))
     vdrainb1.movex(-pdk.get_grule(glayer1)["min_separation"])
     # TODO: fix slight overhang (both this one and the adrain->bdrain)
     comcentroid << straight_route(pdk, vdrainb1.ports["top_met_W"],comcentroid.ports["br_multiplier_0_leftsd_top_met_E"],glayer2=glayer1)
-    vdrainb2 = comcentroid << g0g1via # second via
+    vdrainb2 = comcentroid << via_stack(pdk,glayer0,glayer1) # second via
     align_comp_to_port(vdrainb2, comcentroid.ports["br_multiplier_0_drain_W"],alignment=("left","c"))
     vdrainb2.movex(-pdk.get_grule(glayer1)["min_separation"])
     vdrainb2_mdprt = movex(vdrainb2.ports["bottom_met_N"],-pdk.get_grule("met2","via1")["min_enclosure"])
@@ -151,9 +152,9 @@ def common_centroid_ab_ba(
     comcentroid << L_route(pdk, vdrainb2.ports["top_met_N"],comcentroid.ports["tl_multiplier_0_source_E"])
     # agate to agate
     gate2rt_sep = pdk.get_grule(glayer2)["min_separation"]
-    vgatea1 = comcentroid << g1g2via# first via
+    vgatea1 = comcentroid << via_stack(pdk,glayer1,glayer2)# first via
     align_comp_to_port(vgatea1,comcentroid.ports["tl_multiplier_0_gate_E"],alignment=("right","bottom"))
-    vgatea2 = comcentroid << g1g2via# second via
+    vgatea2 = comcentroid << via_stack(pdk,glayer1,glayer2)# second via
     align_comp_to_port(vgatea2,comcentroid.ports["br_multiplier_0_gate_S"],alignment=("right","bottom"))
     vgatea2.movey(-gate2rt_sep)
     comcentroid << straight_route(pdk, vgatea2.ports["bottom_met_S"], comcentroid.ports["br_multiplier_0_gate_N"])
@@ -161,9 +162,9 @@ def common_centroid_ab_ba(
     cext1 = comcentroid << c_route(pdk, vgatea2.ports["top_met_E"], vgatea1.ports["top_met_E"], cglayer=glayer2, extension=g1extension)
     comcentroid.add_ports(ports=cext1.ports,prefix="A_gate_route_")
     # bgate to bgate
-    vgateb1 = comcentroid << g1g2via# first via
+    vgateb1 = comcentroid << via_stack(pdk,glayer1,glayer2)# first via
     align_comp_to_port(vgateb1,comcentroid.ports["bl_multiplier_0_gate_E"],alignment=("right","top"))
-    vgateb2 = comcentroid << g1g2via# second via
+    vgateb2 = comcentroid << via_stack(pdk,glayer1,glayer2)# second via
     align_comp_to_port(vgateb2,comcentroid.ports["tr_multiplier_0_gate_S"],alignment=("right","top"))
     vgateb2.movey(gate2rt_sep)
     comcentroid << straight_route(pdk, vgateb2.ports["bottom_met_N"], comcentroid.ports["tr_multiplier_0_gate_S"])
