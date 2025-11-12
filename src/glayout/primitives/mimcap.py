@@ -67,7 +67,7 @@ def mimcap(
     # error checking and
     capmettop, capmetbottom = __get_mimcap_layerconstruction_info(pdk)
     # create top component
-    mim_cap = Component()
+    mim_cap = Component(name=f"mimcap_{size[0]}x{size[1]}")
     mim_cap << rectangle(size=size, layer=pdk.get_glayer("capmet"), centered=True)
     top_met_ref = mim_cap << via_array(
         pdk, capmetbottom, capmettop, size=size, minus1=True, lay_bottom=False
@@ -99,7 +99,7 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
 	cap_x_y_bottom_met_...all edges, this is the metal below capmet in row x, col y
 	"""
 	capmettop, capmetbottom = __get_mimcap_layerconstruction_info(pdk)
-	mimcap_arr = Component()
+	mimcap_arr = Component(name=f"mimcap_array_{rows}x{columns}")
 	# create the mimcap array
 	mimcap_single = mimcap(pdk, size)
 	mimcap_space = pdk.get_grule("capmet")["min_separation"] #+ evaluate_bbox(mimcap_single)[0]
