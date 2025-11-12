@@ -190,7 +190,7 @@ def generic_4T_interdigitzed(
     if bottom_kwargs is None:
         bottom_kwargs = dict()
     # place
-    toplvl = Component()
+    toplvl = Component(name=f"four_transistor_id_{numcols}cols")
     if top_row_device=="nfet":
         toprow = toplvl << two_nfet_interdigitized(pdk,numcols,with_substrate_tap=False,length=length,**top_kwargs)
     else:

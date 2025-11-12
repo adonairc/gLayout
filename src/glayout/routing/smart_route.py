@@ -124,7 +124,7 @@ def generic_route_two_transistor_interdigitized(
     samecomp = any(l in name1 and l in name2 for l in ["A","B"])
     samepin = any(l in name1 and l in name2 for l in ["gate","source","drain"])
     if samecomp and samepin:
-        return Component()
+        return Component(name=f"empty_route_{name1}_{name2}")
     # easy routes 3/15
     straight_route_width = 1 if edge1.width > 1 else edge1.width
     if check_route(name1,name2,"A_source","B_source"):

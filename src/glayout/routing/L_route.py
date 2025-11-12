@@ -49,7 +49,7 @@ def L_route(
 	assert_port_manhattan([edge1,edge2])
 	assert_ports_perpindicular(edge1,edge2)
 	pdk.activate()
-	Lroute = Component()
+	Lroute = Component(name=f"Lroute_{edge1.name}_{edge2.name}")
 	# figure out which port is vertical
 	vport = None
 	hport = None
