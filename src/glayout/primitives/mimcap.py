@@ -50,7 +50,6 @@ def __generate_mimcap_array_netlist(mimcap_netlist: Netlist, num_caps: int) -> N
 
 	return arr_netlist
 
-@cell
 def mimcap(
     pdk: MappedPDK, size: tuple[float,float]=(5.0, 5.0)
 ) -> Component:
@@ -66,8 +65,9 @@ def mimcap(
     size = pdk.snap_to_2xgrid(size)
     # error checking and
     capmettop, capmetbottom = __get_mimcap_layerconstruction_info(pdk)
-    # create top component
-    mim_cap = Component()
+    # create top component with unique name based on parameters
+    name = f"mimcap_{size[0]}x{size[1]}"
+    mim_cap = Component(name=name)
     mim_cap << rectangle(size=size, layer=pdk.get_glayer("capmet"), centered=True)
     top_met_ref = mim_cap << via_array(
         pdk, capmetbottom, capmettop, size=size, minus1=True, lay_bottom=False
@@ -87,7 +87,6 @@ def mimcap(
 
     return component
 
-@cell
 def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,float] = (5.0,5.0), rmult: int | None=1) -> Component:
 	"""create mimcap array
 	args:
@@ -99,7 +98,9 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
 	cap_x_y_bottom_met_...all edges, this is the metal below capmet in row x, col y
 	"""
 	capmettop, capmetbottom = __get_mimcap_layerconstruction_info(pdk)
-	mimcap_arr = Component()
+	# Create unique name based on parameters
+	name = f"mimcap_array_{rows}x{columns}_s{size[0]}x{size[1]}_rm{rmult}"
+	mimcap_arr = Component(name=name)
 	# create the mimcap array
 	mimcap_single = mimcap(pdk, size)
 	mimcap_space = pdk.get_grule("capmet")["min_separation"] #+ evaluate_bbox(mimcap_single)[0]
