@@ -223,21 +223,21 @@ def super_class_AB_OTA(
     top_level << straight_route(pdk, p_block_ref.ports["top_welltie_N_top_met_N"], VCC_via.ports["bottom_lay_S"], glayer1='met2', width=6, fullbottom=True)
     top_level.add_ports(VCC_via.ports, prefix="VCC_")
     
-    arrm2m3_2 = via_array(
+    arrm2m3_2_vcc = via_array(
         pdk,
         "met2",
         "met3",
         num_vias=(2,2),
         fullbottom=True
     )
-    VCC_int_via = prec_ref_center(arrm2m3_2)
+    VCC_int_via = prec_ref_center(arrm2m3_2_vcc)
     VCC_int_via.movey(p_block_ref.ymin-4)
     top_level.add(VCC_int_via)
     top_level << straight_route(pdk, p_block_ref.ports["bottom_welltie_S_top_met_S"], VCC_int_via.ports["top_met_N"], glayer1='met3', width=0.5)
     top_level << L_route(pdk, VCC_int_via.ports["bottom_lay_W"], res_1_ref.ports["P_tie_S_top_met_S"], hglayer='met2', vglayer='met2', hwidth=2, vwidth=2, fullbottom=True)
     top_level << L_route(pdk, VCC_int_via.ports["bottom_lay_E"], res_2_ref.ports["P_tie_S_top_met_S"], hglayer='met2', vglayer='met2', hwidth=2, vwidth=2, fullbottom=True)
     top_level << L_route(pdk, VCC_int_via.ports["bottom_lay_W"], local_c_bias_1_ref.ports["welltie_N_top_met_N"], hglayer='met2', vglayer='met2', hwidth=2, vwidth=2, fullbottom=True)
-    top_level << L_route(pdk, VCC_int_via.ports["bottom_lay_E"], local_c_bias_2_ref.ports["welltie_N_top_met_N"], hglayer='met2', vglayer='met2', hwidth=2, vwidth=2, fullbottom=True)  
+    top_level << L_route(pdk, VCC_int_via.ports["bottom_lay_E"], local_c_bias_2_ref.ports["welltie_N_top_met_N"], hglayer='met2', vglayer='met2', hwidth=2, vwidth=2, fullbottom=True)
     top_level << L_route(pdk, res_1_ref.ports["N_multiplier_0_gate_E"], VCC_int_via.ports["top_met_S"], hglayer='met2', vglayer='met3', hwidth=0.5, vwidth=0.3, fullbottom=True)
     top_level << L_route(pdk, res_2_ref.ports["N_multiplier_0_gate_W"], VCC_int_via.ports["top_met_S"], hglayer='met2', vglayer='met3', hwidth=0.5, vwidth=0.3, fullbottom=True)
 
@@ -246,11 +246,19 @@ def super_class_AB_OTA(
     top_level << L_route(pdk, res_2_ref.ports["N_tie_W_top_met_W"], n_block_ref.ports["fvf_2_B_tie_N_top_met_N"], hglayer='met1', vglayer='met2', vwidth=4, hwidth=0.8, fullbottom=True)
     top_level << L_route(pdk, res_1_ref.ports["P_multiplier_0_gate_W"], n_block_ref.ports["fvf_1_B_tie_N_top_met_N"], hglayer='met2', vglayer='met2', vwidth=0.3, hwidth=1.2, fullbottom=True)
     top_level << L_route(pdk, res_2_ref.ports["P_multiplier_0_gate_E"], n_block_ref.ports["fvf_2_B_tie_N_top_met_N"], hglayer='met2', vglayer='met2', vwidth=0.3, hwidth=1.2, fullbottom=True)
-    
+
     top_level << L_route(pdk, n_block_ref.ports["op_cmirr_welltie_N_top_met_N"], n_block_ref.ports["Min_1_tie_E_top_met_E"], hwidth=0.6, vwidth=1, hglayer='met1')
     top_level << L_route(pdk, n_block_ref.ports["op_cmirr_welltie_N_top_met_N"], n_block_ref.ports["Min_2_tie_W_top_met_W"], hwidth=0.6, vwidth=1, hglayer='met1')
-    
-    GND_via = top_level << arrm2m3_2
+
+    # Create separate via_array instance for GND to avoid reference conflicts
+    arrm2m3_2_gnd = via_array(
+        pdk,
+        "met2",
+        "met3",
+        num_vias=(2,2),
+        fullbottom=True
+    )
+    GND_via = top_level << arrm2m3_2_gnd
     GND_via.move(n_block_ref.ports["op_cmirr_welltie_S_top_met_S"].center).movey(-2).movex(local_c_bias_2_ref.xmax)
     top_level << L_route(pdk, n_block_ref.ports["op_cmirr_welltie_S_top_met_S"], GND_via.ports["bottom_lay_W"], vglayer='met2', hglayer='met2', vwidth=1.5, hwidth=1.5)
     top_level.add_ports(GND_via.ports, prefix="VSS_")
