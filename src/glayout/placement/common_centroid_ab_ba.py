@@ -34,7 +34,7 @@ def common_centroid_ab_ba(
     """
     # TODO: error checking
     pdk.activate()
-    comcentroid = Component(name=f"comcentroid_abba_w{width}_f{fingers}")
+    comcentroid = Component()
     # create transistors
     well = None
     if isinstance(dummy, bool):

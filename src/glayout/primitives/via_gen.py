@@ -126,7 +126,7 @@ def via_stack(
     ordered_layer_info = __error_check_order_layers(pdk, glayer1, glayer2)
     level1, level2 = ordered_layer_info[0]
     glayer1, glayer2 = ordered_layer_info[1]
-    viastack = Component(name=f"viastack_{glayer1}_{glayer2}")
+    viastack = Component()
     # if same level return component with min_width rectangle on that layer
     if level1 == level2:
         if same_layer_behavior=="lay_nothing":
@@ -222,7 +222,7 @@ def via_array(
     ordered_layer_info = __error_check_order_layers(pdk, glayer1, glayer2)
     level1, level2 = ordered_layer_info[0]
     glayer1, glayer2 = ordered_layer_info[1]
-    viaarray = Component(name=f"viaarray_{glayer1}_{glayer2}")
+    viaarray = Component()
     # if same level return empty component
     if level1 == level2:
         return viaarray

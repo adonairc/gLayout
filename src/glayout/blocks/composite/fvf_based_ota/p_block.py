@@ -51,7 +51,7 @@ def  p_block(
 
     """
     #top level component
-    top_level = Component(name="p_block")
+    top_level = Component()
     top_kwargs = {
             "fingers": ratio*fingers,
             "width": width,

@@ -21,7 +21,7 @@ def transformed(ref: ComponentReference) -> Component:
 
 	"""
 
-	c = Component(name=f"transformed_{ref.name}")
+	c = Component()
 	c.add(ref)
 	c.add_ports(ref.ports)
 	# In GDSFactory v9, flatten() mutates in-place and returns None
@@ -214,7 +214,7 @@ def align_comp_to_port(
 	# make reference type, execute move
 	if isinstance(custom_comp, Component):
 		# In GDSFactory v9, use << operator to create ComponentReference
-		_temp = Component(name=f"align_temp_{custom_comp.name}")
+		_temp = Component()
 		comp_ref = _temp << custom_comp
 	else:
 		comp_ref = custom_comp
@@ -272,7 +272,7 @@ def prec_array(custom_comp: Component, rows: int, columns: int, spacing: tuple[U
 	if not absolute_spacing:
 		precspacing = [precspacing[i] + evaluate_bbox(custom_comp,True)[i] for i in range(2)]
 	# create array
-	precarray = Component(name=f"array_{custom_comp.name}_{rows}x{columns}")
+	precarray = Component()
 	for colnum in range(columns):
 		coldisp = colnum * precspacing[0]
 		for rownum in range(rows):
@@ -309,7 +309,7 @@ def prec_ref_center(custom_comp: Union[Component,ComponentReference], destinatio
 		compref = custom_comp
 	else:
 		# Use << operator to create a ComponentReference
-		_temp = Component(name=f"center_temp_{custom_comp.name}")
+		_temp = Component()
 		compref = _temp << custom_comp
 	xcor, ycor = prec_center(compref, False)
 	if destination is not None:
@@ -358,7 +358,7 @@ def get_primitive_rectangle(size: tuple[float,float]=(5,3), layer: LayerSpec=(0,
 	"""creates a rectangle component which snaps point to grid (does not snap to 2x grid)
 	has same behavoir as gdsfactory.components.rectangle but doesnt allow centering (would snap to grid)
 	"""
-	temprect = Component(name=f"rect_{size[0]}x{size[1]}_L{layer[0]}_{layer[1]}")
+	temprect = Component()
 	# v7 note: primitive_rectangle from gdstk
 	# temprect.add_polygon(primitive_rectangle((0,0),size,*layer))
 	temprect.add_polygon(rectangle(size, layer, True),layer)

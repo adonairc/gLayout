@@ -235,7 +235,7 @@ def diff_pair(
 	"""
 	# TODO: error checking
 	pdk.activate()
-	diffpair = Component(name=f"diffpair_w{width}_f{fingers}")
+	diffpair = Component()
 	# create transistors
 	well = None
 	if isinstance(dummy, bool):

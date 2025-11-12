@@ -99,7 +99,7 @@ def macro_two_transistor_interdigitized(
     kwargs["dummy"] = (False,True) if dummy[1] else False
     rightmost_devB = multiplier(**kwargs)
     # place devices
-    idplace = Component(name=f"interdigitized_{numcols}cols")
+    idplace = Component()
     dims = evaluate_bbox(center_devA)
     xdisp = pdk.snap_to_2xgrid(dims[0]+pdk.get_grule("active_diff")["min_separation"])
     refs = list()

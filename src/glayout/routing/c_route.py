@@ -89,7 +89,7 @@ def c_route(
     pdk.activate()
     extension = snap_to_grid(extension)
     # create route
-    croute = Component(name=f"croute_{e1glayer}_{cglayer}_{e2glayer}")
+    croute = Component()
     viastack1 = via_stack(pdk,e1glayer,cglayer,fullbottom=fullbottom,assume_bottom_via=True,fulltop=True)
     viastack2 = via_stack(pdk,e2glayer,cglayer,fullbottom=fullbottom,assume_bottom_via=True,fulltop=True)
     
@@ -156,8 +156,8 @@ def c_route(
             else:
                 e1_length += ydiff
     # move into position
-    e1_extension_comp = Component(name=f"e1_ext_{e1glayer}")
-    e2_extension_comp = Component(name=f"e2_ext_{e2glayer}")
+    e1_extension_comp = Component()
+    e2_extension_comp = Component()
     box_dims = [(e1_length, width1),(e2_length, width2)]
     if round(edge1.orientation) == 90 or round(edge1.orientation) == 270:
         box_dims = [(width1, e1_length),(width2, e2_length)]

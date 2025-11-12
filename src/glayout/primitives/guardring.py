@@ -23,7 +23,7 @@ def rectangular_ring(
 		layer = Specific layer to put polygon geometry on.
 		centered: True sets center to (0,0), False sets south-west to (0,0).
 	"""
-	c = Component(name=f"rect_ring_{enclosed_size[0]}x{enclosed_size[1]}_w{width}")
+	c = Component()
 	# Create inner and outer rectangles
 	rect_in_comp = rectangle(size=enclosed_size, centered=centered, layer=layer)
 	rect_out_comp = rectangle(size=[dim+2*width for dim in enclosed_size], centered=centered, layer=layer)
@@ -71,7 +71,7 @@ def tapring(
         [sdlayer, "active_tap", "mcon", horizontal_glayer, vertical_glayer]
     )
     pdk.activate()
-    ptapring = Component(name=f"tapring_{sdlayer}_{horizontal_glayer}_{vertical_glayer}")
+    ptapring = Component()
     if not "met" in horizontal_glayer or not "met" in vertical_glayer:
         raise ValueError("both horizontal and vertical glayers should be metals")
     # check that ring is not too small

@@ -114,7 +114,7 @@ def diff_pair_stackedcmirror(
     with_antenna_diode_on_diffinputs: int
 ) -> Component:
     # create toplevel_stacked component
-    toplevel_stacked = Component(name="diff_pair_stacked_cmirror")
+    toplevel_stacked = Component()
     # place nmos components
     diffpair_and_bias = __add_diff_pair_and_bias(pdk, toplevel_stacked, half_diffpair_params, diffpair_bias, rmult, with_antenna_diode_on_diffinputs)
     # create and position each half of the nmos bias transistor for the common source stage symetrically
