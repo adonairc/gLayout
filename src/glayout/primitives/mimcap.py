@@ -1,4 +1,3 @@
-from gdsfactory import cell
 from gdsfactory.component import Component
 from gdsfactory.components import rectangle
 from glayout.pdk.mappedpdk import MappedPDK
