@@ -9,6 +9,7 @@ from pydantic import validate_arguments
 from glayout.routing.straight_route import straight_route
 from decimal import ROUND_UP, Decimal
 from glayout.spice import Netlist
+import uuid
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
 def __get_mimcap_layerconstruction_info(pdk: MappedPDK) -> tuple[str,str]:
@@ -65,8 +66,9 @@ def mimcap(
     size = pdk.snap_to_2xgrid(size)
     # error checking and
     capmettop, capmetbottom = __get_mimcap_layerconstruction_info(pdk)
-    # create top component with unique name based on parameters
-    name = f"mimcap_{size[0]}x{size[1]}"
+    # create top component with unique name based on parameters plus UUID
+    basename = f"mimcap_{size[0]}x{size[1]}"
+    name = f"{basename}_{uuid.uuid4().hex[:6]}"
     mim_cap = Component(name=name)
     mim_cap << rectangle(size=size, layer=pdk.get_glayer("capmet"), centered=True)
     top_met_ref = mim_cap << via_array(
@@ -98,8 +100,9 @@ def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,floa
 	cap_x_y_bottom_met_...all edges, this is the metal below capmet in row x, col y
 	"""
 	capmettop, capmetbottom = __get_mimcap_layerconstruction_info(pdk)
-	# Create unique name based on parameters
-	name = f"mimcap_array_{rows}x{columns}_s{size[0]}x{size[1]}_rm{rmult}"
+	# Create unique name based on parameters plus UUID
+	basename = f"mimcap_array_{rows}x{columns}"
+	name = f"{basename}_{uuid.uuid4().hex[:6]}"
 	mimcap_arr = Component(name=name)
 	# create the mimcap array
 	mimcap_single = mimcap(pdk, size)

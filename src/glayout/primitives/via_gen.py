@@ -10,6 +10,7 @@ from glayout.util.port_utils import rename_ports_by_orientation, print_ports
 from glayout.util.snap_to_grid import component_snap_to_grid
 from decimal import Decimal
 from typing import Literal
+import uuid
 
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -125,8 +126,9 @@ def via_stack(
     ordered_layer_info = __error_check_order_layers(pdk, glayer1, glayer2)
     level1, level2 = ordered_layer_info[0]
     glayer1, glayer2 = ordered_layer_info[1]
-    # Create unique name based on all parameters to avoid conflicts
-    name = f"viastack_{glayer1}_{glayer2}_c{int(centered)}_fb{int(fullbottom)}_ft{int(fulltop)}_abv{int(assume_bottom_via)}_slb{same_layer_behavior}"
+    # Create unique name based on parameters plus UUID to avoid conflicts
+    basename = f"viastack_{glayer1}_{glayer2}"
+    name = f"{basename}_{uuid.uuid4().hex[:6]}"
     viastack = Component(name=name)
     # if same level return component with min_width rectangle on that layer
     if level1 == level2:
@@ -222,10 +224,9 @@ def via_array(
     ordered_layer_info = __error_check_order_layers(pdk, glayer1, glayer2)
     level1, level2 = ordered_layer_info[0]
     glayer1, glayer2 = ordered_layer_info[1]
-    # Create unique name based on all parameters to avoid conflicts
-    size_str = f"{size[0]}x{size[1]}" if size else "None"
-    num_vias_str = f"{num_vias[0]}x{num_vias[1]}" if num_vias else "None"
-    name = f"viaarray_{glayer1}_{glayer2}_s{size_str}_m{int(minus1)}_nv{num_vias_str}_lb{int(lay_bottom)}_fb{int(fullbottom)}_ne{int(no_exception)}_lel{int(lay_every_layer)}"
+    # Create unique name based on parameters plus UUID to avoid conflicts
+    basename = f"viaarray_{glayer1}_{glayer2}"
+    name = f"{basename}_{uuid.uuid4().hex[:6]}"
     viaarray = Component(name=name)
     # if same level return empty component
     if level1 == level2:
