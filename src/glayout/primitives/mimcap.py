@@ -50,7 +50,7 @@ def __generate_mimcap_array_netlist(mimcap_netlist: Netlist, num_caps: int) -> N
 
 	return arr_netlist
 
-#@cell
+@cell
 def mimcap(
     pdk: MappedPDK, size: tuple[float,float]=(5.0, 5.0)
 ) -> Component:
@@ -87,7 +87,7 @@ def mimcap(
 
     return component
 
-#@cell
+@cell
 def mimcap_array(pdk: MappedPDK, rows: int, columns: int, size: tuple[float,float] = (5.0,5.0), rmult: int | None=1) -> Component:
 	"""create mimcap array
 	args:
