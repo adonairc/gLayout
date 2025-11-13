@@ -5,7 +5,6 @@ from gdsfactory import ComponentReference
 from gdsfactory.component import Component
 from gdsfactory.components.shapes import rectangle
 from gdsfactory.typings import Port, LayerSpec
-from gdsfactory.port import move_copy
 from typing import Callable, Union, Iterable
 from decimal import Decimal
 # from gdsfactory.functions import transformed
@@ -88,11 +87,12 @@ def move(custom_comp: Union[Port, ComponentReference, Component], offsetxy: tupl
 	if destination is not None:
 		xoffset = destination[0] - custom_comp_ext.center[0] if destination[0] is not None else 0
 		yoffset = destination[1] - custom_comp_ext.center[1] if destination[1] is not None else 0
-	if isinstance(custom_comp, Port):
+	# Check for Port-like objects (gdsfactory Port or kfactory DPort)
+	if hasattr(custom_comp, 'move_copy') and callable(getattr(custom_comp, 'move_copy')):
 		if destination is None:
-			custom_comp = move_copy(port=custom_comp, x=offsetxy[0], y=offsetxy[1])
+			custom_comp = custom_comp.move_copy(x=offsetxy[0], y=offsetxy[1])
 		else:
-			custom_comp = move_copy(port=custom_comp, x=xoffset, y=yoffset)
+			custom_comp = custom_comp.move_copy(x=xoffset, y=yoffset)
 	elif isinstance(custom_comp, ComponentReference):
 		if destination is None:
 			custom_comp.movex(offsetxy[0]).movey(offsetxy[1])
