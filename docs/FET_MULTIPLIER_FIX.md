@@ -2,7 +2,7 @@
 
 ## Problem Description
 
-There was an issue with the multiplier and finger counting in the `Fet` Netlist generation code in `/src/glayout/primitives/fet.py` around line 109. The problem occurred when using the `connect_netlist` automated netlist generation in upper-level designs.
+There was an issue with the multiplier and finger counting in the `Fet` Netlist generation code in `/src/a6lib/primitives/fet.py` around line 109. The problem occurred when using the `connect_netlist` automated netlist generation in upper-level designs.
 
 ### Specific Issue
 
@@ -48,7 +48,7 @@ The fix was simple but critical:
 
 ## Files Changed
 
-- `/src/glayout/primitives/fet.py` (line 109)
+- `/src/a6lib/primitives/fet.py` (line 109)
 
 ## Testing
 
@@ -75,4 +75,4 @@ The user's diff_pair example should now work correctly with the LVS verification
 
 ---
 
-**Note**: This fix affects all FET devices (NMOS and PMOS) generated through the gLayout library, ensuring consistent and correct netlist generation across all designs.
+**Note**: This fix affects all FET devices (NMOS and PMOS) generated through the A6lib library, ensuring consistent and correct netlist generation across all designs.

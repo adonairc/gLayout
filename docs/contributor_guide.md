@@ -1,7 +1,7 @@
 
 # Contributor Guide
 
-This section guides you through the steps to contribute a new design to the GLayout project, especially in the context of Chipathon 2025 or similar events.
+This section guides you through the steps to contribute a new design to the A6lib project, especially in the context of Chipathon 2025 or similar events.
 
 ## Table of Contents
 
@@ -9,7 +9,7 @@ This section guides you through the steps to contribute a new design to the GLay
 - [Setup](#setting-up-vs-code)
 - [Git Configuration](#setting-up-git)
 - [Pull Request Guidelines](#pull-request-guidelines)
-- [Running GLayout](#running-glayout)
+- [Running A6lib](#running-a6lib)
 - [Component Creation](#creating-components)
 - [DRC and LVS Verification](#drc-and-lvs-checks)
 - [Troubleshooting](#troubleshooting)
@@ -32,11 +32,11 @@ Before starting, ensure you have:
 # Check Python version
 python --version
 
-# Verify GLayout installation
-python -c "import glayout; print('GLayout successfully imported')"
+# Verify A6lib installation
+python -c "import a6lib; print('A6lib successfully imported')"
 
 # Check available PDKs
-python -c "from glayout import sky130, gf180; print('PDKs available')"
+python -c "from a6lib import sky130, gf180; print('PDKs available')"
 ```
 
 ## Setting up VS Code
@@ -94,22 +94,22 @@ Only contributions that follow the required format will be eligible for review. 
 7. If any bugs are found, ensure that they are reported before you try to find a workaround
 8. Take reference from the larger pcells implemented to get a rough idea of how pcells should ideally be coded up.
 
-## Running GLayout
+## Running A6lib
 
-**GLayout** is a Python-based code-to-layout framework that leverages `gdsfactory` as its backend to automate analog layout design.
+**A6lib** is a Python-based code-to-layout framework that leverages `gdsfactory` as its backend to automate analog layout design.
 
-Additionally, Glayout is a tool that generates DRC clean circuit layouts for any technology implementing the Glayout framework.
+Additionally, A6lib is a tool that generates DRC clean circuit layouts for any technology implementing the A6lib framework.
 
-Glayout is composed of 2 main parts:
+A6lib is composed of 2 main parts:
 
 - Generic pdk framework
 - Circuit generators.
 
-The generic pdk framework allows for describing any pdk in a standardized format. The `pdk` sub-package within Glayout contains all code for the generic pdk class (known as `MappedPDK`) in addition to sky130 and gf180 MappedPDK objects. Because MappedPDK is a python class, describing a technology with a MappedPDK allows for passing the pdk as a python object. The PDK generic circuit generator programs (also known as cells or components) are python functions which take as arguments a MappedPDK object and a set of optional layout parameters to produce a DRC clean layout.
+The generic pdk framework allows for describing any pdk in a standardized format. The `pdk` sub-package within A6lib contains all code for the generic pdk class (known as `MappedPDK`) in addition to sky130 and gf180 MappedPDK objects. Because MappedPDK is a python class, describing a technology with a MappedPDK allows for passing the pdk as a python object. The PDK generic circuit generator programs (also known as cells or components) are python functions which take as arguments a MappedPDK object and a set of optional layout parameters to produce a DRC clean layout.
 
-## Important GDSFactory Notes and GLayout Utilities
+## Important GDSFactory Notes and A6lib Utilities
 
-The GDSFactory API is highly versatile, and there are many useful features. It takes some experience to learn about all features and identify the most useful tools from GDSFactory. GDSFactory serves as the backend GDS manipulation library and as an object-oriented tool kit with several useful classes including: Components, Component References, and Ports. There are also common shapes such as components in GDSFactory, such as rectangles, circles, rectangular_rings, etc. To automate common tasks that do not fit into GDSFactory, Glayout includes many utility functions.
+The GDSFactory API is highly versatile, and there are many useful features. It takes some experience to learn about all features and identify the most useful tools from GDSFactory. GDSFactory serves as the backend GDS manipulation library and as an object-oriented tool kit with several useful classes including: Components, Component References, and Ports. There are also common shapes such as components in GDSFactory, such as rectangles, circles, rectangular_rings, etc. To automate common tasks that do not fit into GDSFactory, A6lib includes many utility functions.
 
 ### Component Functions
 
@@ -132,7 +132,7 @@ Components are the GDSFactory implementation of GDS cells. Components contain re
 
 ### Component References
 
-It is not possible to move Components in GDSFactory. GDSFactory has a Component cache, so moving a component may invalidate the cache, but there are situations where you want to move a component; For these situations, use the glayout move, movex and movey functions.
+It is not possible to move Components in GDSFactory. GDSFactory has a Component cache, so moving a component may invalidate the cache, but there are situations where you want to move a component; For these situations, use the a6lib move, movex and movey functions.
 
 - Component references are pointers to components. They have many of the same methods as Components with some additions
 - `ComponentReference.parent`: Component which this reference points to
@@ -169,7 +169,7 @@ A port describes a single edge of a polygon. The most useful port attributes are
 
 ## Pcells (Implemented and Otherwise)
 
-The currently implemented parametric cells, and planned cells can be found in this [sheet](https://docs.google.com/spreadsheets/d/1KGBN63gHc-hpxVrqoAoOkerA7bl1-sZ44X4uEn-ILGE/edit?gid=0#gid=0). Besides the sheet, pcells implemented in the glayout framework can be found in the [blocks/elementary/](https://github.com/ReaLLMASIC/gLayout/tree/main/blocks/elementary) folder.
+The currently implemented parametric cells, and planned cells can be found in this [sheet](https://docs.google.com/spreadsheets/d/1KGBN63gHc-hpxVrqoAoOkerA7bl1-sZ44X4uEn-ILGE/edit?gid=0#gid=0). Besides the sheet, pcells implemented in the a6lib framework can be found in the [blocks/elementary/](https://github.com/ReaLLMASIC/gLayout/tree/main/blocks/elementary) folder.
 Contributors are encouraged to implement unimplemented Pcells. Refer to docstrings for implemented ones.
 
 ## Creating Components
@@ -178,8 +178,8 @@ Contributors are encouraged to implement unimplemented Pcells. Refer to docstrin
 
 ```bash
 # Create component directory structure
-mkdir -p glayout/flow/blocks/my_component
-cd glayout/flow/blocks/my_component
+mkdir -p a6lib/flow/blocks/my_component
+cd a6lib/flow/blocks/my_component
 ```
 
 ### Step 2: Required Files Checklist
@@ -193,7 +193,7 @@ cd glayout/flow/blocks/my_component
 ### Step 3: Implement Layout Function
 
 ```python
-from glayout import MappedPDK
+from a6lib import MappedPDK
 from gdsfactory import Component
 from gdsfactory.cell import cell
 
@@ -232,7 +232,7 @@ with open(spice_netlist_file, 'r') as f:
 Create an `__init__.py` file in your component directory:
 
 ```python
-from glayout.flow.component.blocks.my_component import my_component
+from a6lib.component.blocks.my_component import my_component
 ```
 
 ### Step 6: Ensure DRC and LVS Clean
@@ -244,7 +244,7 @@ from glayout.flow.component.blocks.my_component import my_component
 
 ## DRC and LVS Checks
 
-DRC (magic and klayout) and LVS (netgen) is supported for glayout components
+DRC (magic and klayout) and LVS (netgen) is supported for a6lib components
 
 ### Magic DRC
 
@@ -327,7 +327,7 @@ netgen_lvs_result = {pdk}.lvs_netgen(
 - Details on how the extraction is done and the script itself can be found in the docstrings
 - The pdk_root, lvs setup file, the schematic reference spice file, and the magic drc file can all be passed as overrides
 - `netgen_lvs_result` is a dictionary that will continue the netgen and magic subprocess return codes and the result as a string
-- The lvs report will be written to `glayout/flow/regression/lvs`, unless an alternate path is specified (WIP, report is currently written out only if a path is specified)
+- The lvs report will be written to `a6lib/flow/regression/lvs`, unless an alternate path is specified (WIP, report is currently written out only if a path is specified)
 
 ## Troubleshooting
 
@@ -357,7 +357,7 @@ netgen_lvs_result = {pdk}.lvs_netgen(
 
 - This will spawn a subprocess that runs ngspice simulations using the spice_testbench file provided and directs logs to the log_file
 
-> More information on the functions can be found in the docstrings in the `MappedPDK` class in `glayout/flow/pdk/mappedpdk/`
+> More information on the functions can be found in the docstrings in the `MappedPDK` class in `a6lib/flow/pdk/mappedpdk/`
 
 ## CI Checks
 
@@ -369,14 +369,14 @@ netgen_lvs_result = {pdk}.lvs_netgen(
    - ***Current mirror*** (uses a two transistor interdigitized placement)
 
 2. Contributors are still encouraged to:
-    - Contribute to `glayout/flow/components/`
+    - Contribute to `a6lib/flow/components/`
     - Ensure they are DRC and LVS clean, ,using the checks described in the section above
 3. (**WIP**) Spice testbench simulations will be added for the opamp
 
 ### GitHub Actions Workflow
 
 - A workflow, when run, will pull the latest stable image from Dockerhub
-- A container is run on top of this image, using similar commands to those in the OpenFASOC/Glayout Installation Guide
+- A container is run on top of this image, using similar commands to those in the OpenFASOC/A6lib Installation Guide
 - Based on the functionality being tested (for example: a pcell), a python script containing the necessary checks is run
 - If the return code of the python script is non zero, the workflow is deemed to have failed and the GitHub actions reflects this
 - If multiple things need to be checked, the scripts can be broken down into multiple sequential jobs, all of which have to pass for a CI check to be successful

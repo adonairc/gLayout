@@ -1,10 +1,10 @@
-# Glayout
+# A6lib
 
 A PDK-agnostic layout automation framework for analog circuit design.
 
 ## Overview
 
-Glayout is a powerful layout automation tool that generates DRC-clean circuit layouts for any technology implementing the Glayout framework. It is implemented as an easy-to-install Python package with all dependencies available on PyPI.
+A6lib is a powerful layout automation tool that generates DRC-clean circuit layouts for any technology implementing the A6lib framework. It is implemented as an easy-to-install Python package with all dependencies available on PyPI.
 
 Key features:
 - PDK-agnostic layout generation
@@ -24,8 +24,8 @@ pip install .
 ### Development Installation
 
 ```bash
-git clone https://github.com/your-username/glayout.git
-cd glayout
+git clone https://github.com/your-username/a6lib.git
+cd a6lib
 pip install -e ".[dev]"
 ```
 
@@ -44,7 +44,7 @@ pip install -e ".[llm]"
 ## Quick Start
 
 ```python
-from glayout import sky130, gf180, nmos ,pmos,via_stack
+from a6lib import sky130, gf180, nmos ,pmos,via_stack
 
 # Generate a via stack
 #met2 is the bottom layer. met3 is the top layer.
@@ -60,7 +60,7 @@ transistor.write_gds("transistor.gds")
 
 ## Documentation
 
-For detailed documentation, please visit our [documentation site](https://glayout.readthedocs.io/).
+For detailed documentation, please visit our [documentation site](https://a6lib.readthedocs.io/).
 
 ## Features
 
@@ -94,11 +94,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Citation
 
-If you use Glayout in your research, please cite our papers:
+If you use A6lib in your research, please cite our papers:
 
 ```bibtex
 @article{hammoud2024human,
-  title={Human Language to Analog Layout Using Glayout Layout Automation Framework},
+  title={Human Language to Analog Layout Using A6lib Layout Automation Framework},
   author={Hammoud, A. and Goyal, C. and Pathen, S. and Dai, A. and Li, A. and Kielian, G. and Saligane, M.},
   journal={Accepted at MLCAD},
   year={2024}

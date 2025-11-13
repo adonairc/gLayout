@@ -6,7 +6,7 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    name="glayout",
+    name="a6lib",
     version="0.1.3",
     description="A PDK-agnostic layout automation framework for analog circuit design",
     long_description=long_description,
