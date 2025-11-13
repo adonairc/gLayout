@@ -1,5 +1,6 @@
 from glayout.flow.placement.two_transistor_interdigitized import two_nfet_interdigitized, two_pfet_interdigitized
 from glayout.flow.pdk.mappedpdk import MappedPDK
+import uuid
 from glayout.flow.routing.c_route import c_route
 from glayout.flow.routing.L_route import L_route
 from glayout.flow.routing.straight_route import straight_route
@@ -126,7 +127,8 @@ def current_mirror(
     Returns:
         Component: a current mirror component object
     """
-    top_level = Component("current mirror")
+    basename = "current_mirror"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     if device in ['nmos', 'nfet']:
         interdigitized_fets = two_nfet_interdigitized(
             pdk, 

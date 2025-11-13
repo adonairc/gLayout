@@ -1,4 +1,5 @@
 from typing import Union
+import uuid
 
 from gdsfactory.cell import cell
 from gdsfactory.component import Component, copy
@@ -117,7 +118,8 @@ def diff_pair(
 	"""
 	# TODO: error checking
 	pdk.activate()
-	diffpair = Component(name=f"diffpair_atlas_w{width}_f{fingers}")
+	basename = "diffpair"
+	diffpair = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# create transistors
 	well = None
 	if isinstance(dummy, bool):
@@ -175,13 +177,14 @@ def diff_pair(
 	source_routeE = diffpair << c_route(pdk, b_topr.ports["multiplier_0_source_E"], a_botr.ports["multiplier_0_source_E"],extension=sextension, viaoffset=False)
 	source_routeW = diffpair << c_route(pdk, a_topl.ports["multiplier_0_source_W"], b_botl.ports["multiplier_0_source_W"],extension=sextension, viaoffset=False)
 	# route drains
-	# place via at the drain
-	drain_br_via = diffpair << viam2m3
-	drain_bl_via = diffpair << viam2m3
+	# place via at the drain - create separate instances to avoid reuse conflicts
+	viam2m3 = via_stack(pdk,"met2","met3",centered=True)
+	drain_br_via = diffpair << via_stack(pdk,"met2","met3",centered=True)
+	drain_bl_via = diffpair << via_stack(pdk,"met2","met3",centered=True)
 	drain_br_via.move(a_botr.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
 	drain_bl_via.move(b_botl.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
-	drain_br_viatm = diffpair << viam2m3
-	drain_bl_viatm = diffpair << viam2m3
+	drain_br_viatm = diffpair << via_stack(pdk,"met2","met3",centered=True)
+	drain_bl_viatm = diffpair << via_stack(pdk,"met2","met3",centered=True)
 	drain_br_viatm.move(a_botr.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
 	drain_bl_viatm.move(b_botl.ports["multiplier_0_drain_N"].center).movey(-1.5 * evaluate_bbox(viam2m3)[1] - metal_space)
 	# create route to drain via

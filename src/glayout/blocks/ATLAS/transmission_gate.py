@@ -1,5 +1,6 @@
 from glayout.flow.pdk.mappedpdk import MappedPDK
 from glayout.flow.pdk.sky130_mapped import sky130_mapped_pdk
+import uuid
 from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory import Component
@@ -127,9 +128,10 @@ def transmission_gate(
     tuples are in (NMOS,PMOS) order
     **kwargs are any kwarg that is supported by nmos and pmos
     """
-   
+
     #top level component
-    top_level = Component(name="transmission_gate")
+    basename = "transmission_gate"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     #two fets
     nfet = nmos(pdk, width=width[0], fingers=fingers[0], multipliers=multipliers[0], with_dummy=True, with_dnwell=False,  with_substrate_tap=False, length=length[0], **kwargs)

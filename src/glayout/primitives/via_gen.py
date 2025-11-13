@@ -10,6 +10,7 @@ from glayout.util.port_utils import rename_ports_by_orientation, print_ports
 from glayout.util.snap_to_grid import component_snap_to_grid
 from decimal import Decimal
 from typing import Literal
+import uuid
 
 
 @validate_arguments(config=dict(arbitrary_types_allowed=True))
@@ -88,8 +89,7 @@ def __get_viastack_minseperation(pdk: MappedPDK, viastack: Component, ordered_la
     top_enclosure = pdk.snap_to_2xgrid(top_enclosure,return_type="float")
     return pdk.snap_to_2xgrid([via_spacing, 2*top_enclosure], return_type="float")
 
-
-# @gf.cell
+@gf.cell
 def via_stack(
     pdk: MappedPDK,
     glayer1: str,
@@ -102,7 +102,7 @@ def via_stack(
 ) -> Component:
     """produces a single via stack between two layers that are routable (metal, poly, or active)
     The via_stack produced is always a square (hieght=width)
-    
+
     args:
     pdk: MappedPDK is the pdk to use
     glayer1: str is the glayer to start on
@@ -116,7 +116,7 @@ def via_stack(
     this option provides the generator with guidance on how to handle a case where same layer is given
     by default, (lay_nothing option) nothing is laid and an empty component is returned
     if min_square is specfied, a square of min_width * min_width is laid
-    
+
     ports, some ports are not layed when it does not make sense (e.g. empty component):
     top_met_...all edges
     bottom_via_...all edges
@@ -126,7 +126,9 @@ def via_stack(
     ordered_layer_info = __error_check_order_layers(pdk, glayer1, glayer2)
     level1, level2 = ordered_layer_info[0]
     glayer1, glayer2 = ordered_layer_info[1]
-    viastack = Component(name=f"viastack_{glayer1}_{glayer2}")
+    # Create unique name based on all parameters to avoid conflicts
+    basename = f"viastack_{glayer1}_{glayer2}_"
+    viastack = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     # if same level return component with min_width rectangle on that layer
     if level1 == level2:
         if same_layer_behavior=="lay_nothing":
@@ -175,11 +177,9 @@ def via_stack(
         # move SW corner to 0,0 if centered=False
         if not centered:
             viastack = move(viastack,(viastack.xmax,viastack.ymax))
-    print("via stack")
     return rename_ports_by_orientation(viastack)
 
-
-# @gf.cell
+@gf.cell
 def via_array(
     pdk: MappedPDK,
     glayer1: str,
@@ -202,17 +202,17 @@ def via_array(
     ****NOTE will lay bottom only over the minimum area required to make legal
     size: tuple is the (width, hieght) of the area to enclose
     ****NOTE: the size will be the dimensions of the top metal
-    minus1: if true removes 1 via from rows/cols num vias 
+    minus1: if true removes 1 via from rows/cols num vias
     ****use if you want extra space at the edges of the array, does not apply to num_vias
     num_vias: number of rows/cols in the via array. Overrides size option
-    ****NOTE: you can specify size for one dim and num_vias for another by setting one element to None 
+    ****NOTE: you can specify size for one dim and num_vias for another by setting one element to None
     ****NOTE: num_vias overides size option
     fullbottom: True specifies that the bottom layer should extend over the entire via_array region
     ****NOTE: fullbottom=True implies lay_bottom and overrides if False
     no_exception: True specfies that the function should change size such that min size is met
     lay_every_layer: True specifies that every layer between glayer1 and glayer2 should be layed in full (not just the vias).
     ****NOTE: this implies lay_bottom
-    
+
     ports, some ports are not layed when it does not make sense (e.g. empty component):
     top_met_...all edges
     bottom_lay_...all edges (only if lay_bottom is specified)
@@ -222,7 +222,9 @@ def via_array(
     ordered_layer_info = __error_check_order_layers(pdk, glayer1, glayer2)
     level1, level2 = ordered_layer_info[0]
     glayer1, glayer2 = ordered_layer_info[1]
-    viaarray = Component(name=f"viaarray_{glayer1}_{glayer2}")
+    # Create unique name based on all parameters to avoid conflicts
+    basename = f"viaarray_{glayer1}_{glayer2}"
+    viaarray = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     # if same level return empty component
     if level1 == level2:
         return viaarray

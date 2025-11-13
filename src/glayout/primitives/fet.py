@@ -13,6 +13,8 @@ from glayout.util.snap_to_grid import component_snap_to_grid
 from decimal import Decimal
 from glayout.routing.straight_route import straight_route
 from glayout.spice import Netlist
+import gdsfactory as gf
+import uuid
 
 
 def add_padding(component: Component, layer, enclosure: float) -> None:
@@ -68,22 +70,26 @@ def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float,
     met1_minsep = pdk.get_grule("met1")["min_separation"]
     poly_spacing += met1_minsep if length < met1_minsep else 0
     # create a single finger
-    finger = Component(name=f"finger_{sdlayer}_w{width}_l{length}")
+    finger = Component(name=f"finger_{uuid.uuid4().hex[:6]}")
     gate = finger << rectangle(size=(length, poly_height), layer=pdk.get_glayer("poly"), centered=True)
-    sd_viaarr = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
-    interfinger_correction = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None))
-    sd_viaarr << interfinger_correction
-    sd_viaarr_ref = finger << sd_viaarr
+    sd_viaarr_right = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
+    interfinger_correction_right = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None)).copy()
+    sd_viaarr_right << interfinger_correction_right
+    sd_viaarr_ref = finger << sd_viaarr_right
     sd_viaarr_ref.movex((poly_spacing+length) / 2)
     finger.add_ports(gate.ports,prefix="gate_")
     finger.add_ports(sd_viaarr_ref.ports,prefix="rightsd_")
     # create finger array
     fingerarray = prec_array(finger, columns=fingers, rows=1, spacing=(poly_spacing+length, 1),absolute_spacing=True)
-    sd_via_ref_left = fingerarray << sd_viaarr
+    # Create separate via_array instance for left side to avoid reference conflicts
+    sd_viaarr_left = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
+    interfinger_correction_left = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None)).copy()
+    sd_viaarr_left << interfinger_correction_left
+    sd_via_ref_left = fingerarray << sd_viaarr_left
     sd_via_ref_left.movex(0-(poly_spacing+length)/2)
     fingerarray.add_ports(sd_via_ref_left.ports,prefix="leftsd_")
     # center finger array and add ports
-    centered_farray = Component(name=f"farray_centered_{sdlayer}_{fingers}f")
+    centered_farray = Component(name=f"centered_farray_{uuid.uuid4().hex[:6]}")
     fingerarray_ref_center = prec_ref_center(fingerarray)
     centered_farray.add(fingerarray_ref_center)
     centered_farray.add_ports(fingerarray_ref_center.ports)
@@ -315,7 +321,7 @@ def __mult_array_macro(
     # create multiplier array
     pdk.activate()
     # TODO: error checking
-    multiplier_arr = Component(name=f"mult_array_{sdlayer}_{multipliers}x{fingers}f")
+    multiplier_arr = Component()
     multiplier_comp = multiplier(
         pdk,
         sdlayer,
@@ -382,14 +388,14 @@ def __mult_array_macro(
                 actualport = "multiplier_0_" + aliasport
             multiplier_arr.add_port(port=multiplier_arr.ports[actualport],name=aliasport)
     # recenter
-    final_arr = Component(name=f"final_array_{sdlayer}_{multipliers}x{fingers}f")
+    final_arr = Component()
     marrref = final_arr << multiplier_arr
     correctionxy = prec_center(marrref)
     marrref.movex(correctionxy[0]).movey(correctionxy[1])
     final_arr.add_ports(marrref.ports)
     return component_snap_to_grid(rename_ports_by_orientation(final_arr))
 
-
+@gf.cell
 def nmos(
     pdk,
     width: float = 3,
@@ -435,7 +441,7 @@ def nmos(
     """
     # TODO: glayer checks
     pdk.activate()
-    nfet = Component(name=f"nmos_w{width}_f{fingers}_m{multipliers}")
+    nfet = Component()
     if rmult:
         if rmult<1:
             raise ValueError("rmult must be positive int")
@@ -530,7 +536,7 @@ def nmos(
 
     return component
 
-
+@gf.cell
 def pmos(
     pdk,
     width: float = 3,
@@ -576,7 +582,7 @@ def pmos(
     """
     # TODO: glayer checks
     pdk.activate()
-    pfet = Component(name=f"pmos_w{width}_f{fingers}_m{multipliers}")
+    pfet = Component()
     if rmult:
         if rmult<1:
             raise ValueError("rmult must be positive int")

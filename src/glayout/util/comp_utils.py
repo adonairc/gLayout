@@ -12,6 +12,7 @@ from decimal import Decimal
 # from gdsfactory.functions import move as __gf_move
 from glayout.pdk.mappedpdk import MappedPDK
 from .port_utils import add_ports_perimeter, rename_ports_by_list, parse_direction
+import uuid
 
 def transformed(ref: ComponentReference) -> Component:
 	"""Returns flattened cell with reference transformations applied.
@@ -21,7 +22,8 @@ def transformed(ref: ComponentReference) -> Component:
 
 	"""
 
-	c = Component(name=f"transformed_{ref.name}")
+	basename = "transformed"
+	c = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	c.add(ref)
 	c.add_ports(ref.ports)
 	# In GDSFactory v9, flatten() mutates in-place and returns None
@@ -123,7 +125,6 @@ def movey(custom_comp: Union[Port, ComponentReference, Component], offsety: floa
 	"""
 	if destination is not None:
 		destination = (None, destination)
-	# custom_comp.move_copy()
 	return move(custom_comp, (0,offsety),destination,layer)
 
 
@@ -149,14 +150,12 @@ def align_comp_to_port(
 	rtr_comp_ref = will return a component reference if set true, else return component
 	"""
 	# find center and bbox
-	print(custom_comp)
 	if isinstance(custom_comp, ComponentReference):
 		comp_type = transformed(custom_comp)
 	else:
 		comp_type = custom_comp
 	if layer:
 		comp_type = comp_type.extract([layer])
-	print(comp_type)
 	cbbox = comp_type.bbox()
 	ccenter = comp_type.center
 	# setup
@@ -214,7 +213,7 @@ def align_comp_to_port(
 	# make reference type, execute move
 	if isinstance(custom_comp, Component):
 		# In GDSFactory v9, use << operator to create ComponentReference
-		_temp = Component(name=f"align_temp_{custom_comp.name}")
+		_temp = Component(name=f"temp_{uuid.uuid4().hex[:6]}")
 		comp_ref = _temp << custom_comp
 	else:
 		comp_ref = custom_comp
@@ -272,7 +271,8 @@ def prec_array(custom_comp: Component, rows: int, columns: int, spacing: tuple[U
 	if not absolute_spacing:
 		precspacing = [precspacing[i] + evaluate_bbox(custom_comp,True)[i] for i in range(2)]
 	# create array
-	precarray = Component(name=f"array_{custom_comp.name}_{rows}x{columns}")
+	basename = "precarray"
+	precarray = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	for colnum in range(columns):
 		coldisp = colnum * precspacing[0]
 		for rownum in range(rows):
@@ -309,7 +309,7 @@ def prec_ref_center(custom_comp: Union[Component,ComponentReference], destinatio
 		compref = custom_comp
 	else:
 		# Use << operator to create a ComponentReference
-		_temp = Component(name=f"center_temp_{custom_comp.name}")
+		_temp = Component(name=f"temp_{uuid.uuid4().hex[:6]}")
 		compref = _temp << custom_comp
 	xcor, ycor = prec_center(compref, False)
 	if destination is not None:
@@ -358,15 +358,19 @@ def get_primitive_rectangle(size: tuple[float,float]=(5,3), layer: LayerSpec=(0,
 	"""creates a rectangle component which snaps point to grid (does not snap to 2x grid)
 	has same behavoir as gdsfactory.components.rectangle but doesnt allow centering (would snap to grid)
 	"""
-	temprect = Component(name=f"rect_{size[0]}x{size[1]}_L{layer[0]}_{layer[1]}")
-	# v7 note: primitive_rectangle from gdstk
-	# temprect.add_polygon(primitive_rectangle((0,0),size,*layer))
-	temprect.add_polygon(rectangle(size, layer, True),layer)
+	basename = "temprect"
+	temprect = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
+	dx = float(size[0])
+	dy = float(size[1])
+	if dx <= 0 or dy <= 0:
+			raise ValueError(f"dx={dx} and dy={dy} must be > 0")
+	points = [
+			(-dx / 2.0, -dy / 2.0),
+			(-dx / 2.0, dy / 2),
+			(dx / 2, dy / 2),
+			(dx / 2, -dy / 2.0),
+			]
+	temprect.add_polygon(points, layer=layer)
 	temprect = rename_ports_by_list(add_ports_perimeter(temprect,layer=layer,prefix="route_"),[("W","e1"),("N","e2"),("E","e3"),("S","e4")])
-	#rect = Component()
-	#clogic_ref = prec_ref_center(temprect) if centered else temprect.ref()
-	#rect.add(clogic_ref)
-	#rect.add_ports(clogic_ref.ports)
-	# In GDSFactory v9, flatten() mutates in-place and returns None
 	temprect.flatten()
 	return temprect

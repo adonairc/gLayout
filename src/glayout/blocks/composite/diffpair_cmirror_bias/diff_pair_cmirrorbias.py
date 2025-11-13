@@ -1,5 +1,6 @@
 from gdsfactory.cell import cell, clear_cache
 from gdsfactory.component import Component, copy
+import uuid
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.components.rectangle import rectangle
 from glayout import MappedPDK, sky130,gf180
@@ -80,7 +81,8 @@ def diff_pair_ibias(
     with_antenna_diode_on_diffinputs: int,
 ) -> Component:
     # create and center diffpair
-    diffpair_i_ = Component("temp diffpair and current source")
+    basename = "temp_diffpair_and_current_source"
+    diffpair_i_ = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     center_diffpair_comp = diff_pair(
         pdk,
         width=half_diffpair_params[0],

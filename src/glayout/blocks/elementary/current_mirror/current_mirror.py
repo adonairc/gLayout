@@ -1,5 +1,6 @@
 from glayout import MappedPDK, sky130,gf180
 from glayout.routing import c_route,L_route,straight_route
+import uuid
 from glayout.spice.netlist import Netlist
 from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized, two_pfet_interdigitized
 from glayout.spice.netlist import Netlist
@@ -124,7 +125,8 @@ def current_mirror(
     Returns:
         Component: a current mirror component object
     """
-    top_level = Component("current mirror")
+    basename = "current_mirror"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     if device in ['nmos', 'nfet']:
         interdigitized_fets = two_nfet_interdigitized(
             pdk, 

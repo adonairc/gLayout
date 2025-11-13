@@ -10,6 +10,7 @@ from glayout.routing.straight_route import straight_route
 from glayout.primitives.guardring import tapring
 from glayout.util.port_utils import add_ports_perimeter
 from gdsfactory import clear_cache
+import uuid
 
 #from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized; from glayout.pdk.sky130_mapped import sky130_mapped_pdk as pdk; biasParams=[6,2,4]; rmult=2
 def add_two_int_labels(two_int_in: Component,
@@ -99,7 +100,8 @@ def macro_two_transistor_interdigitized(
     kwargs["dummy"] = (False,True) if dummy[1] else False
     rightmost_devB = multiplier(**kwargs)
     # place devices
-    idplace = Component(name=f"interdigitized_{numcols}cols")
+    basename = "idplace"
+    idplace = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     dims = evaluate_bbox(center_devA)
     xdisp = pdk.snap_to_2xgrid(dims[0]+pdk.get_grule("active_diff")["min_separation"])
     refs = list()

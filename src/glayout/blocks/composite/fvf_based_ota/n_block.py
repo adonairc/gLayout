@@ -1,5 +1,6 @@
 from glayout.flow.pdk.mappedpdk import MappedPDK
 from glayout.flow.pdk.sky130_mapped import sky130_mapped_pdk
+import uuid
 from gdsfactory import Component
 from gdsfactory.cell import cell
 from gdsfactory.component_reference import ComponentReference
@@ -49,9 +50,10 @@ def n_block(
     current_mirror_params: output stage N-type currrent mirrors - (width, length)
     ratio: current mirroring ratio at output stage
     global_current_bias_params: A low voltage current mirror for biasing - consists of 7 nmoses of (W/L) and one nmos of (W'/L) - (W,W',L)
-    """ 
+    """
     # Create a top level component
-    top_level = Component("n_block")
+    basename = "n_block"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     
     #input differential pair
     fet_in = nmos(pdk, width=input_pair_params[0], length=input_pair_params[1], fingers=1, with_dnwell=False, with_tie=True, with_substrate_tap=False, sd_rmult=3)
@@ -63,13 +65,11 @@ def n_block(
     top_level.add(fet_inA_ref)
     top_level.add(fet_inB_ref)
 
-    #creating VinP and VinM ports
-    viam2m3 = via_stack(pdk, "met2", "met3", centered=True)
-    viam3m4 = via_stack(pdk, "met3", "met4", centered=True)
-    gate_inA_via = top_level << viam3m4
-    gate_inB_via = top_level << viam3m4
-    source_inA_via = top_level << viam2m3
-    source_inB_via = top_level << viam2m3
+    #creating VinP and VinM ports - create separate instances to avoid reuse conflicts
+    gate_inA_via = top_level << via_stack(pdk, "met3", "met4", centered=True)
+    gate_inB_via = top_level << via_stack(pdk, "met3", "met4", centered=True)
+    source_inA_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
+    source_inB_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     gate_inA_via.move(fet_inA_ref.ports["multiplier_0_gate_W"].center).movex(-evaluate_bbox(fet_in)[0]/4).movey(-evaluate_bbox(fet_in)[1]/2)
     gate_inB_via.move(fet_inB_ref.ports["multiplier_0_gate_E"].center).movex(evaluate_bbox(fet_in)[0]/4).movey(-evaluate_bbox(fet_in)[1]/2)
 
@@ -98,8 +98,8 @@ def n_block(
     top_level.add(fvf_2_ref)
 
     #creating ports for conncetion
-    gate_fvf_1A_via = top_level << viam2m3
-    gate_fvf_2A_via = top_level << viam2m3
+    gate_fvf_1A_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
+    gate_fvf_2A_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     gate_fvf_1A_via.move(fvf_1_ref.ports["A_multiplier_0_gate_S"].center).movex(-evaluate_bbox(fet_in)[0]/4).movey(-evaluate_bbox(fet_in)[1]/1.5)
     gate_fvf_2A_via.move(fvf_2_ref.ports["A_multiplier_0_gate_S"].center).movex(evaluate_bbox(fet_in)[0]/4).movey(-evaluate_bbox(fet_in)[1]/1.5)
 

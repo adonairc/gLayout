@@ -1,5 +1,6 @@
 from glayout.flow.pdk.mappedpdk import MappedPDK
 from glayout.flow.pdk.sky130_mapped import sky130_mapped_pdk
+import uuid
 from gdsfactory.component import Component
 from gdsfactory.component_reference import ComponentReference
 from gdsfactory.cell import cell
@@ -92,7 +93,8 @@ def  low_voltage_cmirror(
     The default values are used to mirror 10uA.
     """
     #top level component
-    top_level = Component("Low_voltage_N-type_current_mirror")
+    basename = "Low_voltage_N_type_current_mirror"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 
     #input branch 2
     cascode_fvf = flipped_voltage_follower(pdk, width=(width[0],width[0]), length=(length,length), fingers=(fingers[0],fingers[0]), multipliers=(multipliers[0],multipliers[0]), with_dnwell=False)
@@ -126,24 +128,23 @@ def  low_voltage_cmirror(
     top_level << c_route(pdk, cascode_fvf_ref.ports["A_multiplier_0_gate_W"], bias_fvf_ref.ports["A_multiplier_0_gate_W"])
     top_level << straight_route(pdk, cascode_fvf_ref.ports["B_gate_bottom_met_E"], fet_3_ref.ports["multiplier_0_gate_W"])
     
-    #creating vias for routing
-    viam2m3 = via_stack(pdk, "met2", "met3", centered=True)
-    gate_1_via = top_level << viam2m3 
+    #creating vias for routing - create separate instances to avoid reuse conflicts
+    gate_1_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     gate_1_via.move(fet_1_ref.ports["multiplier_0_gate_W"].center).movex(-1)
-    gate_2_via = top_level << viam2m3                                         
+    gate_2_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     gate_2_via.move(fet_2_ref.ports["multiplier_0_gate_W"].center).movex(-1)
-    gate_3_via = top_level << viam2m3 
+    gate_3_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     gate_3_via.move(fet_3_ref.ports["multiplier_0_gate_E"].center).movex(1)
-    gate_4_via = top_level << viam2m3 
+    gate_4_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     gate_4_via.move(fet_4_ref.ports["multiplier_0_gate_E"].center).movex(1)
 
-    source_2_via = top_level << viam2m3
-    drain_1_via = top_level << viam2m3
+    source_2_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
+    drain_1_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     source_2_via.move(fet_2_ref.ports["multiplier_0_source_E"].center).movex(1.5)
     drain_1_via.move(fet_1_ref.ports["multiplier_0_drain_W"].center).movex(-1)
 
-    source_4_via = top_level << viam2m3
-    drain_3_via = top_level << viam2m3
+    source_4_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
+    drain_3_via = top_level << via_stack(pdk, "met2", "met3", centered=True)
     source_4_via.move(fet_4_ref.ports["multiplier_0_source_W"].center).movex(-1)
     drain_3_via.move(fet_3_ref.ports["multiplier_0_drain_E"].center).movex(1.5)
     

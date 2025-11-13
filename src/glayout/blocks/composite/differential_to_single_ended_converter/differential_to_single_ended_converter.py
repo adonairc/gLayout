@@ -18,15 +18,18 @@ from glayout.util.snap_to_grid import component_snap_to_grid
 from pydantic import validate_arguments
 from glayout.placement.two_transistor_interdigitized import two_nfet_interdigitized
 from glayout.spice import Netlist
+import uuid
 
 
 
 @validate_arguments
 def __create_sharedgatecomps(pdk: MappedPDK, rmult: int, half_pload: tuple[float,float,int]) -> tuple:
     # add diffpair current mirror loads (this is a pmos current mirror split into 2 for better matching/compensation)
-    shared_gate_comps = Component("shared gate components")
+    basename = "shared_gate_components"
+    shared_gate_comps = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     # create the 2*2 multiplier transistors (placed twice later)
-    twomultpcomps = Component("2 multiplier shared gate comps")
+    basename2 = "2mult_shared_gate_comps"
+    twomultpcomps = Component(name=f"{basename2}_{uuid.uuid4().hex[:6]}")
     pcompR = multiplier(pdk, "p+s/d", width=half_pload[0], length=half_pload[1], fingers=half_pload[2], dummy=True,rmult=rmult).copy()
     tapref = pcompR << tapring(pdk, evaluate_bbox(pcompR,padding=0.3+pdk.get_grule("n+s/d", "active_tap")["min_enclosure"]),"n+s/d","met1","met1")
     pcompR.add_padding(layers=(pdk.get_glayer("nwell"),), default=pdk.get_grule("active_tap", "nwell")["min_enclosure"])
@@ -81,7 +84,21 @@ def __create_sharedgatecomps(pdk: MappedPDK, rmult: int, half_pload: tuple[float
         LRsourcesPorts += [pref_.ports["drain_W"],pref_.ports["drain_E"]]
     # combine the two multiplier top and bottom with the 4 multiplier center row
     ytranslation_pcenter = 2 * pcenterfourunits.ymax + 5*pdk.util_max_metal_seperation()
-    ptop_AB = (shared_gate_comps << twomultpcomps).movey(ytranslation_pcenter)
+    # Create separate twomultpcomps instance for top to avoid reference conflicts
+    twomultpcomps_top = Component(name=f"2mult_shared_gate_comps_top_{uuid.uuid4().hex[:6]}")
+    pcompR_top = multiplier(pdk, "p+s/d", width=half_pload[0], length=half_pload[1], fingers=half_pload[2], dummy=True,rmult=rmult).copy()
+    tapref_top = pcompR_top << tapring(pdk, evaluate_bbox(pcompR_top,padding=0.3+pdk.get_grule("n+s/d", "active_tap")["min_enclosure"]),"n+s/d","met1","met1")
+    pcompR_top.add_padding(layers=(pdk.get_glayer("nwell"),), default=pdk.get_grule("active_tap", "nwell")["min_enclosure"])
+    pcompR_top.add_ports(tapref_top.ports,prefix="welltap_")
+    pcompR_top << straight_route(pdk,pcompR_top.ports["dummy_L_gsdcon_top_met_W"],pcompR_top.ports["welltap_W_top_met_W"],glayer2="met1")
+    pcompR_top << straight_route(pdk,pcompR_top.ports["dummy_R_gsdcon_top_met_W"],pcompR_top.ports["welltap_E_top_met_E"],glayer2="met1")
+    pcompL_top = pcompR_top.copy()
+    _prefL_top = (twomultpcomps_top << pcompL_top).movex(-1 * pcompL_top.xmax - pcomp_AB_spacing/2)
+    _prefR_top = (twomultpcomps_top << pcompR_top).movex(-1 * pcompR_top.xmin + pcomp_AB_spacing/2)
+    twomultpcomps_top.add_ports(_prefL_top.ports,prefix="L_")
+    twomultpcomps_top.add_ports(_prefR_top.ports,prefix="R_")
+    twomultpcomps_top << route_quad(_prefL_top.ports["gate_W"], _prefR_top.ports["gate_E"], layer=pdk.get_glayer("met2"))
+    ptop_AB = (shared_gate_comps << twomultpcomps_top).movey(ytranslation_pcenter)
     pbottom_AB = (shared_gate_comps << twomultpcomps).movey(-1 * ytranslation_pcenter)
 
     return shared_gate_comps, ptop_AB, pbottom_AB, LRplusdopedPorts, LRgatePorts, LRdrainsPorts, LRsourcesPorts, LRdummyports

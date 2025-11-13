@@ -1,5 +1,5 @@
 from glayout.pdk.mappedpdk import MappedPDK
-from gdsfactory import cell, boolean
+from gdsfactory import boolean
 from gdsfactory.component import Component
 from gdsfactory.components import rectangle
 from glayout.primitives.via_gen import via_array, via_stack
@@ -7,8 +7,10 @@ from glayout.util.comp_utils import evaluate_bbox
 from glayout.util.snap_to_grid import component_snap_to_grid
 from glayout.routing.L_route import L_route
 from gdsfactory.typings import LayerSpec
+import uuid
+import gdsfactory as gf
 
-@cell
+@gf.cell
 def rectangular_ring(
 	enclosed_size = (4.0,2.0),
 	width: float = 0.5,
@@ -23,7 +25,8 @@ def rectangular_ring(
 		layer = Specific layer to put polygon geometry on.
 		centered: True sets center to (0,0), False sets south-west to (0,0).
 	"""
-	c = Component(name=f"rect_ring_{enclosed_size[0]}x{enclosed_size[1]}_w{width}")
+	basename = "rect_ring"
+	c = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# Create inner and outer rectangles
 	rect_in_comp = rectangle(size=enclosed_size, centered=centered, layer=layer)
 	rect_out_comp = rectangle(size=[dim+2*width for dim in enclosed_size], centered=centered, layer=layer)
@@ -40,7 +43,7 @@ def rectangular_ring(
 	c << ring
 	return c
 
-
+@gf.cell
 def tapring(
     pdk: MappedPDK,
     enclosed_rectangle=(2.0, 4.0),
@@ -71,7 +74,8 @@ def tapring(
         [sdlayer, "active_tap", "mcon", horizontal_glayer, vertical_glayer]
     )
     pdk.activate()
-    ptapring = Component(name=f"tapring_{sdlayer}_{horizontal_glayer}_{vertical_glayer}")
+    basename = f"tapring_{sdlayer}"
+    ptapring = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     if not "met" in horizontal_glayer or not "met" in vertical_glayer:
         raise ValueError("both horizontal and vertical glayers should be metals")
     # check that ring is not too small
@@ -100,43 +104,60 @@ def tapring(
         centered=True,
         layer=pdk.get_glayer(sdlayer),
     )
-    # create via arrs
+    # create via arrs - compute dimensions
     via_width_horizontal = evaluate_bbox(via_stack(pdk, "active_tap", horizontal_glayer))[0]
     arr_size_horizontal = enclosed_rectangle[0]
-    horizontal_arr = via_array(
-        pdk,
-        "active_tap",
-        horizontal_glayer,
-        (arr_size_horizontal, via_width_horizontal),
-        minus1=True,
-        lay_every_layer=True
-    )
     via_width_vertical = evaluate_bbox(via_stack(pdk, "active_tap", vertical_glayer))[1]
     arr_size_vertical = enclosed_rectangle[1]
-    vertical_arr = via_array(
-        pdk,
-        "active_tap",
-        vertical_glayer,
-        (via_width_vertical, arr_size_vertical),
-        minus1=True,
-        lay_every_layer=True
-    )
-    # add via arrs
+
+    # add via arrs - create separate instances for each side to avoid reference conflicts
     refs_prefixes = list()
-    if sides[1]:
-        metal_ref_n = ptapring << horizontal_arr
+    if sides[1]:  # North
+        horizontal_arr_n = via_array(
+            pdk,
+            "active_tap",
+            horizontal_glayer,
+            (arr_size_horizontal, via_width_horizontal),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_n = ptapring << horizontal_arr_n
         metal_ref_n.movey(round(0.5 * (enclosed_rectangle[1] + tap_width),4))
         refs_prefixes.append((metal_ref_n,"N_"))
-    if sides[2]:
-        metal_ref_e = ptapring << vertical_arr
+    if sides[2]:  # East
+        vertical_arr_e = via_array(
+            pdk,
+            "active_tap",
+            vertical_glayer,
+            (via_width_vertical, arr_size_vertical),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_e = ptapring << vertical_arr_e
         metal_ref_e.movex(round(0.5 * (enclosed_rectangle[0] + tap_width),4))
         refs_prefixes.append((metal_ref_e,"E_"))
-    if sides[3]:
-        metal_ref_s = ptapring << horizontal_arr
+    if sides[3]:  # South
+        horizontal_arr_s = via_array(
+            pdk,
+            "active_tap",
+            horizontal_glayer,
+            (arr_size_horizontal, via_width_horizontal),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_s = ptapring << horizontal_arr_s
         metal_ref_s.movey(round(-0.5 * (enclosed_rectangle[1] + tap_width),4))
         refs_prefixes.append((metal_ref_s,"S_"))
-    if sides[0]:
-        metal_ref_w = ptapring << vertical_arr
+    if sides[0]:  # West
+        vertical_arr_w = via_array(
+            pdk,
+            "active_tap",
+            vertical_glayer,
+            (via_width_vertical, arr_size_vertical),
+            minus1=True,
+            lay_every_layer=True
+        )
+        metal_ref_w = ptapring << vertical_arr_w
         metal_ref_w.movex(round(-0.5 * (enclosed_rectangle[0] + tap_width),4))
         refs_prefixes.append((metal_ref_w,"W_"))
     # connect vertices

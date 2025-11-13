@@ -1,11 +1,12 @@
 from typing import Union
+import uuid
 from glayout import MappedPDK, sky130,gf180
 from glayout.spice.netlist import Netlist
 from glayout.routing import c_route,L_route,straight_route
 
-from gdsfactory.cell import cell
+from gdsfactory import cell
 from gdsfactory.component import Component, copy
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components.shapes import rectangle
 from gdsfactory.routing.route_quad import route_quad
 from gdsfactory.routing.route_sharp import route_sharp
 from glayout.pdk.mappedpdk import MappedPDK
@@ -27,11 +28,6 @@ from glayout.routing.smart_route import smart_route
 from glayout.spice import Netlist
 from glayout.pdk.sky130_mapped import sky130_mapped_pdk
 from gdsfactory.components import text_freetype
-try:
-    from evaluator_wrapper import run_evaluation
-except ImportError:
-    print("Warning: evaluator_wrapper not found. Evaluation will be skipped.")
-    run_evaluation = None
 
 
 def sky130_add_df_labels(df_in: Component) -> Component:
@@ -235,7 +231,8 @@ def diff_pair(
 	"""
 	# TODO: error checking
 	pdk.activate()
-	diffpair = Component(name=f"diffpair_w{width}_f{fingers}")
+	basename = "diffpair"
+	diffpair = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
 	# create transistors
 	well = None
 	if isinstance(dummy, bool):
@@ -293,13 +290,14 @@ def diff_pair(
 	source_routeE = diffpair << c_route(pdk, b_topr.ports["multiplier_0_source_E"], a_botr.ports["multiplier_0_source_E"],extension=sextension)
 	source_routeW = diffpair << c_route(pdk, a_topl.ports["multiplier_0_source_W"], b_botl.ports["multiplier_0_source_W"],extension=sextension)
 	# route drains
-	# place via at the drain
-	drain_br_via = diffpair << viam2m3
-	drain_bl_via = diffpair << viam2m3
+	# place via at the drain - create separate instances to avoid reuse conflicts
+	viam2m3 = via_stack(pdk,"met2","met3",centered=True)
+	drain_br_via = diffpair << via_stack(pdk,"met2","met3",centered=True)
+	drain_bl_via = diffpair << via_stack(pdk,"met2","met3",centered=True)
 	drain_br_via.move(a_botr.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
 	drain_bl_via.move(b_botl.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
-	drain_br_viatm = diffpair << viam2m3
-	drain_bl_viatm = diffpair << viam2m3
+	drain_br_viatm = diffpair << via_stack(pdk,"met2","met3",centered=True)
+	drain_bl_viatm = diffpair << via_stack(pdk,"met2","met3",centered=True)
 	drain_br_viatm.move(a_botr.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
 	drain_bl_viatm.move(b_botl.ports["multiplier_0_drain_N"].center).movey(-1.5 * evaluate_bbox(viam2m3)[1] - metal_space)
 	# create route to drain via

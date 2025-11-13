@@ -12,6 +12,7 @@ from glayout.primitives.guardring import tapring
 from glayout.spice.netlist import Netlist
 from gdsfactory.components import text_freetype, rectangle
 from glayout.primitives.via_gen import via_stack
+import uuid
 
 #two seperate bulk nodes
 def add_four_int_labels1(four_int_in: Component,
@@ -190,7 +191,8 @@ def generic_4T_interdigitzed(
     if bottom_kwargs is None:
         bottom_kwargs = dict()
     # place
-    toplvl = Component(name=f"four_transistor_id_{numcols}cols")
+    basename = "toplvl"
+    toplvl = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     if top_row_device=="nfet":
         toprow = toplvl << two_nfet_interdigitized(pdk,numcols,with_substrate_tap=False,length=length,**top_kwargs)
     else:

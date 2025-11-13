@@ -1,5 +1,6 @@
 from glayout.flow.pdk.mappedpdk import MappedPDK
 from glayout.flow.pdk.sky130_mapped import sky130_mapped_pdk
+import uuid
 from gdsfactory.cell import cell
 from gdsfactory.component import Component
 from gdsfactory.component_reference import ComponentReference
@@ -51,7 +52,8 @@ def  p_block(
 
     """
     #top level component
-    top_level = Component(name="p_block")
+    basename = "p_block"
+    top_level = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
     top_kwargs = {
             "fingers": ratio*fingers,
             "width": width,
