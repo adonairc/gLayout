@@ -32,10 +32,15 @@ from .placement.two_transistor_interdigitized import two_transistor_interdigitiz
 from .placement.two_transistor_place import two_transistor_place
 
 # Suppress kfactory verbose logging after all imports
-# This must be done after gdsfactory/kfactory have been imported and configured
-import logging
-logging.getLogger("kfactory").setLevel(logging.CRITICAL)
-logging.getLogger("kfactory.kcell").setLevel(logging.CRITICAL)
+# kfactory uses loguru, not standard logging, so we need to use loguru's API
+try:
+    from loguru import logger
+    logger.disable("kfactory")
+except ImportError:
+    # Fallback to standard logging if loguru is not available
+    import logging
+    logging.getLogger("kfactory").setLevel(logging.CRITICAL)
+    logging.getLogger("kfactory.kcell").setLevel(logging.CRITICAL)
 
 __version__ = "0.1.1"
 
