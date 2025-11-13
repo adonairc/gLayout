@@ -2,9 +2,6 @@
 Glayout - A PDK-agnostic layout automation framework for analog circuit design
 """
 
-import logging
-logging.getLogger("kfactory.kcell").setLevel(logging.CRITICAL)
-
 from .pdk.mappedpdk import MappedPDK
 from .pdk.sky130_mapped import sky130_mapped_pdk as sky130
 from .pdk.gf180_mapped import gf180_mapped_pdk as gf180
@@ -33,6 +30,12 @@ from .placement.common_centroid_ab_ba import common_centroid_ab_ba
 from .placement.four_transistor_interdigitized import generic_4T_interdigitzed
 from .placement.two_transistor_interdigitized import two_transistor_interdigitized,two_pfet_interdigitized,two_nfet_interdigitized,macro_two_transistor_interdigitized
 from .placement.two_transistor_place import two_transistor_place
+
+# Suppress kfactory verbose logging after all imports
+# This must be done after gdsfactory/kfactory have been imported and configured
+import logging
+logging.getLogger("kfactory").setLevel(logging.CRITICAL)
+logging.getLogger("kfactory.kcell").setLevel(logging.CRITICAL)
 
 __version__ = "0.1.1"
 
