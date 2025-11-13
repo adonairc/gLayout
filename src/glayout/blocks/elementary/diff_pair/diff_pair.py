@@ -4,9 +4,9 @@ from glayout import MappedPDK, sky130,gf180
 from glayout.spice.netlist import Netlist
 from glayout.routing import c_route,L_route,straight_route
 
-from gdsfactory.cell import cell
+from gdsfactory import cell
 from gdsfactory.component import Component, copy
-from gdsfactory.components.rectangle import rectangle
+from gdsfactory.components.shapes import rectangle
 from gdsfactory.routing.route_quad import route_quad
 from gdsfactory.routing.route_sharp import route_sharp
 from glayout.pdk.mappedpdk import MappedPDK
@@ -28,11 +28,6 @@ from glayout.routing.smart_route import smart_route
 from glayout.spice import Netlist
 from glayout.pdk.sky130_mapped import sky130_mapped_pdk
 from gdsfactory.components import text_freetype
-try:
-    from evaluator_wrapper import run_evaluation
-except ImportError:
-    print("Warning: evaluator_wrapper not found. Evaluation will be skipped.")
-    run_evaluation = None
 
 
 def sky130_add_df_labels(df_in: Component) -> Component:

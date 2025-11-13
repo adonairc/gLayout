@@ -13,6 +13,8 @@ from glayout.util.snap_to_grid import component_snap_to_grid
 from decimal import Decimal
 from glayout.routing.straight_route import straight_route
 from glayout.spice import Netlist
+import gdsfactory as gf
+import uuid
 
 
 def add_padding(component: Component, layer, enclosure: float) -> None:
@@ -68,10 +70,10 @@ def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float,
     met1_minsep = pdk.get_grule("met1")["min_separation"]
     poly_spacing += met1_minsep if length < met1_minsep else 0
     # create a single finger
-    finger = Component()
+    finger = Component(name=f"finger_{uuid.uuid4().hex[:6]}")
     gate = finger << rectangle(size=(length, poly_height), layer=pdk.get_glayer("poly"), centered=True)
     sd_viaarr_right = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
-    interfinger_correction_right = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None))
+    interfinger_correction_right = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None)).copy()
     sd_viaarr_right << interfinger_correction_right
     sd_viaarr_ref = finger << sd_viaarr_right
     sd_viaarr_ref.movex((poly_spacing+length) / 2)
@@ -81,13 +83,13 @@ def __gen_fingers_macro(pdk: MappedPDK, rmult: int, fingers: int, length: float,
     fingerarray = prec_array(finger, columns=fingers, rows=1, spacing=(poly_spacing+length, 1),absolute_spacing=True)
     # Create separate via_array instance for left side to avoid reference conflicts
     sd_viaarr_left = via_array(pdk, "active_diff", "met1", size=(sd_viaxdim, width), minus1=True, lay_bottom=False).copy()
-    interfinger_correction_left = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None))
+    interfinger_correction_left = via_array(pdk,"met1",inter_finger_topmet, size=(None, width),lay_every_layer=True, num_vias=(1,None)).copy()
     sd_viaarr_left << interfinger_correction_left
     sd_via_ref_left = fingerarray << sd_viaarr_left
     sd_via_ref_left.movex(0-(poly_spacing+length)/2)
     fingerarray.add_ports(sd_via_ref_left.ports,prefix="leftsd_")
     # center finger array and add ports
-    centered_farray = Component()
+    centered_farray = Component(name=f"centered_farray_{uuid.uuid4().hex[:6]}")
     fingerarray_ref_center = prec_ref_center(fingerarray)
     centered_farray.add(fingerarray_ref_center)
     centered_farray.add_ports(fingerarray_ref_center.ports)
@@ -393,7 +395,7 @@ def __mult_array_macro(
     final_arr.add_ports(marrref.ports)
     return component_snap_to_grid(rename_ports_by_orientation(final_arr))
 
-
+@gf.cell
 def nmos(
     pdk,
     width: float = 3,
@@ -534,7 +536,7 @@ def nmos(
 
     return component
 
-
+@gf.cell
 def pmos(
     pdk,
     width: float = 3,

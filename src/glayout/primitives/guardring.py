@@ -8,7 +8,9 @@ from glayout.util.snap_to_grid import component_snap_to_grid
 from glayout.routing.L_route import L_route
 from gdsfactory.typings import LayerSpec
 import uuid
+import gdsfactory as gf
 
+@gf.cell
 def rectangular_ring(
 	enclosed_size = (4.0,2.0),
 	width: float = 0.5,
@@ -41,7 +43,7 @@ def rectangular_ring(
 	c << ring
 	return c
 
-
+@gf.cell
 def tapring(
     pdk: MappedPDK,
     enclosed_rectangle=(2.0, 4.0),

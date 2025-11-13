@@ -89,7 +89,7 @@ def __get_viastack_minseperation(pdk: MappedPDK, viastack: Component, ordered_la
     top_enclosure = pdk.snap_to_2xgrid(top_enclosure,return_type="float")
     return pdk.snap_to_2xgrid([via_spacing, 2*top_enclosure], return_type="float")
 
-
+@gf.cell
 def via_stack(
     pdk: MappedPDK,
     glayer1: str,
@@ -179,7 +179,7 @@ def via_stack(
             viastack = move(viastack,(viastack.xmax,viastack.ymax))
     return rename_ports_by_orientation(viastack)
 
-
+@gf.cell
 def via_array(
     pdk: MappedPDK,
     glayer1: str,

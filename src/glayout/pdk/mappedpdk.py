@@ -1160,3 +1160,17 @@ exit
         # correctly return list or single element
         return snapped_dims[0] if len(snapped_dims)==1 else snapped_dims
 
+    def __hash__(self):
+        """Make this object usable as part of GDSFactory cache keys."""
+        return hash(self.name)
+
+    def __eq__(self, other):
+        """Ensure two MappedPDKs with same name/version are considered equal."""
+        return (
+            isinstance(other, MappedPDK)
+            and self.name == other.name
+        )
+
+    def __repr__(self):
+        """Readable representation for debugging and cell naming."""
+        return f"MappedPDK({self.name})"

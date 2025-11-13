@@ -125,7 +125,6 @@ def movey(custom_comp: Union[Port, ComponentReference, Component], offsety: floa
 	"""
 	if destination is not None:
 		destination = (None, destination)
-	# custom_comp.move_copy()
 	return move(custom_comp, (0,offsety),destination,layer)
 
 
@@ -151,14 +150,12 @@ def align_comp_to_port(
 	rtr_comp_ref = will return a component reference if set true, else return component
 	"""
 	# find center and bbox
-	print(custom_comp)
 	if isinstance(custom_comp, ComponentReference):
 		comp_type = transformed(custom_comp)
 	else:
 		comp_type = custom_comp
 	if layer:
 		comp_type = comp_type.extract([layer])
-	print(comp_type)
 	cbbox = comp_type.bbox()
 	ccenter = comp_type.center
 	# setup
@@ -363,14 +360,17 @@ def get_primitive_rectangle(size: tuple[float,float]=(5,3), layer: LayerSpec=(0,
 	"""
 	basename = "temprect"
 	temprect = Component(name=f"{basename}_{uuid.uuid4().hex[:6]}")
-	# v7 note: primitive_rectangle from gdstk
-	# temprect.add_polygon(primitive_rectangle((0,0),size,*layer))
-	temprect.add_polygon(rectangle(size, layer, True),layer)
+	dx = float(size[0])
+	dy = float(size[1])
+	if dx <= 0 or dy <= 0:
+			raise ValueError(f"dx={dx} and dy={dy} must be > 0")
+	points = [
+			(-dx / 2.0, -dy / 2.0),
+			(-dx / 2.0, dy / 2),
+			(dx / 2, dy / 2),
+			(dx / 2, -dy / 2.0),
+			]
+	temprect.add_polygon(points, layer=layer)
 	temprect = rename_ports_by_list(add_ports_perimeter(temprect,layer=layer,prefix="route_"),[("W","e1"),("N","e2"),("E","e3"),("S","e4")])
-	#rect = Component()
-	#clogic_ref = prec_ref_center(temprect) if centered else temprect.ref()
-	#rect.add(clogic_ref)
-	#rect.add_ports(clogic_ref.ports)
-	# In GDSFactory v9, flatten() mutates in-place and returns None
 	temprect.flatten()
 	return temprect
