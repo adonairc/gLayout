@@ -45,17 +45,17 @@ def sky130_add_df_labels(df_in: Component) -> Component:
     # vtail
     vtaillabel = rectangle(layer=met1_pin,size=(0.27,0.27),centered=True).copy()
     vtaillabel.add_label(text="VTAIL",layer=met1_label)
-    move_info.append((vtaillabel,df_in.ports["bl_multiplier_0_source_S"],None))
+    move_info.append((vtaillabel,df_in.ports["bl_multiplier_0_row0_col0_source_S"],None))
     
     # vdd1
     vdd1label = rectangle(layer=met1_pin,size=(0.27,0.27),centered=True).copy()
     vdd1label.add_label(text="VDD1",layer=met1_label)
-    move_info.append((vdd1label,df_in.ports["tl_multiplier_0_drain_N"],None))
+    move_info.append((vdd1label,df_in.ports["tl_multiplier_0_row0_col0_drain_N"],None))
     
     # vdd2
     vdd2label = rectangle(layer=met1_pin,size=(0.27,0.27),centered=True).copy()
     vdd2label.add_label(text="VDD2",layer=met1_label)
-    move_info.append((vdd2label,df_in.ports["tr_multiplier_0_drain_N"],None))
+    move_info.append((vdd2label,df_in.ports["tr_multiplier_0_row0_col0_drain_N"],None))
     
     # VB
     vblabel = rectangle(layer=li1_pin,size=(0.5,0.5),centered=True).copy()
@@ -65,12 +65,12 @@ def sky130_add_df_labels(df_in: Component) -> Component:
     # VP
     vplabel = rectangle(layer=met1_pin,size=(0.27,0.27),centered=True).copy()
     vplabel.add_label(text="VP",layer=met1_label)
-    move_info.append((vplabel,df_in.ports["br_multiplier_0_gate_S"], None))
+    move_info.append((vplabel,df_in.ports["br_multiplier_0_row0_col0_gate_S"], None))
     
     # VN
     vnlabel = rectangle(layer=met1_pin,size=(0.27,0.27),centered=True).copy()
     vnlabel.add_label(text="VN",layer=met1_label)
-    move_info.append((vnlabel,df_in.ports["bl_multiplier_0_gate_S"], None))
+    move_info.append((vnlabel,df_in.ports["bl_multiplier_0_row0_col0_gate_S"], None))
 
     # move everything to position
     for comp, prt, alignment in move_info:
@@ -240,20 +240,20 @@ def diff_pair(
 	if n_or_p_fet:
 		fetL = nmos(pdk, width=width, fingers=fingers,length=length,multipliers=1,with_tie=False,with_dummy=(dummy[0], False),with_dnwell=False,with_substrate_tap=False,rmult=rmult)
 		fetR = nmos(pdk, width=width, fingers=fingers,length=length,multipliers=1,with_tie=False,with_dummy=(False,dummy[1]),with_dnwell=False,with_substrate_tap=False,rmult=rmult)
-		min_spacing_x = pdk.get_grule("n+s/d")["min_separation"] - 2*(fetL.xmax - fetL.ports["multiplier_0_plusdoped_E"].center[0])
+		min_spacing_x = pdk.get_grule("n+s/d")["min_separation"] - 2*(fetL.xmax - fetL.ports["multiplier_0_row0_col0_plusdoped_E"].center[0])
 		well = "pwell"
 	else:
 		fetL = pmos(pdk, width=width, fingers=fingers,length=length,multipliers=1,with_tie=False,with_dummy=(dummy[0], False),dnwell=False,with_substrate_tap=False,rmult=rmult)
 		fetR = pmos(pdk, width=width, fingers=fingers,length=length,multipliers=1,with_tie=False,with_dummy=(False,dummy[1]),dnwell=False,with_substrate_tap=False,rmult=rmult)
-		min_spacing_x = pdk.get_grule("p+s/d")["min_separation"] - 2*(fetL.xmax - fetL.ports["multiplier_0_plusdoped_E"].center[0])
+		min_spacing_x = pdk.get_grule("p+s/d")["min_separation"] - 2*(fetL.xmax - fetL.ports["multiplier_0_row0_col0_plusdoped_E"].center[0])
 		well = "nwell"
 	# place transistors
 	viam2m3 = via_stack(pdk,"met2","met3",centered=True)
 	metal_min_dim = max(pdk.get_grule("met2")["min_width"],pdk.get_grule("met3")["min_width"])
 	metal_space = max(pdk.get_grule("met2")["min_separation"],pdk.get_grule("met3")["min_separation"],metal_min_dim)
-	gate_route_os = evaluate_bbox(viam2m3)[0] - fetL.ports["multiplier_0_gate_W"].width + metal_space
+	gate_route_os = evaluate_bbox(viam2m3)[0] - fetL.ports["multiplier_0_row0_col0_gate_W"].width + metal_space
 	min_spacing_y = metal_space + 2*gate_route_os
-	min_spacing_y = min_spacing_y - 2*abs(fetL.ports["well_S"].center[1] - fetL.ports["multiplier_0_gate_S"].center[1])
+	min_spacing_y = min_spacing_y - 2*abs(fetL.ports["well_S"].center[1] - fetL.ports["multiplier_0_row0_col0_gate_S"].center[1])
 	# TODO: fix spacing where you see +-0.5
 	a_topl = (diffpair << fetL).movey(fetL.ymax+min_spacing_y/2+0.5).movex(0-fetL.xmax-min_spacing_x/2)
 	b_topr = (diffpair << fetR).movey(fetR.ymax+min_spacing_y/2+0.5).movex(fetL.xmax+min_spacing_x/2)
@@ -268,63 +268,63 @@ def diff_pair(
 		tapref = diffpair << tapring(pdk,evaluate_bbox(diffpair,padding=1),horizontal_glayer="met1")
 		diffpair.add_ports(tapref.ports,prefix="tap_")
 		try:
-			diffpair<<straight_route(pdk,a_topl.ports["multiplier_0_dummy_L_gsdcon_top_met_W"],diffpair.ports["tap_W_top_met_W"],glayer2="met1")
+			diffpair<<straight_route(pdk,a_topl.ports["multiplier_0_row0_col0_dummy_L_gsdcon_top_met_W"],diffpair.ports["tap_W_top_met_W"],glayer2="met1")
 		except KeyError:
 			pass
 		try:
-			diffpair<<straight_route(pdk,b_topr.ports["multiplier_0_dummy_R_gsdcon_top_met_W"],diffpair.ports["tap_E_top_met_E"],glayer2="met1")
+			diffpair<<straight_route(pdk,b_topr.ports["multiplier_0_row0_col0_dummy_R_gsdcon_top_met_W"],diffpair.ports["tap_E_top_met_E"],glayer2="met1")
 		except KeyError:
 			pass
 		try:
-			diffpair<<straight_route(pdk,b_botl.ports["multiplier_0_dummy_L_gsdcon_top_met_W"],diffpair.ports["tap_W_top_met_W"],glayer2="met1")
+			diffpair<<straight_route(pdk,b_botl.ports["multiplier_0_row0_col0_dummy_L_gsdcon_top_met_W"],diffpair.ports["tap_W_top_met_W"],glayer2="met1")
 		except KeyError:
 			pass
 		try:
-			diffpair<<straight_route(pdk,a_botr.ports["multiplier_0_dummy_R_gsdcon_top_met_W"],diffpair.ports["tap_E_top_met_E"],glayer2="met1")
+			diffpair<<straight_route(pdk,a_botr.ports["multiplier_0_row0_col0_dummy_R_gsdcon_top_met_W"],diffpair.ports["tap_E_top_met_E"],glayer2="met1")
 		except KeyError:
 			pass
 	# route sources (short sources)
-	diffpair << route_quad(a_topl.ports["multiplier_0_source_E"], b_topr.ports["multiplier_0_source_W"], layer=pdk.get_glayer("met2"))
-	diffpair << route_quad(b_botl.ports["multiplier_0_source_E"], a_botr.ports["multiplier_0_source_W"], layer=pdk.get_glayer("met2"))
-	sextension = b_topr.ports["well_E"].center[0] - b_topr.ports["multiplier_0_source_E"].center[0]
-	source_routeE = diffpair << c_route(pdk, b_topr.ports["multiplier_0_source_E"], a_botr.ports["multiplier_0_source_E"],extension=sextension)
-	source_routeW = diffpair << c_route(pdk, a_topl.ports["multiplier_0_source_W"], b_botl.ports["multiplier_0_source_W"],extension=sextension)
+	diffpair << route_quad(a_topl.ports["multiplier_0_row0_col0_source_E"], b_topr.ports["multiplier_0_row0_col0_source_W"], layer=pdk.get_glayer("met2"))
+	diffpair << route_quad(b_botl.ports["multiplier_0_row0_col0_source_E"], a_botr.ports["multiplier_0_row0_col0_source_W"], layer=pdk.get_glayer("met2"))
+	sextension = b_topr.ports["well_E"].center[0] - b_topr.ports["multiplier_0_row0_col0_source_E"].center[0]
+	source_routeE = diffpair << c_route(pdk, b_topr.ports["multiplier_0_row0_col0_source_E"], a_botr.ports["multiplier_0_row0_col0_source_E"],extension=sextension)
+	source_routeW = diffpair << c_route(pdk, a_topl.ports["multiplier_0_row0_col0_source_W"], b_botl.ports["multiplier_0_row0_col0_source_W"],extension=sextension)
 	# route drains
 	# place via at the drain - create separate instances to avoid reuse conflicts
 	viam2m3 = via_stack(pdk,"met2","met3",centered=True)
 	drain_br_via = diffpair << via_stack(pdk,"met2","met3",centered=True)
 	drain_bl_via = diffpair << via_stack(pdk,"met2","met3",centered=True)
-	drain_br_via.move(a_botr.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
-	drain_bl_via.move(b_botl.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
+	drain_br_via.move(a_botr.ports["multiplier_0_row0_col0_drain_N"].center).movey(viam2m3.ymin)
+	drain_bl_via.move(b_botl.ports["multiplier_0_row0_col0_drain_N"].center).movey(viam2m3.ymin)
 	drain_br_viatm = diffpair << via_stack(pdk,"met2","met3",centered=True)
 	drain_bl_viatm = diffpair << via_stack(pdk,"met2","met3",centered=True)
-	drain_br_viatm.move(a_botr.ports["multiplier_0_drain_N"].center).movey(viam2m3.ymin)
-	drain_bl_viatm.move(b_botl.ports["multiplier_0_drain_N"].center).movey(-1.5 * evaluate_bbox(viam2m3)[1] - metal_space)
+	drain_br_viatm.move(a_botr.ports["multiplier_0_row0_col0_drain_N"].center).movey(viam2m3.ymin)
+	drain_bl_viatm.move(b_botl.ports["multiplier_0_row0_col0_drain_N"].center).movey(-1.5 * evaluate_bbox(viam2m3)[1] - metal_space)
 	# create route to drain via
-	width_drain_route = b_topr.ports["multiplier_0_drain_E"].width
-	dextension = source_routeE.xmax - b_topr.ports["multiplier_0_drain_E"].center[0] + metal_space
+	width_drain_route = b_topr.ports["multiplier_0_row0_col0_drain_E"].width
+	dextension = source_routeE.xmax - b_topr.ports["multiplier_0_row0_col0_drain_E"].center[0] + metal_space
 	bottom_extension = viam2m3.ymax + width_drain_route/2 + 2*metal_space
 	drain_br_viatm.movey(0-bottom_extension - metal_space - width_drain_route/2 - viam2m3.ymax)
 	diffpair << route_quad(drain_br_viatm.ports["top_met_N"], drain_br_via.ports["top_met_S"], layer=pdk.get_glayer("met3"))
 	diffpair << route_quad(drain_bl_viatm.ports["top_met_N"], drain_bl_via.ports["top_met_S"], layer=pdk.get_glayer("met3"))
 	floating_port_drain_bottom_L = set_port_orientation(movey(drain_bl_via.ports["bottom_met_W"],0-bottom_extension), get_orientation("E"))
 	floating_port_drain_bottom_R = set_port_orientation(movey(drain_br_via.ports["bottom_met_E"],0-bottom_extension - metal_space - width_drain_route), get_orientation("W"))
-	drain_routeTR_BL = diffpair << c_route(pdk, floating_port_drain_bottom_L, b_topr.ports["multiplier_0_drain_E"],extension=dextension, width1=width_drain_route,width2=width_drain_route)
-	drain_routeTL_BR = diffpair << c_route(pdk, floating_port_drain_bottom_R, a_topl.ports["multiplier_0_drain_W"],extension=dextension, width1=width_drain_route,width2=width_drain_route)
+	drain_routeTR_BL = diffpair << c_route(pdk, floating_port_drain_bottom_L, b_topr.ports["multiplier_0_row0_col0_drain_E"],extension=dextension, width1=width_drain_route,width2=width_drain_route)
+	drain_routeTL_BR = diffpair << c_route(pdk, floating_port_drain_bottom_R, a_topl.ports["multiplier_0_row0_col0_drain_W"],extension=dextension, width1=width_drain_route,width2=width_drain_route)
 	# cross gate route top with c_route. bar_minus ABOVE bar_plus
-	get_left_extension = lambda bar, a_topl=a_topl, diffpair=diffpair, pdk=pdk : (abs(diffpair.xmin-min(a_topl.ports["multiplier_0_gate_W"].center[0],bar.ports["e1"].center[0])) + pdk.get_grule("met2")["min_separation"])
-	get_right_extension = lambda bar, b_topr=b_topr, diffpair=diffpair, pdk=pdk : (abs(diffpair.xmax-max(b_topr.ports["multiplier_0_gate_E"].center[0],bar.ports["e3"].center[0])) + pdk.get_grule("met2")["min_separation"])
+	get_left_extension = lambda bar, a_topl=a_topl, diffpair=diffpair, pdk=pdk : (abs(diffpair.xmin-min(a_topl.ports["multiplier_0_row0_col0_gate_W"].center[0],bar.ports["e1"].center[0])) + pdk.get_grule("met2")["min_separation"])
+	get_right_extension = lambda bar, b_topr=b_topr, diffpair=diffpair, pdk=pdk : (abs(diffpair.xmax-max(b_topr.ports["multiplier_0_row0_col0_gate_E"].center[0],bar.ports["e3"].center[0])) + pdk.get_grule("met2")["min_separation"])
 	# lay bar plus and PLUSgate_routeW
-	bar_comp = rectangle(centered=True,size=(abs(b_topr.xmax-a_topl.xmin), b_topr.ports["multiplier_0_gate_E"].width),layer=pdk.get_glayer("met2"))
+	bar_comp = rectangle(centered=True,size=(abs(b_topr.xmax-a_topl.xmin), b_topr.ports["multiplier_0_row0_col0_gate_E"].width),layer=pdk.get_glayer("met2"))
 	bar_plus = (diffpair << bar_comp).movey(diffpair.ymax + bar_comp.ymax + pdk.get_grule("met2")["min_separation"])
-	PLUSgate_routeW = diffpair << c_route(pdk, a_topl.ports["multiplier_0_gate_W"], bar_plus.ports["e1"], extension=get_left_extension(bar_plus))
+	PLUSgate_routeW = diffpair << c_route(pdk, a_topl.ports["multiplier_0_row0_col0_gate_W"], bar_plus.ports["e1"], extension=get_left_extension(bar_plus))
 	# lay bar minus and MINUSgate_routeE
 	plus_minus_seperation = max(pdk.get_grule("met2")["min_separation"], plus_minus_seperation)
 	bar_minus = (diffpair << bar_comp).movey(diffpair.ymax +bar_comp.ymax + plus_minus_seperation)
-	MINUSgate_routeE = diffpair << c_route(pdk, b_topr.ports["multiplier_0_gate_E"], bar_minus.ports["e3"], extension=get_right_extension(bar_minus))
+	MINUSgate_routeE = diffpair << c_route(pdk, b_topr.ports["multiplier_0_row0_col0_gate_E"], bar_minus.ports["e3"], extension=get_right_extension(bar_minus))
 	# lay MINUSgate_routeW and PLUSgate_routeE
-	MINUSgate_routeW = diffpair << c_route(pdk, set_port_orientation(b_botl.ports["multiplier_0_gate_E"],"W"), bar_minus.ports["e1"], extension=get_left_extension(bar_minus))
-	PLUSgate_routeE = diffpair << c_route(pdk, set_port_orientation(a_botr.ports["multiplier_0_gate_W"],"E"), bar_plus.ports["e3"], extension=get_right_extension(bar_plus))
+	MINUSgate_routeW = diffpair << c_route(pdk, set_port_orientation(b_botl.ports["multiplier_0_row0_col0_gate_E"],"W"), bar_minus.ports["e1"], extension=get_left_extension(bar_minus))
+	PLUSgate_routeE = diffpair << c_route(pdk, set_port_orientation(a_botr.ports["multiplier_0_row0_col0_gate_W"],"E"), bar_plus.ports["e3"], extension=get_right_extension(bar_plus))
 	# correct pwell place, add ports, flatten, and return
 	diffpair.add_ports(a_topl.ports,prefix="tl_")
 	diffpair.add_ports(b_topr.ports,prefix="tr_")
