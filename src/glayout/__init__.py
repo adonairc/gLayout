@@ -2,6 +2,9 @@
 Glayout - A PDK-agnostic layout automation framework for analog circuit design
 """
 
+import logging
+logging.getLogger("kfactory.kcell").setLevel(logging.CRITICAL)
+
 from .pdk.mappedpdk import MappedPDK
 from .pdk.sky130_mapped import sky130_mapped_pdk as sky130
 from .pdk.gf180_mapped import gf180_mapped_pdk as gf180
